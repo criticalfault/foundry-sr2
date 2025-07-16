@@ -17,17 +17,42 @@ import { SR2DataImporter } from "./data-importer.js";
 
 Hooks.once("init", async function () {
     console.log("Shadowrun 2E | Initializing Shadowrun 2nd Edition System");
+    
+    // Debug: Log that we're starting initialization
+    console.log("SR2E | Registering document classes...");
 
     // Assign custom classes and constants
     CONFIG.Actor.documentClass = SR2Actor;
     CONFIG.Item.documentClass = SR2Item;
 
     // Register sheet application classes
+    console.log("SR2E | Unregistering core sheets...");
     Actors.unregisterSheet("core", ActorSheet);
-    Actors.registerSheet("shadowrun2e", SR2ActorSheet, { makeDefault: true });
+    
+    console.log("SR2E | Registering SR2ActorSheet...", SR2ActorSheet);
+    Actors.registerSheet("shadowrun2e", SR2ActorSheet, { 
+        types: ["character"], 
+        makeDefault: true,
+        label: "Shadowrun 2E Character Sheet"
+    });
+    
+    // Force set as default for character actors
+    if (!CONFIG.Actor.sheetClasses.character) {
+        CONFIG.Actor.sheetClasses.character = {};
+    }
+    CONFIG.Actor.sheetClasses.character["shadowrun2e.SR2ActorSheet"] = {
+        id: "shadowrun2e.SR2ActorSheet",
+        cls: SR2ActorSheet,
+        default: true
+    };
 
     Items.unregisterSheet("core", ItemSheet);
-    Items.registerSheet("shadowrun2e", SR2ItemSheet, { makeDefault: true });
+    Items.registerSheet("shadowrun2e", SR2ItemSheet, { 
+        makeDefault: true,
+        label: "Shadowrun 2E Item Sheet"
+    });
+    
+    console.log("SR2E | Sheet registration completed");
 
     // Register system settings
     registerSystemSettings();
@@ -208,6 +233,10 @@ class DataImportConfig extends FormApplication {
 /* -------------------------------------------- */
 
 Hooks.once("ready", async function () {
+    // Debug: Check if our sheets are registered
+    console.log("SR2E | Checking registered actor sheets:", Object.keys(game.system.documentTypes.Actor));
+    console.log("SR2E | Available actor sheet classes:", Actors.registeredSheets);
+    
     // Auto-import data on first world load
     if (game.user.isGM && !game.settings.get("shadowrun2e", "dataImported")) {
         const shouldImport = await Dialog.confirm({
