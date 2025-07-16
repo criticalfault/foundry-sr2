@@ -42,14 +42,23 @@
           <div class="attribute">
             <label>Body</label>
             <input type="number" name="system.attributes.body.value" value="{{system.attributes.body.value}}" data-dtype="Number"/>
+            {{#if augmentationModifiers.BOD}}
+              <span class="modifier-display">+{{augmentationModifiers.BOD}} = {{modifiedAttributes.body}}</span>
+            {{/if}}
           </div>
           <div class="attribute">
             <label>Quickness</label>
             <input type="number" name="system.attributes.quickness.value" value="{{system.attributes.quickness.value}}" data-dtype="Number"/>
+            {{#if augmentationModifiers.QCK}}
+              <span class="modifier-display">+{{augmentationModifiers.QCK}} = {{modifiedAttributes.quickness}}</span>
+            {{/if}}
           </div>
           <div class="attribute">
             <label>Strength</label>
             <input type="number" name="system.attributes.strength.value" value="{{system.attributes.strength.value}}" data-dtype="Number"/>
+            {{#if augmentationModifiers.STR}}
+              <span class="modifier-display">+{{augmentationModifiers.STR}} = {{modifiedAttributes.strength}}</span>
+            {{/if}}
           </div>
         </div>
         
@@ -58,14 +67,23 @@
           <div class="attribute">
             <label>Charisma</label>
             <input type="number" name="system.attributes.charisma.value" value="{{system.attributes.charisma.value}}" data-dtype="Number"/>
+            {{#if augmentationModifiers.CHA}}
+              <span class="modifier-display">+{{augmentationModifiers.CHA}} = {{modifiedAttributes.charisma}}</span>
+            {{/if}}
           </div>
           <div class="attribute">
             <label>Intelligence</label>
             <input type="number" name="system.attributes.intelligence.value" value="{{system.attributes.intelligence.value}}" data-dtype="Number"/>
+            {{#if augmentationModifiers.INT}}
+              <span class="modifier-display">+{{augmentationModifiers.INT}} = {{modifiedAttributes.intelligence}}</span>
+            {{/if}}
           </div>
           <div class="attribute">
             <label>Willpower</label>
             <input type="number" name="system.attributes.willpower.value" value="{{system.attributes.willpower.value}}" data-dtype="Number"/>
+            {{#if augmentationModifiers.WIL}}
+              <span class="modifier-display">+{{augmentationModifiers.WIL}} = {{modifiedAttributes.willpower}}</span>
+            {{/if}}
           </div>
         </div>
 
@@ -373,6 +391,16 @@
               <option value="shamanic" {{#if (eq system.magic.tradition "shamanic")}}selected{{/if}}>Shamanic</option>
             </select>
           </div>
+          <div class="magic-stats">
+            <div class="magic-stat">
+              <label>Magic Rating:</label>
+              <span>{{system.attributes.magic.value}}</span>
+            </div>
+            <div class="magic-stat">
+              <label>Spell Pool:</label>
+              <span>{{system.pools.spell.current}} / {{system.pools.spell.max}}</span>
+            </div>
+          </div>
           {{/if}}
         </div>
       </div>
@@ -380,6 +408,9 @@
       {{#if system.magic.awakened}}
       <div class="items-header">
         <h3>Spells</h3>
+        <div class="spell-info">
+          <span class="spell-count">Spells Known: {{spells.length}} / {{system.attributes.magic.value}}</span>
+        </div>
         <div class="item-controls">
           <button class="browse-items" data-type="spell" title="Browse Spells">
             <i class="fas fa-search"></i> Browse Spells
@@ -406,7 +437,7 @@
             <span>{{item.name}}</span>
           </div>
           <div class="item-force">
-            <input type="number" name="items.{{item._id}}.system.force" value="{{item.system.force}}" data-dtype="Number" min="1" max="12"/>
+            <input type="number" name="items.{{item._id}}.system.force" value="{{item.system.force}}" data-dtype="Number" min="1" max="10"/>
           </div>
           <div class="item-drain">
             <span>{{item.system.drain}}</span>
@@ -436,11 +467,33 @@
 
     {{!-- Adept Powers Tab --}}
     <div class="tab adept" data-group="primary" data-tab="adept">
+      {{#if (gt system.attributes.magic.value 0)}}
       <div class="adept-section">
         <h3>Physical Adept Powers</h3>
-        <div class="power-points">
-          <label>Magic Rating: {{system.attributes.magic.value}}</label>
-          <label>Power Points Used: <span class="power-points-used">{{powerPointsUsed}}</span> / {{system.attributes.magic.value}}</label>
+        <div class="adept-info">
+          <div class="adept-type">
+            <label>
+              <input type="checkbox" name="system.magic.physicalAdept" {{#if system.magic.physicalAdept}}checked{{/if}}/>
+              Physical Adept
+            </label>
+          </div>
+          <div class="power-points">
+            <div class="power-point-stat">
+              <label>Magic Rating:</label>
+              <span>{{system.attributes.magic.value}}</span>
+            </div>
+            <div class="power-point-stat">
+              <label>Power Points Used:</label>
+              <span class="power-points-used {{#if (gt powerPointsUsed system.attributes.magic.value)}}over-limit{{/if}}">{{powerPointsUsed}}</span>
+              <span>/ {{system.attributes.magic.value}}</span>
+            </div>
+            {{#if (gt powerPointsUsed system.attributes.magic.value)}}
+              <div class="power-point-warning">
+                <i class="fas fa-exclamation-triangle"></i>
+                <span>Exceeding power point limit!</span>
+              </div>
+            {{/if}}
+          </div>
         </div>
       </div>
 
@@ -497,6 +550,11 @@
         </div>
         {{/unless}}
       </div>
+      {{else}}
+      <div class="no-magic">
+        <p>This character has no Magic rating. Set Magic > 0 to access Adept Powers.</p>
+      </div>
+      {{/if}}
     </div>
 
     <div class="tab biography" data-group="primary" data-tab="biography">

@@ -42,13 +42,27 @@ export class SR2Actor extends Actor {
    */
   _calculateDerivedAttributes(systemData) {
     const attrs = systemData.attributes;
-    
-    // Reaction = (Quickness + Intelligence) / 2
-    attrs.reaction.value = Math.ceil((attrs.quickness.value + attrs.intelligence.value) / 2);
-    
-    // Combat Pool = (Quickness + Intelligence + Willpower) / 2
-    systemData.pools.combat.max = Math.floor((attrs.quickness.value + attrs.intelligence.value + attrs.willpower.value) / 2);
-    
+
+    // Apply cyberware and bioware modifiers to attributes
+    const modifiers = this._calculateAugmentationModifiers();
+
+    // Base attributes with modifiers applied
+    const modifiedAttrs = {
+      body: attrs.body.value + (modifiers.BOD || 0),
+      quickness: attrs.quickness.value + (modifiers.QCK || 0),
+      strength: attrs.strength.value + (modifiers.STR || 0),
+      charisma: attrs.charisma.value + (modifiers.CHA || 0),
+      intelligence: attrs.intelligence.value + (modifiers.INT || 0),
+      willpower: attrs.willpower.value + (modifiers.WIL || 0),
+      reaction: Math.ceil((attrs.quickness.value + attrs.intelligence.value) / 2) + (modifiers.RCT || 0)
+    };
+
+    // Update the reaction attribute with modifiers
+    attrs.reaction.value = modifiedAttrs.reaction;
+
+    // Combat Pool = (Modified Quickness + Modified Intelligence + Modified Willpower) / 2 + Combat Pool bonuses
+    systemData.pools.combat.max = Math.floor((modifiedAttrs.quickness + modifiedAttrs.intelligence + modifiedAttrs.willpower) / 2) + (modifiers.CPL || 0);
+
     // Spell Pool = highest Sorcery skill (if awakened)
     if (systemData.magic.awakened) {
       const sorcerySkill = this._getHighestSorcerySkill();
@@ -56,25 +70,25 @@ export class SR2Actor extends Actor {
     } else {
       systemData.pools.spell.max = 0;
     }
-    
-    // Hacking Pool = Reaction + highest Computer skill (Computer, Computer->Software, Computer->Software->Decking)
+
+    // Hacking Pool = Modified Reaction + highest Computer skill
     const hackingSkill = this._getHighestComputerSkill();
-    systemData.pools.hacking.max = attrs.reaction.value + hackingSkill;
-    
-    // Control Pool = Reaction + Vehicle Control Rig bonus
+    systemData.pools.hacking.max = modifiedAttrs.reaction + hackingSkill;
+
+    // Control Pool = Modified Reaction + Vehicle Control Rig bonus
     const controlRigBonus = this._getControlRigBonus();
-    systemData.pools.control.max = attrs.reaction.value + controlRigBonus;
-    
-    // Task Pool = Intelligence + highest relevant skill (simplified - using Intelligence base)
-    systemData.pools.task.max = attrs.intelligence.value;
-    
-    // Astral Combat Pool = Willpower + Charisma (for astral combat)
+    systemData.pools.control.max = modifiedAttrs.reaction + controlRigBonus;
+
+    // Task Pool = Modified Intelligence + highest relevant skill (simplified - using Intelligence base)
+    systemData.pools.task.max = modifiedAttrs.intelligence;
+
+    // Astral Combat Pool = Modified Willpower + Modified Charisma (for astral combat)
     if (systemData.magic.awakened) {
-      systemData.pools.astral.max = attrs.willpower.value + attrs.charisma.value;
+      systemData.pools.astral.max = modifiedAttrs.willpower + modifiedAttrs.charisma;
     } else {
       systemData.pools.astral.max = 0;
     }
-    
+
     // Initialize current values if not set
     Object.keys(systemData.pools).forEach(poolName => {
       if (poolName !== 'karma' && systemData.pools[poolName].current === undefined) {
@@ -89,7 +103,7 @@ export class SR2Actor extends Actor {
   _getSkillRating(baseSkillName) {
     const skills = this.items.filter(i => i.type === 'skill' && i.system.baseSkill === baseSkillName);
     if (skills.length === 0) return 0;
-    
+
     // Return the highest rating if multiple concentrations exist
     return Math.max(...skills.map(skill => skill.system.rating || 0));
   }
@@ -99,12 +113,12 @@ export class SR2Actor extends Actor {
    * Looks for Computer base skill and any concentrations (Software, etc.)
    */
   _getHighestComputerSkill() {
-    const computerSkills = this.items.filter(i => 
+    const computerSkills = this.items.filter(i =>
       i.type === 'skill' && i.system.baseSkill === 'Computer'
     );
-    
+
     if (computerSkills.length === 0) return 0;
-    
+
     // Return the highest rating among all Computer skill concentrations
     return Math.max(...computerSkills.map(skill => skill.system.rating || 0));
   }
@@ -114,12 +128,12 @@ export class SR2Actor extends Actor {
    * Looks for Sorcery base skill and any concentrations
    */
   _getHighestSorcerySkill() {
-    const sorcerySkills = this.items.filter(i => 
+    const sorcerySkills = this.items.filter(i =>
       i.type === 'skill' && i.system.baseSkill === 'Sorcery'
     );
-    
+
     if (sorcerySkills.length === 0) return 0;
-    
+
     // Return the highest rating among all Sorcery skill concentrations
     return Math.max(...sorcerySkills.map(skill => skill.system.rating || 0));
   }
@@ -129,14 +143,14 @@ export class SR2Actor extends Actor {
    * Level 1 = +2, Level 2 = +4, Level 3 = +6
    */
   _getControlRigBonus() {
-    const controlRigs = this.items.filter(i => 
-      i.type === 'cyberware' && 
-      i.system.installed && 
+    const controlRigs = this.items.filter(i =>
+      i.type === 'cyberware' &&
+      i.system.installed &&
       i.name.toLowerCase().includes('control rig')
     );
-    
+
     if (controlRigs.length === 0) return 0;
-    
+
     // Find the highest level control rig
     let highestLevel = 0;
     for (const rig of controlRigs) {
@@ -145,9 +159,73 @@ export class SR2Actor extends Actor {
         highestLevel = rating;
       }
     }
-    
+
     // Convert rating to bonus: Level 1 = +2, Level 2 = +4, Level 3 = +6
     return highestLevel * 2;
+  }
+
+  /**
+   * Calculate attribute modifiers from installed cyberware and bioware
+   * Parses the "Mods" field to extract bonuses like +1BOD, +2RCT, etc.
+   */
+  _calculateAugmentationModifiers() {
+    const modifiers = {
+      BOD: 0,    // Body
+      QCK: 0,    // Quickness  
+      STR: 0,    // Strength
+      CHA: 0,    // Charisma
+      INT: 0,    // Intelligence
+      WIL: 0,    // Willpower
+      RCT: 0,    // Reaction
+      INI: 0,    // Initiative Dice
+      CPL: 0     // Combat Pool
+    };
+
+    // Get all installed cyberware, bioware, and adept powers
+    const augmentations = this.items.filter(i =>
+      ((i.type === 'cyberware' || i.type === 'bioware') && i.system.installed) ||
+      (i.type === 'adeptpower')
+    );
+
+    // Parse modifiers from each augmentation
+    for (const aug of augmentations) {
+      const mods = aug.system.mods || "";
+      if (!mods) continue;
+
+      // For adept powers, multiply by current level if it has levels
+      let levelMultiplier = 1;
+      if (aug.type === 'adeptpower' && aug.system.hasLevels) {
+        levelMultiplier = aug.system.currentLevel || 1;
+      }
+
+      // Parse modifier string like "+1BOD,+2RCT" or "+1QCK,+1STR"
+      const modParts = mods.split(',');
+
+      for (const modPart of modParts) {
+        const trimmed = modPart.trim();
+        if (!trimmed) continue;
+
+        // Match pattern like "+1BOD" or "+2RCT"
+        const match = trimmed.match(/([+-]\d+)([A-Z]{3})/);
+        if (match) {
+          const baseValue = parseInt(match[1]);
+          const attribute = match[2];
+          const finalValue = baseValue * levelMultiplier;
+
+          if (modifiers.hasOwnProperty(attribute)) {
+            modifiers[attribute] += finalValue;
+
+            if (levelMultiplier > 1) {
+              console.log(`SR2E | Applied ${aug.name} (Level ${levelMultiplier}): ${trimmed} x${levelMultiplier} = ${finalValue} (Total ${attribute}: ${modifiers[attribute]})`);
+            } else {
+              console.log(`SR2E | Applied ${aug.name}: ${trimmed} (Total ${attribute}: ${modifiers[attribute]})`);
+            }
+          }
+        }
+      }
+    }
+
+    return modifiers;
   }
 
   /**
@@ -155,10 +233,10 @@ export class SR2Actor extends Actor {
    */
   _calculateConditionMonitors(systemData) {
     const attrs = systemData.attributes;
-    
+
     // Physical Condition Monitor = 10
     systemData.health.physical.max = 10;
-    
+
     // Stun Condition Monitor = 10  
     systemData.health.stun.max = 10;
   }
@@ -168,7 +246,13 @@ export class SR2Actor extends Actor {
    */
   _calculateInitiative(systemData) {
     const attrs = systemData.attributes;
+    const modifiers = this._calculateAugmentationModifiers();
+
+    // Base initiative = Quickness + Reaction (both already include modifiers)
     systemData.initiative.base = attrs.quickness.value + attrs.reaction.value;
+
+    // Initiative dice = 1 base + INI modifiers from cyberware
+    systemData.initiative.dice = 1 + (modifiers.INI || 0);
   }
 
   /**
@@ -178,21 +262,21 @@ export class SR2Actor extends Actor {
     const diceResults = [];
     let totalSuccesses = 0;
     let totalOnes = 0;
-    
+
     // Roll each die in the pool
     for (let i = 0; i < dicePool; i++) {
       const dieResults = [];
       let currentRoll = Math.floor(Math.random() * 6) + 1;
       let dieTotal = currentRoll;
       dieResults.push(currentRoll);
-      
+
       // Exploding 6s - keep rolling while we get 6s
       while (currentRoll === 6) {
         currentRoll = Math.floor(Math.random() * 6) + 1;
         dieTotal += currentRoll;
         dieResults.push(currentRoll);
       }
-      
+
       // Count successes and ones for this die
       if (dieTotal >= targetNumber) {
         totalSuccesses++;
@@ -200,7 +284,7 @@ export class SR2Actor extends Actor {
       if (dieResults[0] === 1) { // Only the first roll counts for ones
         totalOnes++;
       }
-      
+
       diceResults.push({
         results: dieResults,
         total: dieTotal,
@@ -208,10 +292,10 @@ export class SR2Actor extends Actor {
         isOne: dieResults[0] === 1
       });
     }
-    
+
     // Critical failure only occurs when ALL dice show 1 on their first roll
     const isCriticalFailure = totalOnes === dicePool && totalSuccesses === 0;
-    
+
     const chatData = {
       user: game.user.id,
       speaker: ChatMessage.getSpeaker({ actor: this }),
@@ -225,7 +309,7 @@ export class SR2Actor extends Actor {
         diceResults: diceResults
       })
     };
-    
+
     ChatMessage.create(chatData);
     return { successes: totalSuccesses, ones: totalOnes, isCriticalFailure: isCriticalFailure };
   }

@@ -18,6 +18,17 @@ import { SR2DataImporter } from "./data-importer.js";
 Hooks.once("init", async function () {
     console.log("Shadowrun 2E | Initializing Shadowrun 2nd Edition System");
     
+    // Suppress V1 Application deprecation warnings for now
+    // TODO: Migrate to ApplicationV2 in future version
+    const originalWarn = console.warn;
+    console.warn = function(...args) {
+        const message = args.join(' ');
+        if (message.includes('V1 Application framework is deprecated')) {
+            return; // Suppress this specific warning
+        }
+        originalWarn.apply(console, args);
+    };
+    
     // Debug: Log that we're starting initialization
     console.log("SR2E | Registering document classes...");
 

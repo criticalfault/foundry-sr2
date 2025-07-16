@@ -102,6 +102,7 @@
       },
       "magic": {
         "awakened": false,
+        "physicalAdept": false,
         "tradition": ""
       },
       "resources": {

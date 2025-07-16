@@ -99,7 +99,22 @@ export class SR2ActorSheet extends ActorSheet {
    * Prepare character specific data
    */
   _prepareCharacterData(context) {
-    // Add any character-specific data preparation here
+    // Calculate and display augmentation modifiers
+    const modifiers = this.actor._calculateAugmentationModifiers();
+    context.augmentationModifiers = modifiers;
+    
+    // Calculate total modified attributes for display
+    const attrs = context.system.attributes;
+    context.modifiedAttributes = {
+      body: attrs.body.value + (modifiers.BOD || 0),
+      quickness: attrs.quickness.value + (modifiers.QCK || 0),
+      strength: attrs.strength.value + (modifiers.STR || 0),
+      charisma: attrs.charisma.value + (modifiers.CHA || 0),
+      intelligence: attrs.intelligence.value + (modifiers.INT || 0),
+      willpower: attrs.willpower.value + (modifiers.WIL || 0),
+      reaction: attrs.reaction.value, // Already includes modifiers
+      initiativeDice: 1 + (modifiers.INI || 0)
+    };
   }
 
   /**
