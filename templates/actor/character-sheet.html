@@ -188,9 +188,10 @@
                   <div class="concentration-section">
                     <select name="items.{{skill._id}}.system.concentration" data-dtype="String" class="concentration-select">
                       <option value="">Select Concentration...</option>
-                      {{#each (lookup @root.availableSkills skill.system.baseSkill).Concentrations}}
-                        <option value="{{this.name}}" {{#if (eq this.name ../skill.system.concentration)}}selected{{/if}}>{{this.name}}</option>
-                      {{/each}}
+                      <!-- Concentrations will be populated by JavaScript -->
+                      {{#if skill.system.concentration}}
+                        <option value="{{skill.system.concentration}}" selected>{{skill.system.concentration}}</option>
+                      {{/if}}
                     </select>
                   </div>
                 {{/if}}

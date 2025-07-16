@@ -15,8 +15,8 @@ export class SR2ItemSheet extends ItemSheet {
 
   /** @override */
   get template() {
-    const path = "systems/shadowrun2e/templates/item";
-    return `${path}/item-${this.item.type}-sheet.html`;
+    // Use the same template for all item types
+    return "systems/shadowrun2e/templates/item/item-sheet.html";
   }
 
   /** @override */
