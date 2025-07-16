@@ -7,6 +7,7 @@ import { SR2Actor } from "./actor/actor.js";
 import { SR2ActorSheet } from "./actor/actor-sheet.js";
 import { SR2CyberdeckSheet } from "./actor/cyberdeck-sheet.js";
 import { SR2VehicleSheet } from "./actor/vehicle-sheet.js";
+import { SR2SpiritSheet } from "./actor/spirit-sheet.js";
 import { SR2Item } from "./item/item.js";
 import { SR2ItemSheet } from "./item/item-sheet.js";
 import { initializeInitiativeTracker } from "./initiative-tracker.js";
@@ -63,6 +64,13 @@ Hooks.once("init", async function () {
         label: "Shadowrun 2E Vehicle Sheet"
     });
     
+    console.log("SR2E | Registering SR2SpiritSheet...", SR2SpiritSheet);
+    Actors.registerSheet("shadowrun2e", SR2SpiritSheet, { 
+        types: ["spirit"], 
+        makeDefault: true,
+        label: "Shadowrun 2E Spirit Sheet"
+    });
+    
     // Force set as default for character actors
     if (!CONFIG.Actor.sheetClasses.character) {
         CONFIG.Actor.sheetClasses.character = {};
@@ -90,6 +98,16 @@ Hooks.once("init", async function () {
     CONFIG.Actor.sheetClasses.vehicle["shadowrun2e.SR2VehicleSheet"] = {
         id: "shadowrun2e.SR2VehicleSheet",
         cls: SR2VehicleSheet,
+        default: true
+    };
+    
+    // Force set as default for spirit actors
+    if (!CONFIG.Actor.sheetClasses.spirit) {
+        CONFIG.Actor.sheetClasses.spirit = {};
+    }
+    CONFIG.Actor.sheetClasses.spirit["shadowrun2e.SR2SpiritSheet"] = {
+        id: "shadowrun2e.SR2SpiritSheet",
+        cls: SR2SpiritSheet,
         default: true
     };
 
@@ -156,6 +174,7 @@ function preloadHandlebarsTemplates() {
         "systems/shadowrun2e/templates/actor/character-sheet.html",
         "systems/shadowrun2e/templates/actor/cyberdeck-sheet.html",
         "systems/shadowrun2e/templates/actor/vehicle-sheet.html",
+        "systems/shadowrun2e/templates/actor/spirit-sheet.html",
         "systems/shadowrun2e/templates/item/item-sheet.html",
         "systems/shadowrun2e/templates/apps/initiative-tracker.html",
         "systems/shadowrun2e/templates/apps/item-browser.html",

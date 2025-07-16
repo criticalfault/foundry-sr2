@@ -1,6 +1,6 @@
 {
   "Actor": {
-    "types": ["character", "cyberdeck", "vehicle"],
+    "types": ["character", "cyberdeck", "vehicle", "spirit"],
     "templates": {
       "base": {
         "health": {
@@ -176,6 +176,59 @@
         "value": 0,
         "max": 10
       }
+    },
+    "spirit": {
+      "spiritType": "",
+      "attributes": {
+        "body": {
+          "value": 1,
+          "min": 1,
+          "max": 20
+        },
+        "quickness": {
+          "value": 1,
+          "min": 1,
+          "max": 20
+        },
+        "strength": {
+          "value": 1,
+          "min": 1,
+          "max": 20
+        },
+        "charisma": {
+          "value": 1,
+          "min": 1,
+          "max": 20
+        },
+        "intelligence": {
+          "value": 1,
+          "min": 1,
+          "max": 20
+        },
+        "willpower": {
+          "value": 1,
+          "min": 1,
+          "max": 20
+        },
+        "force": {
+          "value": 1,
+          "min": 1,
+          "max": 12
+        },
+        "reaction": {
+          "value": 1,
+          "min": 1,
+          "max": 20
+        }
+      },
+      "health": {
+        "value": 0,
+        "max": 10
+      },
+      "powers": "",
+      "services": 0,
+      "summoner": "",
+      "biography": ""
     }
   },
   "Item": {
