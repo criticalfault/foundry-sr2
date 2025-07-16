@@ -1,0 +1,219 @@
+{
+  "Actor": {
+    "types": ["character"],
+    "templates": {
+      "base": {
+        "health": {
+          "physical": {
+            "value": 0,
+            "max": 10
+          },
+          "stun": {
+            "value": 0,
+            "max": 10
+          }
+        },
+        "biography": ""
+      }
+    },
+    "character": {
+      "templates": ["base"],
+      "attributes": {
+        "body": {
+          "value": 1,
+          "min": 1,
+          "max": 6
+        },
+        "quickness": {
+          "value": 1,
+          "min": 1,
+          "max": 6
+        },
+        "strength": {
+          "value": 1,
+          "min": 1,
+          "max": 6
+        },
+        "charisma": {
+          "value": 1,
+          "min": 1,
+          "max": 6
+        },
+        "intelligence": {
+          "value": 1,
+          "min": 1,
+          "max": 6
+        },
+        "willpower": {
+          "value": 1,
+          "min": 1,
+          "max": 6
+        },
+        "essence": {
+          "value": 6,
+          "min": 0,
+          "max": 6
+        },
+        "magic": {
+          "value": 0,
+          "min": 0,
+          "max": 6
+        },
+        "reaction": {
+          "value": 1,
+          "min": 1,
+          "max": 12
+        }
+      },
+      "pools": {
+        "combat": {
+          "current": 0,
+          "max": 0
+        },
+        "spell": {
+          "current": 0,
+          "max": 0
+        },
+        "karma": {
+          "current": 0,
+          "total": 0
+        },
+        "hacking": {
+          "current": 0,
+          "max": 0
+        },
+        "control": {
+          "current": 0,
+          "max": 0
+        },
+        "task": {
+          "current": 0,
+          "max": 0
+        },
+        "astral": {
+          "current": 0,
+          "max": 0
+        }
+      },
+      "initiative": {
+        "base": 2,
+        "dice": 1,
+        "current": 0
+      },
+      "magic": {
+        "awakened": false,
+        "tradition": ""
+      },
+      "resources": {
+        "nuyen": 0,
+        "lifestyle": "street"
+      },
+      "details": {
+        "metatype": "human",
+        "age": "",
+        "height": "",
+        "weight": "",
+        "eyes": "",
+        "hair": "",
+        "skin": "",
+        "concept": ""
+      }
+    }
+  },
+  "Item": {
+    "types": ["skill", "weapon", "armor", "gear", "cyberware", "bioware", "spell", "adeptpower", "contact"],
+    "templates": {
+      "base": {
+        "description": "",
+        "source": "",
+        "quantity": 1,
+        "weight": 0,
+        "price": 0
+      }
+    },
+    "skill": {
+      "templates": ["base"],
+      "rating": 0,
+      "attribute": "body",
+      "baseSkill": "",
+      "concentration": "",
+      "specialization": "",
+      "category": "active",
+      "requiresConcentration": false
+    },
+    "weapon": {
+      "templates": ["base"],
+      "weaponType": "melee",
+      "concealability": 0,
+      "damage": "1M",
+      "reach": 0,
+      "mode": "SS",
+      "ammo": {
+        "current": 0,
+        "max": 0,
+        "type": ""
+      },
+      "recoil": 0,
+      "equipped": false
+    },
+    "armor": {
+      "templates": ["base"],
+      "rating": 0,
+      "concealability": 0,
+      "equipped": false
+    },
+    "gear": {
+      "templates": ["base"],
+      "rating": 0,
+      "equipped": false
+    },
+    "cyberware": {
+      "templates": ["base"],
+      "rating": 0,
+      "essence": 0,
+      "installed": false,
+      "bodyLocation": "",
+      "reactionBonus": 0,
+      "initiativeDice": 0,
+      "streetIndex": 1.0
+    },
+    "bioware": {
+      "templates": ["base"],
+      "rating": 0,
+      "bioIndex": 0,
+      "installed": false,
+      "bodyLocation": "",
+      "streetIndex": 1.0,
+      "mods": ""
+    },
+    "spell": {
+      "templates": ["base"],
+      "category": "combat",
+      "type": "mana",
+      "range": "touch",
+      "damage": "M",
+      "duration": "instant",
+      "drain": "2",
+      "force": 1,
+      "class": "C"
+    },
+    "adeptpower": {
+      "templates": ["base"],
+      "cost": 0,
+      "hasLevels": false,
+      "currentLevel": 1,
+      "maxLevel": 6,
+      "mods": "",
+      "notes": "",
+      "bookPage": ""
+    },
+    "contact": {
+      "templates": ["base"],
+      "level": 1,
+      "loyalty": 1,
+      "archetype": "",
+      "connection": "",
+      "notes": ""
+    }
+  }
+}

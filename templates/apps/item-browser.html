@@ -1,0 +1,139 @@
+<div class="item-browser">
+  <header class="browser-header">
+    <h2>{{title}}</h2>
+    <div class="browser-controls">
+      <div class="search-section">
+        <input type="text" class="item-search" placeholder="Search items..." value="{{searchTerm}}">
+        <button class="clear-search" title="Clear Search">
+          <i class="fas fa-times"></i>
+        </button>
+      </div>
+      
+      <div class="filter-section">
+        <select class="category-filter">
+          <option value="">All Categories</option>
+          {{#each categories}}
+            <option value="{{this}}" {{#if (eq this ../selectedCategory)}}selected{{/if}}>{{this}}</option>
+          {{/each}}
+        </select>
+      </div>
+    </div>
+  </header>
+
+  <div class="browser-content">
+    {{#if hasItems}}
+      <div class="items-grid">
+        {{#each items}}
+          <div class="item-card" data-item-index="{{@index}}">
+            <div class="item-header">
+              <h4 class="item-name">{{name}}</h4>
+              <div class="item-category">{{category}}</div>
+            </div>
+            
+            <div class="item-details">
+              {{#if (eq ../itemType "cyberware")}}
+                <div class="detail-row">
+                  <span class="label">Essence Cost:</span>
+                  <span class="value">{{essence}}</span>
+                </div>
+                <div class="detail-row">
+                  <span class="label">Cost:</span>
+                  <span class="value">¥{{cost}}</span>
+                </div>
+                <div class="detail-row">
+                  <span class="label">Street Index:</span>
+                  <span class="value">{{streetIndex}}</span>
+                </div>
+                {{#if mods}}
+                  <div class="detail-row">
+                    <span class="label">Modifiers:</span>
+                    <span class="value">{{mods}}</span>
+                  </div>
+                {{/if}}
+              {{/if}}
+              
+              {{#if (eq ../itemType "bioware")}}
+                <div class="detail-row">
+                  <span class="label">Bio Index:</span>
+                  <span class="value">{{bioIndex}}</span>
+                </div>
+                <div class="detail-row">
+                  <span class="label">Cost:</span>
+                  <span class="value">¥{{cost}}</span>
+                </div>
+                <div class="detail-row">
+                  <span class="label">Street Index:</span>
+                  <span class="value">{{streetIndex}}</span>
+                </div>
+                {{#if mods}}
+                  <div class="detail-row">
+                    <span class="label">Modifiers:</span>
+                    <span class="value">{{mods}}</span>
+                  </div>
+                {{/if}}
+              {{/if}}
+              
+              {{#if (eq ../itemType "spell")}}
+                <div class="detail-row">
+                  <span class="label">Drain:</span>
+                  <span class="value">{{drain}}</span>
+                </div>
+                <div class="detail-row">
+                  <span class="label">Type:</span>
+                  <span class="value">{{type}}</span>
+                </div>
+                <div class="detail-row">
+                  <span class="label">Duration:</span>
+                  <span class="value">{{duration}}</span>
+                </div>
+              {{/if}}
+              
+              {{#if (eq ../itemType "adeptpower")}}
+                <div class="detail-row">
+                  <span class="label">Cost:</span>
+                  <span class="value">{{cost}} Power Points</span>
+                </div>
+                {{#if hasLevels}}
+                  <div class="detail-row">
+                    <span class="label">Has Levels:</span>
+                    <span class="value">Yes</span>
+                  </div>
+                {{/if}}
+                {{#if mods}}
+                  <div class="detail-row">
+                    <span class="label">Modifiers:</span>
+                    <span class="value">{{mods}}</span>
+                  </div>
+                {{/if}}
+                {{#if notes}}
+                  <div class="detail-row">
+                    <span class="label">Notes:</span>
+                    <span class="value">{{notes}}</span>
+                  </div>
+                {{/if}}
+              {{/if}}
+              
+              <div class="detail-row source">
+                <span class="label">Source:</span>
+                <span class="value">{{bookPage}}</span>
+              </div>
+            </div>
+            
+            <div class="item-actions">
+              <button class="add-item" data-item-index="{{@index}}" title="Add to Character">
+                <i class="fas fa-plus"></i> Add
+              </button>
+            </div>
+          </div>
+        {{/each}}
+      </div>
+    {{else}}
+      <div class="no-results">
+        <p>No items found matching your search criteria.</p>
+        {{#if searchTerm}}
+          <p>Try adjusting your search term or clearing the filters.</p>
+        {{/if}}
+      </div>
+    {{/if}}
+  </div>
+</div>

@@ -1,0 +1,41 @@
+<div class="dice-roll">
+  <h3>{{title}}</h3>
+  
+  <div class="roll-summary">
+    <div class="dice-pool">
+      <span class="pool-size">{{dicePool}}</span> dice vs TN <span class="target-number">{{targetNumber}}</span>
+    </div>
+    
+    <div class="roll-results">
+      {{#if isCriticalFailure}}
+        <div class="critical-failure">
+          <i class="fas fa-skull"></i> Critical Failure!
+        </div>
+      {{else}}
+        <div class="successes">
+          <span class="success-count">{{successes}}</span> 
+          {{#if (eq successes 1)}}Success{{else}}Successes{{/if}}
+        </div>
+        {{#if ones}}
+          <div class="ones-rolled">
+            <span class="ones-count">{{ones}}</span> 
+            {{#if (eq ones 1)}}One{{else}}Ones{{/if}} rolled
+          </div>
+        {{/if}}
+      {{/if}}
+    </div>
+  </div>
+
+  <div class="dice-details">
+    {{#each diceResults}}
+      <div class="die-result {{#if success}}success{{/if}} {{#if isOne}}one{{/if}}">
+        <div class="die-rolls">
+          {{#each results}}
+            <span class="die-face {{#if (eq this 6)}}exploded{{/if}}">{{this}}</span>
+          {{/each}}
+        </div>
+        <div class="die-total">= {{total}}</div>
+      </div>
+    {{/each}}
+  </div>
+</div>

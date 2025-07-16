@@ -1,0 +1,86 @@
+{
+  "SR2E": {
+    "ActorName": "Actor Name",
+    "ItemName": "Item Name",
+    "Description": "Description"
+  },
+
+  "TYPES": {
+    "Actor": {
+      "character": "Character"
+    },
+    "Item": {
+      "skill": "Skill",
+      "weapon": "Weapon", 
+      "armor": "Armor",
+      "gear": "Gear",
+      "cyberware": "Cyberware",
+      "bioware": "Bioware",
+      "spell": "Spell",
+      "adeptpower": "Adept Power",
+      "contact": "Contact"
+    }
+  },
+
+  "SR2E.Attributes": {
+    "Body": "Body",
+    "Quickness": "Quickness", 
+    "Strength": "Strength",
+    "Charisma": "Charisma",
+    "Intelligence": "Intelligence",
+    "Willpower": "Willpower",
+    "Essence": "Essence",
+    "Magic": "Magic",
+    "Reaction": "Reaction"
+  },
+
+  "SR2E.Pools": {
+    "Combat": "Combat Pool",
+    "Spell": "Spell Pool", 
+    "Karma": "Karma Pool",
+    "Hacking": "Hacking Pool",
+    "Control": "Control Pool",
+    "Task": "Task Pool",
+    "Astral": "Astral Combat Pool"
+  },
+
+  "SR2E.Health": {
+    "Physical": "Physical Damage",
+    "Stun": "Stun Damage"
+  },
+
+  "SR2E.Skills": {
+    "Rating": "Rating",
+    "Attribute": "Attribute",
+    "Specialization": "Specialization"
+  },
+
+  "SR2E.Metatypes": {
+    "Human": "Human",
+    "Elf": "Elf",
+    "Dwarf": "Dwarf", 
+    "Ork": "Ork",
+    "Troll": "Troll"
+  },
+
+  "SR2E.Initiative": {
+    "Tracker": "Initiative Tracker",
+    "Phase": "Phase",
+    "Initiative": "Initiative",
+    "Dice": "Dice",
+    "Reaction": "Reaction",
+    "Actions": "Actions",
+    "AddCombatants": "Add Combatants",
+    "RollAll": "Roll All",
+    "StartCombat": "Start Combat",
+    "NextTurn": "Next Turn",
+    "NextPhase": "Next Phase",
+    "Reset": "Reset",
+    "RollInitiative": "Roll Initiative",
+    "RemoveFromTracker": "Remove from Tracker",
+    "NoCombatants": "No combatants in tracker.",
+    "SelectTokens": "Select tokens and click \"Add Combatants\" to begin.",
+    "CurrentTurn": "Current Turn",
+    "NewRound": "New Combat Round"
+  }
+}

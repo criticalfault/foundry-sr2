@@ -1,0 +1,33 @@
+{
+  "id": "shadowrun-2e",
+  "title": "Shadowrun 2nd Edition",
+  "description": "A comprehensive system for playing Shadowrun 2nd Edition in Foundry VTT",
+  "version": "1.0.0",
+  "compatibility": {
+    "minimum": "11",
+    "verified": "12"
+  },
+  "authors": [
+    {
+      "name": "Dean Petty"
+    }
+  ],
+  "esmodules": ["scripts/shadowrun2e.js"],
+  "styles": ["styles/shadowrun2e.css"],
+  "languages": [
+    {
+      "lang": "en",
+      "name": "English",
+      "path": "lang/en.json"
+    }
+  ],
+  "gridDistance": 1,
+  "gridUnits": "m",
+  "primaryTokenAttribute": "health",
+  "secondaryTokenAttribute": "stun",
+  "url": "",
+  "manifest": "",
+  "download": "",
+  "license": "LICENSE",
+  "readme": "README.md"
+}

@@ -1,0 +1,506 @@
+<form class="{{cssClass}} {{actor.type}} flexcol" autocomplete="off">
+
+  {{!-- Sheet Header --}}
+  <header class="sheet-header">
+    <img class="profile-img" src="{{actor.img}}" data-edit="img" title="{{actor.name}}" height="100" width="100"/>
+    <div class="header-fields">
+      <h1 class="charname"><input name="name" type="text" value="{{actor.name}}" placeholder="Character Name"/></h1>
+      <div class="resource">
+        <label class="resource-label">Metatype</label>
+        <select name="system.details.metatype" data-dtype="String">
+          <option value="human" {{#if (eq system.details.metatype "human")}}selected{{/if}}>Human</option>
+          <option value="elf" {{#if (eq system.details.metatype "elf")}}selected{{/if}}>Elf</option>
+          <option value="dwarf" {{#if (eq system.details.metatype "dwarf")}}selected{{/if}}>Dwarf</option>
+          <option value="ork" {{#if (eq system.details.metatype "ork")}}selected{{/if}}>Ork</option>
+          <option value="troll" {{#if (eq system.details.metatype "troll")}}selected{{/if}}>Troll</option>
+        </select>
+      </div>
+    </div>
+  </header>
+
+  {{!-- Sheet Tab Navigation --}}
+  <nav class="sheet-tabs tabs" data-group="primary">
+    <a class="item" data-tab="attributes">Attributes</a>
+    <a class="item" data-tab="skills">Skills</a>
+    <a class="item" data-tab="combat">Combat</a>
+    <a class="item" data-tab="gear">Gear</a>
+    <a class="item" data-tab="cyberware">Cyberware</a>
+    <a class="item" data-tab="bioware">Bioware</a>
+    <a class="item" data-tab="magic">Magic</a>
+    <a class="item" data-tab="adept">Adept Powers</a>
+    <a class="item" data-tab="biography">Biography</a>
+  </nav>
+
+  {{!-- Sheet Body --}}
+  <section class="sheet-body">
+
+    {{!-- Attributes Tab --}}
+    <div class="tab attributes" data-group="primary" data-tab="attributes">
+      <div class="attributes-section">
+        <h3>Physical Attributes</h3>
+        <div class="attributes-grid">
+          <div class="attribute">
+            <label>Body</label>
+            <input type="number" name="system.attributes.body.value" value="{{system.attributes.body.value}}" data-dtype="Number"/>
+          </div>
+          <div class="attribute">
+            <label>Quickness</label>
+            <input type="number" name="system.attributes.quickness.value" value="{{system.attributes.quickness.value}}" data-dtype="Number"/>
+          </div>
+          <div class="attribute">
+            <label>Strength</label>
+            <input type="number" name="system.attributes.strength.value" value="{{system.attributes.strength.value}}" data-dtype="Number"/>
+          </div>
+        </div>
+        
+        <h3>Mental Attributes</h3>
+        <div class="attributes-grid">
+          <div class="attribute">
+            <label>Charisma</label>
+            <input type="number" name="system.attributes.charisma.value" value="{{system.attributes.charisma.value}}" data-dtype="Number"/>
+          </div>
+          <div class="attribute">
+            <label>Intelligence</label>
+            <input type="number" name="system.attributes.intelligence.value" value="{{system.attributes.intelligence.value}}" data-dtype="Number"/>
+          </div>
+          <div class="attribute">
+            <label>Willpower</label>
+            <input type="number" name="system.attributes.willpower.value" value="{{system.attributes.willpower.value}}" data-dtype="Number"/>
+          </div>
+        </div>
+
+        <h3>Special Attributes</h3>
+        <div class="attributes-grid">
+          <div class="attribute">
+            <label>Essence</label>
+            <input type="number" name="system.attributes.essence.value" value="{{system.attributes.essence.value}}" data-dtype="Number" step="0.1"/>
+          </div>
+          <div class="attribute">
+            <label>Magic</label>
+            <input type="number" name="system.attributes.magic.value" value="{{system.attributes.magic.value}}" data-dtype="Number"/>
+          </div>
+          <div class="attribute">
+            <label>Reaction</label>
+            <input type="number" name="system.attributes.reaction.value" value="{{system.attributes.reaction.value}}" data-dtype="Number" readonly/>
+          </div>
+        </div>
+      </div>
+
+      <div class="condition-monitors">
+        <h3>Condition Monitors</h3>
+        <div class="monitor">
+          <label>Physical Damage</label>
+          <input type="number" name="system.health.physical.value" value="{{system.health.physical.value}}" data-dtype="Number"/>
+          <span>/ {{system.health.physical.max}}</span>
+        </div>
+        <div class="monitor">
+          <label>Stun Damage</label>
+          <input type="number" name="system.health.stun.value" value="{{system.health.stun.value}}" data-dtype="Number"/>
+          <span>/ {{system.health.stun.max}}</span>
+        </div>
+      </div>
+
+      <div class="pools-section">
+        <h3>Dice Pools</h3>
+        <div class="pools-grid">
+          <div class="pool">
+            <label>Combat Pool</label>
+            <button class="pool-adjust" data-pool="combat" data-adjust="-1">-</button>
+            <span>{{system.pools.combat.current}} / {{system.pools.combat.max}}</span>
+            <button class="pool-adjust" data-pool="combat" data-adjust="1">+</button>
+          </div>
+          <div class="pool">
+            <label>Spell Pool</label>
+            <button class="pool-adjust" data-pool="spell" data-adjust="-1">-</button>
+            <span>{{system.pools.spell.current}} / {{system.pools.spell.max}}</span>
+            <button class="pool-adjust" data-pool="spell" data-adjust="1">+</button>
+          </div>
+          <div class="pool">
+            <label>Hacking Pool</label>
+            <button class="pool-adjust" data-pool="hacking" data-adjust="-1">-</button>
+            <span>{{system.pools.hacking.current}} / {{system.pools.hacking.max}}</span>
+            <button class="pool-adjust" data-pool="hacking" data-adjust="1">+</button>
+          </div>
+          <div class="pool">
+            <label>Control Pool</label>
+            <button class="pool-adjust" data-pool="control" data-adjust="-1">-</button>
+            <span>{{system.pools.control.current}} / {{system.pools.control.max}}</span>
+            <button class="pool-adjust" data-pool="control" data-adjust="1">+</button>
+          </div>
+          <div class="pool">
+            <label>Task Pool</label>
+            <button class="pool-adjust" data-pool="task" data-adjust="-1">-</button>
+            <span>{{system.pools.task.current}} / {{system.pools.task.max}}</span>
+            <button class="pool-adjust" data-pool="task" data-adjust="1">+</button>
+          </div>
+          <div class="pool">
+            <label>Astral Combat Pool</label>
+            <button class="pool-adjust" data-pool="astral" data-adjust="-1">-</button>
+            <span>{{system.pools.astral.current}} / {{system.pools.astral.max}}</span>
+            <button class="pool-adjust" data-pool="astral" data-adjust="1">+</button>
+          </div>
+          <div class="pool karma-pool">
+            <label>Karma Pool</label>
+            <input type="number" name="system.pools.karma.current" value="{{system.pools.karma.current}}" data-dtype="Number"/>
+            <span>/ {{system.pools.karma.total}}</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    {{!-- Skills Tab --}}
+    <div class="tab skills" data-group="primary" data-tab="skills">
+      <div class="skills-header">
+        <h3>Skills</h3>
+        <div class="skill-controls">
+          <a class="item-control item-create" title="Add Skill" data-type="skill">
+            <i class="fas fa-plus"></i> Add Skill
+          </a>
+        </div>
+      </div>
+
+      <div class="skills-list">
+        <div class="skills-table-header">
+          <div class="skill-name">Skill / Concentration</div>
+          <div class="skill-rating">Rating</div>
+          <div class="skill-attribute">Attribute</div>
+          <div class="skill-specialization">Specialization</div>
+          <div class="skill-actions">Actions</div>
+        </div>
+        
+        {{#each skills as |skill id|}}
+        <div class="skill-item" data-item-id="{{skill._id}}">
+          <div class="skill-main">
+            <div class="skill-name-section">
+              <div class="skill-image">
+                <img src="{{skill.img}}" title="{{skill.name}}" width="24" height="24"/>
+              </div>
+              <div class="skill-name-details">
+                <div class="base-skill">
+                  <select name="items.{{skill._id}}.system.baseSkill" data-dtype="String" class="base-skill-select" data-skill-id="{{skill._id}}">
+                    <option value="">Select Base Skill...</option>
+                    {{#each @root.availableSkills}}
+                      <option value="{{@key}}" {{#if (eq @key ../skill.system.baseSkill)}}selected{{/if}}>{{this.name}}</option>
+                    {{/each}}
+                  </select>
+                </div>
+                {{#if skill.system.baseSkill}}
+                  <div class="concentration-section">
+                    <select name="items.{{skill._id}}.system.concentration" data-dtype="String" class="concentration-select">
+                      <option value="">{{#if (lookup @root.availableSkills skill.system.baseSkill).requiresConcentration}}Select Concentration...{{else}}No Concentration{{/if}}</option>
+                      {{#each (lookup @root.availableSkills skill.system.baseSkill).Concentrations}}
+                        <option value="{{this.name}}" {{#if (eq this.name ../skill.system.concentration)}}selected{{/if}}>{{this.name}}</option>
+                      {{/each}}
+                    </select>
+                  </div>
+                {{/if}}
+              </div>
+            </div>
+            
+            <div class="skill-rating">
+              <input type="number" name="items.{{skill._id}}.system.rating" value="{{skill.system.rating}}" data-dtype="Number" min="0" max="12"/>
+            </div>
+            
+            <div class="skill-attribute">
+              <select name="items.{{skill._id}}.system.attribute" data-dtype="String">
+                <option value="body" {{#if (eq skill.system.attribute "body")}}selected{{/if}}>Body</option>
+                <option value="quickness" {{#if (eq skill.system.attribute "quickness")}}selected{{/if}}>Quickness</option>
+                <option value="strength" {{#if (eq skill.system.attribute "strength")}}selected{{/if}}>Strength</option>
+                <option value="charisma" {{#if (eq skill.system.attribute "charisma")}}selected{{/if}}>Charisma</option>
+                <option value="intelligence" {{#if (eq skill.system.attribute "intelligence")}}selected{{/if}}>Intelligence</option>
+                <option value="willpower" {{#if (eq skill.system.attribute "willpower")}}selected{{/if}}>Willpower</option>
+                <option value="magic" {{#if (eq skill.system.attribute "magic")}}selected{{/if}}>Magic</option>
+              </select>
+            </div>
+            
+            <div class="skill-specialization">
+              <input type="text" name="items.{{skill._id}}.system.specialization" value="{{skill.system.specialization}}" placeholder="Enter specialization..."/>
+            </div>
+            
+            <div class="skill-actions">
+              <button class="skill-roll" data-skill-id="{{skill._id}}" title="Roll Skill">
+                <i class="fas fa-dice-d6"></i>
+              </button>
+              <button class="item-delete" data-item-id="{{skill._id}}" title="Delete Skill">
+                <i class="fas fa-trash"></i>
+              </button>
+            </div>
+          </div>
+        </div>
+        {{/each}}
+        
+        {{#unless skills}}
+        <div class="no-skills">
+          <p>No skills added yet. Click "Add Skill" to get started.</p>
+        </div>
+        {{/unless}}
+      </div>
+    </div>
+
+    {{!-- Other tabs would go here --}}
+    <div class="tab combat" data-group="primary" data-tab="combat">
+      <p>Combat tab content coming soon...</p>
+    </div>
+
+    <div class="tab gear" data-group="primary" data-tab="gear">
+      <p>Gear tab content coming soon...</p>
+    </div>
+
+    {{!-- Cyberware Tab --}}
+    <div class="tab cyberware" data-group="primary" data-tab="cyberware">
+      <div class="items-header">
+        <h3>Cyberware</h3>
+        <div class="item-controls">
+          <button class="browse-items" data-type="cyberware" title="Browse Cyberware">
+            <i class="fas fa-search"></i> Browse Cyberware
+          </button>
+          <a class="item-control item-create" title="Add Custom Cyberware" data-type="cyberware">
+            <i class="fas fa-plus"></i> Add Custom
+          </a>
+        </div>
+      </div>
+
+      <div class="items-list">
+        <div class="items-table-header">
+          <div class="item-name">Name</div>
+          <div class="item-rating">Rating</div>
+          <div class="item-essence">Essence</div>
+          <div class="item-installed">Installed</div>
+          <div class="item-actions">Actions</div>
+        </div>
+        
+        {{#each cyberware as |item id|}}
+        <div class="item-row" data-item-id="{{item._id}}">
+          <div class="item-name">
+            <img src="{{item.img}}" title="{{item.name}}" width="24" height="24"/>
+            <span>{{item.name}}</span>
+          </div>
+          <div class="item-rating">
+            <input type="number" name="items.{{item._id}}.system.rating" value="{{item.system.rating}}" data-dtype="Number" min="0"/>
+          </div>
+          <div class="item-essence">
+            <span>{{item.system.essence}}</span>
+          </div>
+          <div class="item-installed">
+            <input type="checkbox" name="items.{{item._id}}.system.installed" {{#if item.system.installed}}checked{{/if}}/>
+          </div>
+          <div class="item-actions">
+            <button class="item-delete" data-item-id="{{item._id}}" title="Delete Item">
+              <i class="fas fa-trash"></i>
+            </button>
+          </div>
+        </div>
+        {{/each}}
+        
+        {{#unless cyberware}}
+        <div class="no-items">
+          <p>No cyberware installed. Browse the catalog to add cyberware.</p>
+        </div>
+        {{/unless}}
+      </div>
+    </div>
+
+    {{!-- Bioware Tab --}}
+    <div class="tab bioware" data-group="primary" data-tab="bioware">
+      <div class="items-header">
+        <h3>Bioware</h3>
+        <div class="item-controls">
+          <button class="browse-items" data-type="bioware" title="Browse Bioware">
+            <i class="fas fa-search"></i> Browse Bioware
+          </button>
+          <a class="item-control item-create" title="Add Custom Bioware" data-type="bioware">
+            <i class="fas fa-plus"></i> Add Custom
+          </a>
+        </div>
+      </div>
+
+      <div class="items-list">
+        <div class="items-table-header">
+          <div class="item-name">Name</div>
+          <div class="item-rating">Rating</div>
+          <div class="item-bioindex">Bio Index</div>
+          <div class="item-installed">Installed</div>
+          <div class="item-actions">Actions</div>
+        </div>
+        
+        {{#each bioware as |item id|}}
+        <div class="item-row" data-item-id="{{item._id}}">
+          <div class="item-name">
+            <img src="{{item.img}}" title="{{item.name}}" width="24" height="24"/>
+            <span>{{item.name}}</span>
+          </div>
+          <div class="item-rating">
+            <input type="number" name="items.{{item._id}}.system.rating" value="{{item.system.rating}}" data-dtype="Number" min="0"/>
+          </div>
+          <div class="item-bioindex">
+            <span>{{item.system.bioIndex}}</span>
+          </div>
+          <div class="item-installed">
+            <input type="checkbox" name="items.{{item._id}}.system.installed" {{#if item.system.installed}}checked{{/if}}/>
+          </div>
+          <div class="item-actions">
+            <button class="item-delete" data-item-id="{{item._id}}" title="Delete Item">
+              <i class="fas fa-trash"></i>
+            </button>
+          </div>
+        </div>
+        {{/each}}
+        
+        {{#unless bioware}}
+        <div class="no-items">
+          <p>No bioware installed. Browse the catalog to add bioware.</p>
+        </div>
+        {{/unless}}
+      </div>
+    </div>
+
+    {{!-- Magic Tab --}}
+    <div class="tab magic" data-group="primary" data-tab="magic">
+      <div class="magic-section">
+        <h3>Magic Settings</h3>
+        <div class="magic-controls">
+          <label>
+            <input type="checkbox" name="system.magic.awakened" {{#if system.magic.awakened}}checked{{/if}}/>
+            Awakened Character
+          </label>
+          {{#if system.magic.awakened}}
+          <div class="tradition-select">
+            <label>Tradition:</label>
+            <select name="system.magic.tradition" data-dtype="String">
+              <option value="">Select Tradition...</option>
+              <option value="hermetic" {{#if (eq system.magic.tradition "hermetic")}}selected{{/if}}>Hermetic</option>
+              <option value="shamanic" {{#if (eq system.magic.tradition "shamanic")}}selected{{/if}}>Shamanic</option>
+            </select>
+          </div>
+          {{/if}}
+        </div>
+      </div>
+
+      {{#if system.magic.awakened}}
+      <div class="items-header">
+        <h3>Spells</h3>
+        <div class="item-controls">
+          <button class="browse-items" data-type="spell" title="Browse Spells">
+            <i class="fas fa-search"></i> Browse Spells
+          </button>
+          <a class="item-control item-create" title="Add Custom Spell" data-type="spell">
+            <i class="fas fa-plus"></i> Add Custom
+          </a>
+        </div>
+      </div>
+
+      <div class="items-list">
+        <div class="items-table-header">
+          <div class="item-name">Spell</div>
+          <div class="item-force">Force</div>
+          <div class="item-drain">Drain</div>
+          <div class="item-type">Type</div>
+          <div class="item-actions">Actions</div>
+        </div>
+        
+        {{#each spells as |item id|}}
+        <div class="item-row" data-item-id="{{item._id}}">
+          <div class="item-name">
+            <img src="{{item.img}}" title="{{item.name}}" width="24" height="24"/>
+            <span>{{item.name}}</span>
+          </div>
+          <div class="item-force">
+            <input type="number" name="items.{{item._id}}.system.force" value="{{item.system.force}}" data-dtype="Number" min="1" max="12"/>
+          </div>
+          <div class="item-drain">
+            <span>{{item.system.drain}}</span>
+          </div>
+          <div class="item-type">
+            <span>{{item.system.type}}</span>
+          </div>
+          <div class="item-actions">
+            <button class="spell-cast" data-item-id="{{item._id}}" title="Cast Spell">
+              <i class="fas fa-magic"></i>
+            </button>
+            <button class="item-delete" data-item-id="{{item._id}}" title="Delete Spell">
+              <i class="fas fa-trash"></i>
+            </button>
+          </div>
+        </div>
+        {{/each}}
+        
+        {{#unless spells}}
+        <div class="no-items">
+          <p>No spells learned. Browse the spell catalog to add spells.</p>
+        </div>
+        {{/unless}}
+      </div>
+      {{/if}}
+    </div>
+
+    {{!-- Adept Powers Tab --}}
+    <div class="tab adept" data-group="primary" data-tab="adept">
+      <div class="adept-section">
+        <h3>Physical Adept Powers</h3>
+        <div class="power-points">
+          <label>Magic Rating: {{system.attributes.magic.value}}</label>
+          <label>Power Points Used: <span class="power-points-used">{{powerPointsUsed}}</span> / {{system.attributes.magic.value}}</label>
+        </div>
+      </div>
+
+      <div class="items-header">
+        <div class="item-controls">
+          <button class="browse-items" data-type="adeptpower" title="Browse Adept Powers">
+            <i class="fas fa-search"></i> Browse Powers
+          </button>
+          <a class="item-control item-create" title="Add Custom Power" data-type="adeptpower">
+            <i class="fas fa-plus"></i> Add Custom
+          </a>
+        </div>
+      </div>
+
+      <div class="items-list">
+        <div class="items-table-header">
+          <div class="item-name">Power</div>
+          <div class="item-level">Level</div>
+          <div class="item-cost">Cost</div>
+          <div class="item-mods">Modifiers</div>
+          <div class="item-actions">Actions</div>
+        </div>
+        
+        {{#each adeptpowers as |item id|}}
+        <div class="item-row" data-item-id="{{item._id}}">
+          <div class="item-name">
+            <img src="{{item.img}}" title="{{item.name}}" width="24" height="24"/>
+            <span>{{item.name}}</span>
+          </div>
+          <div class="item-level">
+            {{#if item.system.hasLevels}}
+              <input type="number" name="items.{{item._id}}.system.currentLevel" value="{{item.system.currentLevel}}" data-dtype="Number" min="1" max="{{item.system.maxLevel}}"/>
+            {{else}}
+              <span>—</span>
+            {{/if}}
+          </div>
+          <div class="item-cost">
+            <span>{{item.system.totalCost}}</span>
+          </div>
+          <div class="item-mods">
+            <span>{{item.system.mods}}</span>
+          </div>
+          <div class="item-actions">
+            <button class="item-delete" data-item-id="{{item._id}}" title="Delete Power">
+              <i class="fas fa-trash"></i>
+            </button>
+          </div>
+        </div>
+        {{/each}}
+        
+        {{#unless adeptpowers}}
+        <div class="no-items">
+          <p>No adept powers learned. Browse the power catalog to add powers.</p>
+        </div>
+        {{/unless}}
+      </div>
+    </div>
+
+    <div class="tab biography" data-group="primary" data-tab="biography">
+      <textarea name="system.biography" rows="20" placeholder="Character biography...">{{system.biography}}</textarea>
+    </div>
+
+  </section>
+</form>

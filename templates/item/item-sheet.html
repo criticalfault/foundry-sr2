@@ -1,0 +1,76 @@
+<form class="{{cssClass}} {{item.type}} flexcol" autocomplete="off">
+
+  {{!-- Item Sheet Header --}}
+  <header class="sheet-header">
+    <img class="profile-img" src="{{item.img}}" data-edit="img" title="{{item.name}}" height="64" width="64"/>
+    <div class="header-fields">
+      <h1 class="charname"><input name="name" type="text" value="{{item.name}}" placeholder="Item Name"/></h1>
+    </div>
+  </header>
+
+  {{!-- Item Sheet Navigation --}}
+  <nav class="sheet-tabs tabs" data-group="primary">
+    <a class="item" data-tab="description">Description</a>
+    <a class="item" data-tab="details">Details</a>
+  </nav>
+
+  {{!-- Item Sheet Body --}}
+  <section class="sheet-body">
+
+    {{!-- Description Tab --}}
+    <div class="tab" data-group="primary" data-tab="description">
+      <textarea name="system.description" rows="20" placeholder="Item description...">{{system.description}}</textarea>
+    </div>
+
+    {{!-- Details Tab --}}
+    <div class="tab" data-group="primary" data-tab="details">
+      <div class="form-group">
+        <label>Quantity</label>
+        <input type="number" name="system.quantity" value="{{system.quantity}}" data-dtype="Number"/>
+      </div>
+      
+      <div class="form-group">
+        <label>Weight</label>
+        <input type="number" name="system.weight" value="{{system.weight}}" data-dtype="Number" step="0.1"/>
+      </div>
+      
+      <div class="form-group">
+        <label>Price (¥)</label>
+        <input type="number" name="system.price" value="{{system.price}}" data-dtype="Number"/>
+      </div>
+
+      {{#if (eq item.type "skill")}}
+      <div class="form-group">
+        <label>Rating</label>
+        <input type="number" name="system.rating" value="{{system.rating}}" data-dtype="Number"/>
+      </div>
+      
+      <div class="form-group">
+        <label>Linked Attribute</label>
+        <select name="system.attribute" data-dtype="String">
+          <option value="body" {{#if (eq system.attribute "body")}}selected{{/if}}>Body</option>
+          <option value="quickness" {{#if (eq system.attribute "quickness")}}selected{{/if}}>Quickness</option>
+          <option value="strength" {{#if (eq system.attribute "strength")}}selected{{/if}}>Strength</option>
+          <option value="charisma" {{#if (eq system.attribute "charisma")}}selected{{/if}}>Charisma</option>
+          <option value="intelligence" {{#if (eq system.attribute "intelligence")}}selected{{/if}}>Intelligence</option>
+          <option value="willpower" {{#if (eq system.attribute "willpower")}}selected{{/if}}>Willpower</option>
+        </select>
+      </div>
+      {{/if}}
+
+      {{#if (eq item.type "weapon")}}
+      <div class="form-group">
+        <label>Damage Code</label>
+        <input type="text" name="system.damage" value="{{system.damage}}" placeholder="e.g. 6M"/>
+      </div>
+      
+      <div class="form-group">
+        <label>Concealability</label>
+        <input type="number" name="system.concealability" value="{{system.concealability}}" data-dtype="Number"/>
+      </div>
+      {{/if}}
+
+    </div>
+
+  </section>
+</form>

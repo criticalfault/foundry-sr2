@@ -1,0 +1,626 @@
+{
+  "Aircraft B/R": {
+    "name": "Aircraft B/R",
+    "requiresConcentration": false,
+    "Concentrations": []
+  },
+  "Armed Combat": {
+    "name": "Armed Combat",
+    "requiresConcentration": false,
+    "Concentrations": [
+      { "name": "Clubs", "Specializations": ["*weapon"] },
+      { "name": "Edged weapons", "Specializations": ["*weapon"] },
+      { "name": "Pole Arms / Staff", "Specializations": ["*weapon"] },
+      { "name": "Whips/Flails", "Specializations": ["*weapon"] }
+    ]
+  },
+  "Armed Combat B/R": {
+    "name": "Armed Combat B/R",
+    "requiresConcentration": false,
+    "Concentrations": []
+  },
+  "Artistic Expression": {
+    "name": "Artistic Expression",
+    "requiresConcentration": false,
+    "Concentrations": [
+      { "name": "Painting", "Specializations": ["Spray", "Oil", "Watercolor"] },
+      { "name": "Sculpting", "Specializations": [] },
+      { "name": "Drawing", "Specializations": ["Anime", "Comic"] },
+      {
+        "name": "Writing",
+        "Specializations": ["Horror", "Comedy", "Screenplay"]
+      },
+      { "name": "Photography", "Specializations": ["Digital", "Film"] }
+    ]
+  },
+  "Athletics": {
+    "name": "Athletics",
+    "requiresConcentration": false,
+    "Concentrations": [
+      { "name": "Climbing", "Specializations": [] },
+      { "name": "Jumping", "Specializations": [] },
+      { "name": "Lifting", "Specializations": [] },
+      { "name": "Running", "Specializations": [] },
+      { "name": "Swimming", "Specializations": [] },
+      { "name": "Football", "Specializations": ["Passing"] },
+      { "name": "Baseball", "Specializations": [] },
+      { "name": "Urban Brawl", "Specializations": [] },
+      { "name": "Combat Biking", "Specializations": ["Flagsnagging"] }
+    ]
+  },
+  "Bike": {
+    "name": "Bike",
+    "requiresConcentration": false,
+    "Concentrations": [
+      { "name": "Racing", "Specializations": ["*vehicle"] },
+      { "name": "Two-wheeler", "Specializations": ["*vehicle"] },
+      { "name": "Three-wheeler", "Specializations": ["*vehicle"] }
+    ]
+  },
+  "Biology": {
+    "name": "Biology",
+    "requiresConcentration": false,
+    "Concentrations": [
+      { "name": "Botany", "Specializations": [] },
+      { "name": "Medicine", "Specializations": [] },
+      { "name": "Parabotany", "Specializations": [] },
+      { "name": "Parazoology", "Specializations": [] },
+      { "name": "Zoology", "Specializations": [] }
+    ]
+  },
+  "Biotech": {
+    "name": "Biotech",
+    "requiresConcentration": false,
+    "Concentrations": [
+      { "name": "Extended care", "Specializations": [] },
+      { "name": "First aid", "Specializations": [] },
+      { "name": "Organ culture", "Specializations": ["*organ/limb"] },
+      {
+        "name": "Replacement construction",
+        "Specializations": ["*organ/limb"]
+      },
+      {
+        "name": "Transimplant surgery",
+        "Specializations": ["Headware", "Bodyware", "Organic replacements"]
+      }
+    ]
+  },
+  "Biotech B/R": {
+    "name": "Biotech B/R",
+    "requiresConcentration": false,
+    "Concentrations": []
+  },
+  "Boats B/R": {
+    "name": "Boats B/R",
+    "requiresConcentration": false,
+    "Concentrations": []
+  },
+  "Car": {
+    "name": "Car",
+    "requiresConcentration": false,
+    "Concentrations": [
+      { "name": "Passenger vehicle", "Specializations": ["*vehicle"] },
+      { "name": "Racing", "Specializations": ["*vehicle"] },
+      { "name": "Remote operation", "Specializations": ["*category"] },
+      { "name": "Truck", "Specializations": ["*vehicle"] }
+    ]
+  },
+  "Channel: Access": {
+    "name": "Channel: Access",
+    "Concentrations": [
+      { "name": "Crash", "Specializations": [] },
+      { "name": "Decrypt", "Specializations": [] },
+      { "name": "Disinfect", "Specializations": [] },
+      { "name": "Deception", "Specializations": [] },
+      { "name": "Scanner", "Specializations": [] }
+    ]
+  },
+  "Channel: Control": {
+    "name": "Channel: Control",
+    "Concentrations": [
+      { "name": "Analyze", "Specializations": [] },
+      { "name": "Crash", "Specializations": [] },
+      { "name": "Camo", "Specializations": [] },
+      { "name": "Commlink", "Specializations": [] },
+      { "name": "Deception", "Specializations": [] },
+      { "name": "Disinfect", "Specializations": [] },
+      { "name": "Mirrors", "Specializations": [] },
+      { "name": "Validate", "Specializations": [] },
+      { "name": "Scanner", "Specializations": [] }
+    ]
+  },
+  "Channel: Index": {
+    "name": "Channel: Index",
+    "Concentrations": [
+      { "name": "Analyze", "Specializations": [] },
+      { "name": "Browse", "Specializations": [] },
+      { "name": "Crash", "Specializations": [] },
+      { "name": "Disinfect", "Specializations": [] },
+      { "name": "Evaluate", "Specializations": [] },
+      { "name": "Scanner", "Specializations": [] }
+    ]
+  },
+  "Channel: Files": {
+    "name": "Channel: Files",
+    "Concentrations": [
+      { "name": "Commlink", "Specializations": [] },
+      { "name": "Crash", "Specializations": [] },
+      { "name": "Decrypt", "Specializations": [] },
+      { "name": "Disinfect", "Specializations": [] },
+      { "name": "Read/Write", "Specializations": [] },
+      { "name": "Scanner", "Specializations": [] }
+    ]
+  },
+  "Channel: Slave": {
+    "name": "Channel: Slave",
+    "Concentrations": [
+      { "name": "Spoof", "Specializations": [] },
+      { "name": "Crash", "Specializations": [] },
+      { "name": "Decrypt", "Specializations": [] },
+      { "name": "Disinfect", "Specializations": [] },
+      { "name": "Scanner", "Specializations": [] }
+    ]
+  },
+  "Computer": {
+    "name": "Computer",
+    "requiresConcentration": false,
+    "Concentrations": [
+      {
+        "name": "Hardware",
+        "Specializations": [
+          "Mainframes",
+          "Micros",
+          "Interface tech",
+          "Implant tech"
+        ]
+      },
+      {
+        "name": "Software",
+        "Specializations": [
+          "Decking",
+          " Matrix programming",
+          "Non-matrix programming",
+          "Interface programming",
+          "Implant programming"
+        ]
+      }
+    ]
+  },
+  "Computer B/R": {
+    "name": "Computer B/R",
+    "requiresConcentration": false,
+    "Concentrations": []
+  },
+  "Computer theory": {
+    "name": "Computer theory",
+    "requiresConcentration": false,
+    "Concentrations": [
+      {
+        "name": "Hardware",
+        "Specializations": [
+          "Mainframes",
+          "Micros",
+          "Matrix programming",
+          "Interface tech",
+          "Implant tech"
+        ]
+      },
+      { "name": "Matrix Theory", "Specializations": [] },
+      {
+        "name": "Software",
+        "Specializations": [
+          "Decking",
+          "Matrix programming",
+          "Non-matrix programming",
+          "Interface programming",
+          "Implant programming"
+        ]
+      }
+    ]
+  },
+  "Conjuring": {
+    "name": "Conjuring",
+    "requiresConcentration": false,
+    "Concentrations": [
+      { "name": "Banishing", "Specializations": ["*type"] },
+      { "name": "Controlling", "Specializations": ["*type"] },
+      { "name": "Elemental", "Specializations": ["*type"] },
+      { "name": "Nature spirit", "Specializations": ["*type"] }
+    ]
+  },
+  "Cybertechnology": {
+    "name": "Cybertechnology",
+    "requiresConcentration": false,
+    "Concentrations": [
+      { "name": "Bodyware", "Specializations": ["*device"] },
+      { "name": "Headware", "Specializations": ["*device"] }
+    ]
+  },
+  "Dancing": {
+    "name": "Dancing",
+    "requiresConcentration": false,
+    "Concentrations": [
+      { "name": "Ballet", "Specializations": ["*specific dance"] },
+      { "name": "Modern", "Specializations": ["*specific dance"] },
+      { "name": "Ballroom", "Specializations": ["*specific dance"] },
+      { "name": "Native American", "Specializations": ["*specific dance"] }
+    ]
+  },
+  "Demolitions": {
+    "name": "Demolitions",
+    "requiresConcentration": false,
+    "Concentrations": [
+      { "name": "Conventional Explosives", "Specializations": [] },
+      { "name": "Plastic Explosives", "Specializations": [] }
+    ]
+  },
+  "Electronics": {
+    "name": "Electronics",
+    "requiresConcentration": false,
+    "Concentrations": [
+      { "name": "Control systems", "Specializations": [] },
+      { "name": "Diagnostic", "Specializations": [] },
+      { "name": "Electronic warfare", "Specializations": [] },
+      { "name": "Linking between devices", "Specializations": [] },
+      { "name": "Maglocks", "Specializations": [] }
+    ]
+  },
+  "Electronics B/R": {
+    "name": "Electronics B/R",
+    "requiresConcentration": false,
+    "Concentrations": []
+  },
+  "Electronic Music": {
+    "name": "Electronic Music",
+    "requiresConcentration": false,
+    "Concentrations": []
+  },
+  "Enchanting": {
+    "name": "Enchanting",
+    "requiresConcentration": false,
+    "Concentrations": [
+      { "name": "Alchemy", "Specializations": [] },
+      { "name": "Talismongering", "Specializations": ["*type"] }
+    ]
+  },
+  "Etiquette: Art": {
+    "name": "Etiquette: Art",
+    "requiresConcentration": true,
+    "requiredConcentration": "Art",
+    "Concentrations": []
+  },
+  "Etiquette: Corporate": {
+    "name": "Etiquette: Corporate",
+    "requiresConcentration": true,
+    "requiredConcentration": "Corporate",
+    "Concentrations": []
+  },
+  "Etiquette: Magical": {
+    "name": "Etiquette: Magical",
+    "requiresConcentration": true,
+    "requiredConcentration": "Magical",
+    "Concentrations": []
+  },
+  "Etiquette: Matrix": {
+    "name": "Etiquette: Matrix",
+    "requiresConcentration": true,
+    "requiredConcentration": "Matrix",
+    "Concentrations": []
+  },
+  "Etiquette: Media": {
+    "name": "Etiquette: Media",
+    "requiresConcentration": true,
+    "requiredConcentration": "Media",
+    "Concentrations": []
+  },
+  "Etiquette: Street": {
+    "name": "Etiquette: Street",
+    "requiresConcentration": true,
+    "requiredConcentration": "Street",
+    "Concentrations": []
+  },
+  "Etiquette: Tribal": {
+    "name": "Etiquette: Tribal",
+    "requiresConcentration": true,
+    "requiredConcentration": "Tribal",
+    "Concentrations": []
+  },
+  "Firearms": {
+    "name": "Firearms",
+    "requiresConcentration": false,
+    "Concentrations": [
+      { "name": "Grenade launchers", "Specializations": ["*weapon"] },
+      { "name": "LMG", "Specializations": ["*weapon"] },
+      { "name": "Pistols", "Specializations": ["*weapon"] },
+      { "name": "Rifles", "Specializations": ["*weapon"] },
+      { "name": "SMG", "Specializations": ["*weapon"] },
+      { "name": "Tasers", "Specializations": ["*weapon"] }
+    ]
+  },
+  "Firearms B/R": {
+    "name": "Firearms B/R",
+    "requiresConcentration": false,
+    "Concentrations": []
+  },
+  "Ground vehicles B/R": {
+    "name": "Ground vehicles B/R",
+    "requiresConcentration": false,
+    "Concentrations": []
+  },
+  "Gunnery": {
+    "name": "Gunnery",
+    "requiresConcentration": false,
+    "Concentrations": [
+      { "name": "Assault Cannon", "Specializations": ["*weapon"] },
+      { "name": "Machine Guns", "Specializations": ["*weapon"] },
+      { "name": "Missile Launchers", "Specializations": ["*weapon"] },
+      { "name": "Vehicle Cannons", "Specializations": ["*weapon"] }
+    ]
+  },
+  "Gunnery B/R": {
+    "name": "Gunnery B/R",
+    "requiresConcentration": false,
+    "Concentrations": []
+  },
+  "Hovecraft": {
+    "name": "Hovecraft",
+    "requiresConcentration": false,
+    "Concentrations": [
+      { "name": "Passenger craft", "Specializations": ["*vehicle"] },
+      { "name": "Racing", "Specializations": ["*vehicle"] },
+      { "name": "Remote operation", "Specializations": ["*category"] },
+      { "name": "Transport craft", "Specializations": ["*vehicle"] }
+    ]
+  },
+  "Interrogation": {
+    "name": "Interrogation",
+    "requiresConcentration": false,
+    "Concentrations": [
+      {
+        "name": "Machine-aided",
+        "Specializations": ["Lie detectors", "Voice stress analysis"]
+      },
+      { "name": "Verbal", "Specializations": [] },
+      { "name": "Interviewing", "Specializations": ["Trideo Interviewing"] }
+    ]
+  },
+  "Leadership": {
+    "name": "Leadership",
+    "requiresConcentration": false,
+    "Concentrations": [
+      {
+        "name": "Commercial",
+        "Specializations": ["Strategy", "Tactics", "Morale"]
+      },
+      {
+        "name": "Military",
+        "Specializations": ["Strategy", "Tactics", "Morale"]
+      },
+      {
+        "name": "Political",
+        "Specializations": ["Strategy", "Tactics", "Morale"]
+      },
+      {
+        "name": "Negotiation",
+        "Specializations": ["Bargain", "Bribe", "Fast Talk"]
+      },
+      { "name": "Reporting", "Specializations": [] }
+    ]
+  },
+  "Magical theory": {
+    "name": "Magical theory",
+    "requiresConcentration": false,
+    "Concentrations": [
+      { "name": "Design", "Specializations": ["Shamanic", "Hermetic"] },
+      { "name": "History", "Specializations": ["*continent"] }
+    ]
+  },
+  "Military theory": {
+    "name": "Military theory",
+    "requiresConcentration": false,
+    "Concentrations": [
+      { "name": "Military history", "Specializations": ["*continent/period"] },
+      { "name": "Tactics", "Specializations": ["Air", "Land", "Sea"] }
+    ]
+  },
+  "Musical Composition": {
+    "name": "Musical Composition",
+    "requiresConcentration": false,
+    "Concentrations": []
+  },
+  "Musical Instrument": {
+    "name": "Musical Instrument",
+    "requiresConcentration": false,
+    "Concentrations": [
+      { "name": "Acoustic", "Specializations": ["*instrument"] },
+      { "name": "Electric", "Specializations": ["*instrument"] },
+      { "name": "Synthesizer", "Specializations": ["*instrument"] }
+    ]
+  },
+  "Musical Production": {
+    "name": "Musical Production",
+    "requiresConcentration": false,
+    "Concentrations": []
+  },
+  "Negotiation": {
+    "name": "Negotiation",
+    "requiresConcentration": false,
+    "Concentrations": [
+      { "name": "Bargain", "Specializations": [] },
+      { "name": "Bribe", "Specializations": [] },
+      { "name": "Fast Talk", "Specializations": [] }
+    ]
+  },
+  "Motorboat": {
+    "name": "Motorboat",
+    "requiresConcentration": false,
+    "Concentrations": [
+      { "name": "Pleasure craft", "Specializations": ["*vehicle"] },
+      { "name": "Racing", "Specializations": ["*vehicle"] },
+      { "name": "Remote operation", "Specializations": ["*category"] },
+      { "name": "Transport", "Specializations": ["*vehicle"] }
+    ]
+  },
+  "Physical sciences": {
+    "name": "Physical sciences",
+    "requiresConcentration": false,
+    "Concentrations": [
+      { "name": "Chemistry", "Specializations": [] },
+      { "name": "Engineering", "Specializations": [] },
+      { "name": "Geology", "Specializations": [] },
+      { "name": "Physics", "Specializations": [] }
+    ]
+  },
+  "Police Procedures": {
+    "name": "Police Procedures",
+    "requiresConcentration": false,
+    "Concentrations": [
+      { "name": "Find Contraband", "Specializations": [] },
+      { "name": "Bureaucracy", "Specializations": [] },
+      { "name": "Laws and Statutes", "Specializations": [] }
+    ]
+  },
+  "Portacam": {
+    "name": "Portacam",
+    "requiresConcentration": false,
+    "Concentrations": []
+  },
+  "Projectile Weapons": {
+    "name": "Projectile Weapons",
+    "requiresConcentration": false,
+    "Concentrations": [
+      { "name": "Bows", "Specializations": ["*weapon"] },
+      { "name": "Crossbows", "Specializations": ["*weapon"] }
+    ]
+  },
+  "Projectile Weapons B/R": {
+    "name": "Projectile Weapons B/R",
+    "requiresConcentration": false,
+    "Concentrations": []
+  },
+  "Psychology": {
+    "name": "Psychology",
+    "requiresConcentration": false,
+    "Concentrations": [
+      { "name": "Deviant behavior", "Specializations": [] },
+      { "name": "Group behavior", "Specializations": [] },
+      { "name": "Individual behavior", "Specializations": [] }
+    ]
+  },
+  "Rotor craft": {
+    "name": "Rotor craft",
+    "requiresConcentration": false,
+    "Concentrations": [
+      { "name": "Fixed-rotor", "Specializations": ["*vehicle"] },
+      { "name": "Remote operation", "Specializations": ["*category"] },
+      { "name": "Tilt-rotor", "Specializations": ["*vehicle"] }
+    ]
+  },
+  "Sailboat": {
+    "name": "Sailboat",
+    "requiresConcentration": false,
+    "Concentrations": [
+      { "name": "Pleasure craft", "Specializations": ["*vehicle"] },
+      { "name": "Racing", "Specializations": ["*vehicle"] },
+      { "name": "Transport", "Specializations": ["*vehicle"] }
+    ]
+  },
+  "Singing": {
+    "name": "Singing",
+    "requiresConcentration": false,
+    "Concentrations": [
+      {
+        "name": "Chant",
+        "Specializations": ["Gregorian Chant", "Native American Chant"]
+      },
+      { "name": "Rock", "Specializations": ["Metal", "Thrash"] },
+      { "name": "Blues", "Specializations": [] },
+      { "name": "Classical", "Specializations": [] },
+      { "name": "Pop", "Specializations": [] }
+    ]
+  },
+  "Sociology": {
+    "name": "Sociology",
+    "requiresConcentration": false,
+    "Concentrations": [
+      { "name": "Anthropology", "Specializations": [] },
+      { "name": "Archaelogy", "Specializations": [] },
+      { "name": "History", "Specializations": [] }
+    ]
+  },
+
+  "Sorcery": {
+    "name": "Sorcery",
+    "requiresConcentration": false,
+    "Concentrations": [
+      { "name": "Astral Sorcery", "Specializations": ["*aspect"] },
+      { "name": "Combat Spells", "Specializations": ["*technique"] },
+      { "name": "Detection Spells", "Specializations": ["*technique"] },
+      { "name": "Forensic Magic", "Specializations": [] },
+      { "name": "Health Spells", "Specializations": ["*technique"] },
+      { "name": "Illusion Spells", "Specializations": ["*technique"] },
+      { "name": "Manipulation Spells", "Specializations": ["*technique"] },
+      { "name": "Ritual Sorcery", "Specializations": ["category"] },
+      { "name": "Spellcasting", "Specializations": ["*spell category"] },
+      { "name": "Spell Defense", "Specializations": ["*spell category"] }
+    ]
+  },
+  "Stealth": {
+    "name": "Stealth",
+    "requiresConcentration": false,
+    "Concentrations": [
+      { "name": "Farmland", "Specializations": ["*aspect"] },
+      { "name": "Urban", "Specializations": ["*aspect"] },
+      { "name": "Wilderness", "Specializations": ["*aspect"] }
+    ]
+  },
+  "Throwing Weapons": {
+    "name": "Throwing Weapons",
+    "requiresConcentration": false,
+    "Concentrations": [
+      {
+        "name": "Aerodynamic",
+        "Specializations": ["Shuriken", "Airfoil grenades"]
+      },
+      { "name": "Non-aerodynamic", "Specializations": ["Grenades", "Knives"] },
+      { "name": "Shafted", "Specializations": ["*weapon"] }
+    ]
+  },
+  "Throwings Weapons B/R": {
+    "name": "Throwings Weapons B/R",
+    "requiresConcentration": false,
+    "Concentrations": []
+  },
+
+  "Unarmed combat": {
+    "name": "Unarmed combat",
+    "requiresConcentration": false,
+    "Concentrations": [
+      { "name": "Cyber Implant Weaponry", "Specializations": ["*weapon"] },
+      { "name": "Martial Arts Style", "Specializations": ["*style"] },
+      { "name": "Subduing Combat", "Specializations": [] }
+    ]
+  },
+
+  "Vectored thrust": {
+    "name": "Vectored thrust",
+    "requiresConcentration": false,
+    "Concentrations": [
+      { "name": "LAV craft", "Specializations": ["*vehicle"] },
+      { "name": "Remote operation", "Specializations": ["*category"] },
+      { "name": "VTOL", "Specializations": ["*vehicle"] }
+    ]
+  },
+
+  "Winged planes": {
+    "name": "Winged planes",
+    "requiresConcentration": false,
+    "Concentrations": [
+      { "name": "Gliders", "Specializations": ["*vehicle"] },
+      { "name": "Jets", "Specializations": ["*vehicle"] },
+      { "name": "Propellers", "Specializations": ["*vehicle"] },
+      { "name": "Racing", "Specializations": ["*vehicle"] },
+      { "name": "Remote operation", "Specializations": ["*category"] }
+    ]
+  }
+}

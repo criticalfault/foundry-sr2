@@ -1,0 +1,119 @@
+<div class="initiative-tracker">
+  <header class="tracker-header">
+    <h2>Initiative Tracker</h2>
+    {{#if isActive}}
+      <div class="phase-indicator">
+        <span class="phase-label">Phase:</span>
+        <span class="phase-number">{{currentPhase}}</span>
+      </div>
+    {{/if}}
+  </header>
+
+  <div class="tracker-controls">
+    <button class="add-combatant" title="Add Selected Tokens">
+      <i class="fas fa-plus"></i> Add Combatants
+    </button>
+    
+    {{#if hasActiveCombat}}
+      <button class="roll-all-initiative" title="Roll Initiative for All">
+        <i class="fas fa-dice"></i> Roll All
+      </button>
+      
+      {{#unless isActive}}
+        <button class="start-combat" title="Start Combat">
+          <i class="fas fa-play"></i> Start Combat
+        </button>
+      {{/unless}}
+      
+      {{#if isActive}}
+        <button class="next-turn" title="Next Turn">
+          <i class="fas fa-step-forward"></i> Next Turn
+        </button>
+        <button class="next-phase" title="Next Phase">
+          <i class="fas fa-forward"></i> Next Phase
+        </button>
+      {{/if}}
+      
+      <button class="reset-combat" title="Reset Combat">
+        <i class="fas fa-stop"></i> Reset
+      </button>
+    {{/if}}
+  </div>
+
+  <div class="combatants-list">
+    {{#if combatants}}
+      <div class="combatant-header">
+        <span class="name-col">Name</span>
+        <span class="init-col">Initiative</span>
+        <span class="dice-col">Dice</span>
+        <span class="reaction-col">Reaction</span>
+        <span class="actions-col">Actions</span>
+      </div>
+      
+      {{#each combatants}}
+        <div class="combatant {{#if isActive}}active{{/if}}" data-combatant-id="{{id}}">
+          <div class="combatant-info">
+            <img class="combatant-image" src="{{img}}" alt="{{name}}">
+            <span class="combatant-name">{{name}}</span>
+          </div>
+          
+          <div class="initiative-display">
+            {{#if hasRolled}}
+              <input type="number" class="edit-initiative" value="{{currentInit}}" data-combatant-id="{{id}}" min="0">
+              <span class="initiative-phases">
+                {{#if (gt initiative 10)}}
+                  <div class="phase-breakdown">
+                    {{#each (phases initiative)}}
+                      <span class="phase-init {{#if (eq @index ../../../currentPhase)}}current{{/if}}">{{this}}</span>
+                    {{/each}}
+                  </div>
+                {{/if}}
+              </span>
+            {{else}}
+              <span class="not-rolled">—</span>
+            {{/if}}
+          </div>
+          
+          <div class="dice-display">
+            <span class="dice-count">{{initiativeDice}}d6</span>
+          </div>
+          
+          <div class="reaction-display">
+            <span class="reaction-value">{{reaction}}</span>
+          </div>
+          
+          <div class="combatant-actions">
+            {{#unless hasRolled}}
+              <button class="roll-initiative" data-combatant-id="{{id}}" title="Roll Initiative">
+                <i class="fas fa-dice"></i>
+              </button>
+            {{/unless}}
+            <button class="remove-combatant" data-combatant-id="{{id}}" title="Remove from Tracker">
+              <i class="fas fa-times"></i>
+            </button>
+          </div>
+        </div>
+      {{/each}}
+    {{else}}
+      <div class="empty-tracker">
+        <p>No combatants in tracker.</p>
+        <p>Select tokens and click "Add Combatants" to begin.</p>
+      </div>
+    {{/if}}
+  </div>
+
+  {{#if isActive}}
+    <div class="turn-summary">
+      <h3>Current Turn</h3>
+      {{#with (lookup combatants currentTurn)}}
+        <div class="current-actor">
+          <img src="{{img}}" alt="{{name}}">
+          <div class="actor-details">
+            <span class="actor-name">{{name}}</span>
+            <span class="actor-initiative">Initiative: {{currentInit}}</span>
+          </div>
+        </div>
+      {{/with}}
+    </div>
+  {{/if}}
+</div>
