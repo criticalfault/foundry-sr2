@@ -187,7 +187,7 @@
                 {{#if skill.system.baseSkill}}
                   <div class="concentration-section">
                     <select name="items.{{skill._id}}.system.concentration" data-dtype="String" class="concentration-select">
-                      <option value="">{{#if (lookup @root.availableSkills skill.system.baseSkill).requiresConcentration}}Select Concentration...{{else}}No Concentration{{/if}}</option>
+                      <option value="">Select Concentration...</option>
                       {{#each (lookup @root.availableSkills skill.system.baseSkill).Concentrations}}
                         <option value="{{this.name}}" {{#if (eq this.name ../skill.system.concentration)}}selected{{/if}}>{{this.name}}</option>
                       {{/each}}

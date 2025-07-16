@@ -3,20 +3,20 @@
  * Loads items from JSON files into Foundry compendiums
  */
 export class SR2DataImporter {
-  
+
   /**
    * Import all data from JSON files into compendiums
    */
   static async importAllData() {
     console.log("SR2E | Starting data import...");
-    
+
     try {
       await this.importCyberware();
       await this.importBioware();
       await this.importSpells();
       await this.importAdeptPowers();
       await this.importSkills();
-      
+
       console.log("SR2E | Data import completed successfully");
       ui.notifications.info("Shadowrun 2E data imported successfully!");
     } catch (error) {
@@ -30,16 +30,24 @@ export class SR2DataImporter {
    */
   static async importCyberware() {
     const pack = game.packs.get("shadowrun2e.cyberware");
-    if (!pack) return;
+    if (!pack) {
+      console.warn("SR2E | Cyberware compendium not found");
+      return;
+    }
 
     console.log("SR2E | Importing cyberware...");
-    
+
     try {
+      // Unlock the compendium for editing
+      if (pack.locked) {
+        await pack.configure({ locked: false });
+      }
+
       const response = await fetch('/systems/shadowrun2e/data/cyberware.json');
       const data = await response.json();
-      
+
       const items = [];
-      
+
       for (const [category, categoryItems] of Object.entries(data)) {
         for (const item of categoryItems) {
           const itemData = {
@@ -63,10 +71,13 @@ export class SR2DataImporter {
           items.push(itemData);
         }
       }
-      
+
       await Item.createDocuments(items, { pack: pack.collection });
       console.log(`SR2E | Imported ${items.length} cyberware items`);
-      
+
+      // Lock the compendium again after import
+      await pack.configure({ locked: true });
+
     } catch (error) {
       console.error("SR2E | Failed to import cyberware:", error);
     }
@@ -77,16 +88,24 @@ export class SR2DataImporter {
    */
   static async importBioware() {
     const pack = game.packs.get("shadowrun2e.bioware");
-    if (!pack) return;
+    if (!pack) {
+      console.warn("SR2E | Bioware compendium not found");
+      return;
+    }
 
     console.log("SR2E | Importing bioware...");
-    
+
     try {
+      // Unlock the compendium for editing
+      if (pack.locked) {
+        await pack.configure({ locked: false });
+      }
+
       const response = await fetch('/systems/shadowrun2e/data/bioware.json');
       const data = await response.json();
-      
+
       const items = [];
-      
+
       for (const [category, categoryItems] of Object.entries(data)) {
         for (const item of categoryItems) {
           const itemData = {
@@ -110,10 +129,13 @@ export class SR2DataImporter {
           items.push(itemData);
         }
       }
-      
+
       await Item.createDocuments(items, { pack: pack.collection });
       console.log(`SR2E | Imported ${items.length} bioware items`);
-      
+
+      // Lock the compendium again after import
+      await pack.configure({ locked: true });
+
     } catch (error) {
       console.error("SR2E | Failed to import bioware:", error);
     }
@@ -124,16 +146,24 @@ export class SR2DataImporter {
    */
   static async importSpells() {
     const pack = game.packs.get("shadowrun2e.spells");
-    if (!pack) return;
+    if (!pack) {
+      console.warn("SR2E | Spells compendium not found");
+      return;
+    }
 
     console.log("SR2E | Importing spells...");
-    
+
     try {
+      // Unlock the compendium for editing
+      if (pack.locked) {
+        await pack.configure({ locked: false });
+      }
+
       const response = await fetch('/systems/shadowrun2e/data/spells.json');
       const data = await response.json();
-      
+
       const items = [];
-      
+
       for (const spell of data) {
         const itemData = {
           name: spell.Name.trim(),
@@ -156,10 +186,13 @@ export class SR2DataImporter {
         };
         items.push(itemData);
       }
-      
+
       await Item.createDocuments(items, { pack: pack.collection });
       console.log(`SR2E | Imported ${items.length} spells`);
-      
+
+      // Lock the compendium again after import
+      await pack.configure({ locked: true });
+
     } catch (error) {
       console.error("SR2E | Failed to import spells:", error);
     }
@@ -170,16 +203,24 @@ export class SR2DataImporter {
    */
   static async importAdeptPowers() {
     const pack = game.packs.get("shadowrun2e.adeptpowers");
-    if (!pack) return;
+    if (!pack) {
+      console.warn("SR2E | Adept Powers compendium not found");
+      return;
+    }
 
     console.log("SR2E | Importing adept powers...");
-    
+
     try {
+      // Unlock the compendium for editing
+      if (pack.locked) {
+        await pack.configure({ locked: false });
+      }
+
       const response = await fetch('/systems/shadowrun2e/data/AdeptPowers.json');
       const data = await response.json();
-      
+
       const items = [];
-      
+
       for (const power of data) {
         const itemData = {
           name: power.Name.trim(),
@@ -201,10 +242,13 @@ export class SR2DataImporter {
         };
         items.push(itemData);
       }
-      
+
       await Item.createDocuments(items, { pack: pack.collection });
       console.log(`SR2E | Imported ${items.length} adept powers`);
-      
+
+      // Lock the compendium again after import
+      await pack.configure({ locked: true });
+
     } catch (error) {
       console.error("SR2E | Failed to import adept powers:", error);
     }
@@ -215,16 +259,24 @@ export class SR2DataImporter {
    */
   static async importSkills() {
     const pack = game.packs.get("shadowrun2e.skills");
-    if (!pack) return;
+    if (!pack) {
+      console.warn("SR2E | Skills compendium not found");
+      return;
+    }
 
     console.log("SR2E | Importing skills...");
-    
+
     try {
+      // Unlock the compendium for editing
+      if (pack.locked) {
+        await pack.configure({ locked: false });
+      }
+
       const response = await fetch('/systems/shadowrun2e/data/skills.json');
       const data = await response.json();
-      
+
       const items = [];
-      
+
       for (const [skillName, skillData] of Object.entries(data)) {
         // Create base skill
         const itemData = {
@@ -246,7 +298,7 @@ export class SR2DataImporter {
           }
         };
         items.push(itemData);
-        
+
         // Create concentration variants if they exist
         if (skillData.Concentrations && skillData.Concentrations.length > 0) {
           for (const concentration of skillData.Concentrations) {
@@ -272,10 +324,13 @@ export class SR2DataImporter {
           }
         }
       }
-      
+
       await Item.createDocuments(items, { pack: pack.collection });
       console.log(`SR2E | Imported ${items.length} skill items`);
-      
+
+      // Lock the compendium again after import
+      await pack.configure({ locked: true });
+
     } catch (error) {
       console.error("SR2E | Failed to import skills:", error);
     }
