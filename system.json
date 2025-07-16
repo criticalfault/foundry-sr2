@@ -25,6 +25,43 @@
       "path": "lang/en.json"
     }
   ],
+  "packs": [
+    {
+      "name": "cyberware",
+      "label": "Cyberware",
+      "path": "packs/cyberware.db",
+      "type": "Item",
+      "system": "shadowrun2e"
+    },
+    {
+      "name": "bioware", 
+      "label": "Bioware",
+      "path": "packs/bioware.db",
+      "type": "Item",
+      "system": "shadowrun2e"
+    },
+    {
+      "name": "spells",
+      "label": "Spells",
+      "path": "packs/spells.db", 
+      "type": "Item",
+      "system": "shadowrun2e"
+    },
+    {
+      "name": "adeptpowers",
+      "label": "Adept Powers",
+      "path": "packs/adeptpowers.db",
+      "type": "Item", 
+      "system": "shadowrun2e"
+    },
+    {
+      "name": "skills",
+      "label": "Skills",
+      "path": "packs/skills.db",
+      "type": "Item",
+      "system": "shadowrun2e"
+    }
+  ],
   "gridDistance": 1,
   "gridUnits": "m",
   "primaryTokenAttribute": "health",

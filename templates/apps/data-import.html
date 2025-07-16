@@ -1,0 +1,52 @@
+<div class="data-import">
+  <header class="import-header">
+    <h2>Import Shadowrun 2E Data</h2>
+    <p>Import system data from JSON files into Foundry compendiums for easy access.</p>
+  </header>
+
+  <div class="import-content">
+    {{#if dataImported}}
+      <div class="import-status success">
+        <i class="fas fa-check-circle"></i>
+        <p><strong>Data has been imported!</strong></p>
+        <p>All system data is available in the compendium packs in the sidebar.</p>
+      </div>
+      
+      <div class="import-actions">
+        <button class="clear-data" type="button">
+          <i class="fas fa-trash"></i> Clear All Data
+        </button>
+        <button class="import-data" type="button">
+          <i class="fas fa-sync"></i> Re-import Data
+        </button>
+      </div>
+    {{else}}
+      <div class="import-status pending">
+        <i class="fas fa-exclamation-triangle"></i>
+        <p><strong>Data not yet imported</strong></p>
+        <p>Click the button below to import all system data into compendiums.</p>
+      </div>
+      
+      <div class="import-details">
+        <h3>What will be imported:</h3>
+        <ul>
+          <li><strong>Cyberware</strong> - All cyberware from the data files</li>
+          <li><strong>Bioware</strong> - All bioware augmentations</li>
+          <li><strong>Spells</strong> - Complete spell catalog</li>
+          <li><strong>Adept Powers</strong> - Physical adept abilities</li>
+          <li><strong>Skills</strong> - Base skills and concentrations</li>
+        </ul>
+      </div>
+      
+      <div class="import-actions">
+        <button class="import-data" type="button">
+          <i class="fas fa-download"></i> Import All Data
+        </button>
+      </div>
+    {{/if}}
+  </div>
+
+  <div class="import-footer">
+    <p><em>Note: This process may take a few moments to complete.</em></p>
+  </div>
+</div>

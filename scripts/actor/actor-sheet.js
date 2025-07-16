@@ -16,7 +16,9 @@ export class SR2ActorSheet extends ActorSheet {
 
   /** @override */
   get template() {
-    return `systems/shadowrun2e/templates/actor/${this.actor.type}-sheet.html`;
+    // For now, all actor types use the character sheet
+    // Later we can add different sheets for different actor types
+    return "systems/shadowrun2e/templates/actor/character-sheet.html";
   }
 
   /** @override */
@@ -52,7 +54,7 @@ export class SR2ActorSheet extends ActorSheet {
 
     for (let i of context.items) {
       i.img = i.img || "icons/svg/item-bag.svg";
-      
+
       if (i.type === 'skill') {
         skills.push(i);
       } else if (i.type === 'weapon') {
@@ -86,7 +88,7 @@ export class SR2ActorSheet extends ActorSheet {
     context.spells = spells;
     context.adeptpowers = adeptpowers;
     context.skills = skills;
-    
+
     // Calculate total power points used for adept powers
     context.powerPointsUsed = adeptpowers.reduce((total, power) => {
       return total + (power.system.totalCost || 0);
@@ -106,7 +108,7 @@ export class SR2ActorSheet extends ActorSheet {
   async _prepareSkillsData(context) {
     // Load the skills data from the JSON file
     try {
-      const response = await fetch('systems/shadowrun2e/data/skills.json');
+      const response = await fetch('/systems/shadowrun2e/data/skills.json');
       const skillsData = await response.json();
       context.availableSkills = skillsData;
     } catch (error) {
@@ -158,7 +160,7 @@ export class SR2ActorSheet extends ActorSheet {
 
     // Item browser
     html.find('.browse-items').click(this._onBrowseItems.bind(this));
-    
+
     // Spell casting
     html.find('.spell-cast').click(this._onSpellCast.bind(this));
   }
@@ -170,7 +172,7 @@ export class SR2ActorSheet extends ActorSheet {
     event.preventDefault();
     const header = event.currentTarget;
     const type = header.dataset.type;
-    const data = duplicate(header.dataset);
+    const data = foundry.utils.deepClone(header.dataset);
     const name = `New ${type.capitalize()}`;
     const itemData = {
       name: name,
@@ -178,7 +180,7 @@ export class SR2ActorSheet extends ActorSheet {
       system: data
     };
     delete itemData.system["type"];
-    return await Item.create(itemData, {parent: this.actor});
+    return await Item.create(itemData, { parent: this.actor });
   }
 
   /**
@@ -219,12 +221,12 @@ export class SR2ActorSheet extends ActorSheet {
     const element = event.currentTarget;
     const poolType = element.dataset.pool;
     const adjustment = parseInt(element.dataset.adjust);
-    
+
     const currentValue = this.actor.system.pools[poolType].current;
     const maxValue = this.actor.system.pools[poolType].max;
     const newValue = Math.clamped(currentValue + adjustment, 0, maxValue);
-    
-    this.actor.update({[`system.pools.${poolType}.current`]: newValue});
+
+    this.actor.update({ [`system.pools.${poolType}.current`]: newValue });
   }
 
   /**
@@ -236,7 +238,7 @@ export class SR2ActorSheet extends ActorSheet {
     const skillId = element.dataset.skillId;
     const baseSkill = element.value;
     const item = this.actor.items.get(skillId);
-    
+
     if (item) {
       // Clear concentration when base skill changes
       await item.update({
@@ -255,16 +257,16 @@ export class SR2ActorSheet extends ActorSheet {
     event.preventDefault();
     const skillId = event.currentTarget.dataset.skillId;
     const skill = this.actor.items.get(skillId);
-    
+
     if (!skill) return;
 
     const skillRating = skill.system.rating || 0;
     const attributeName = skill.system.attribute || 'body';
     const attributeValue = this.actor.system.attributes[attributeName]?.value || 1;
-    
+
     // Calculate dice pool
     let dicePool = skillRating + attributeValue;
-    
+
     // Add specialization bonus if applicable
     let title = skill.name;
     if (skill.system.concentration) {
@@ -275,7 +277,7 @@ export class SR2ActorSheet extends ActorSheet {
       // Specialization gives +2 dice when applicable
       dicePool += 2;
     }
-    
+
     // Roll the dice
     await this.actor.rollDice(dicePool, 4, title);
   }
@@ -286,7 +288,7 @@ export class SR2ActorSheet extends ActorSheet {
   async _onBrowseItems(event) {
     event.preventDefault();
     const itemType = event.currentTarget.dataset.type;
-    
+
     // Import the item browser dynamically
     const { SR2ItemBrowser } = await import("/systems/shadowrun2e/scripts/item-browser.js");
     const browser = new SR2ItemBrowser(this.actor, itemType);
@@ -300,28 +302,28 @@ export class SR2ActorSheet extends ActorSheet {
     event.preventDefault();
     const spellId = event.currentTarget.dataset.itemId;
     const spell = this.actor.items.get(spellId);
-    
+
     if (!spell) return;
 
     const force = spell.system.force || 1;
     const magicRating = this.actor.system.attributes.magic.value || 1;
     const sorcerySkill = this._getHighestSorcerySkill();
-    
+
     // Calculate dice pool for spellcasting
     const dicePool = magicRating + sorcerySkill;
-    
+
     // Calculate target number (usually 4, but can be modified)
     const targetNumber = 4;
-    
+
     const title = `Casting ${spell.name} (Force ${force})`;
-    
+
     // Roll for spellcasting
     const result = await this.actor.rollDice(dicePool, targetNumber, title);
-    
+
     // Calculate drain
     const drainValue = this._calculateDrain(spell.system.drain, force);
     const drainPool = this.actor.system.attributes.willpower.value + magicRating;
-    
+
     // Roll drain resistance
     const drainTitle = `Drain Resistance for ${spell.name}`;
     await this.actor.rollDice(drainPool, drainValue, drainTitle);
@@ -331,12 +333,12 @@ export class SR2ActorSheet extends ActorSheet {
    * Get the highest Sorcery skill rating
    */
   _getHighestSorcerySkill() {
-    const sorcerySkills = this.actor.items.filter(i => 
+    const sorcerySkills = this.actor.items.filter(i =>
       i.type === 'skill' && i.system.baseSkill === 'Sorcery'
     );
-    
+
     if (sorcerySkills.length === 0) return 0;
-    
+
     return Math.max(...sorcerySkills.map(skill => skill.system.rating || 0));
   }
 
@@ -345,23 +347,23 @@ export class SR2ActorSheet extends ActorSheet {
    */
   _calculateDrain(drainCode, force) {
     if (!drainCode) return 4;
-    
+
     // Parse drain codes like "(F/2)M", "[(F/2)+1]S", etc.
     let drainValue = 4; // Default
-    
+
     try {
       // Replace F with force value
       let formula = drainCode.replace(/F/g, force.toString());
-      
+
       // Remove brackets and damage level indicators
       formula = formula.replace(/[\[\]LMSD]/g, '');
-      
+
       // Evaluate the mathematical expression
       drainValue = Math.max(2, Math.floor(eval(formula)));
     } catch (error) {
       console.warn(`Could not parse drain code: ${drainCode}`, error);
     }
-    
+
     return drainValue;
   }
 }
