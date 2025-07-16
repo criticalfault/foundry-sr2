@@ -1,0 +1,330 @@
+<form class="{{cssClass}} {{actor.type}} flexcol" autocomplete="off">
+
+  {{!-- Vehicle Header --}}
+  <header class="sheet-header">
+    <img class="profile-img" src="{{actor.img}}" data-edit="img" title="{{actor.name}}" height="80" width="80"/>
+    <div class="header-fields">
+      <h1 class="vehiclename"><input name="name" type="text" value="{{actor.name}}" placeholder="Vehicle Name"/></h1>
+      <div class="vehicle-model">
+        <label>Model:</label>
+        <input name="system.model" type="text" value="{{system.model}}" placeholder="Vehicle Model"/>
+      </div>
+      <div class="vehicle-type">
+        <label>Type:</label>
+        <select name="system.vehicleType" data-dtype="String">
+          <option value="ground" {{#if (eq system.vehicleType "ground")}}selected{{/if}}>Ground Vehicle</option>
+          <option value="air" {{#if (eq system.vehicleType "air")}}selected{{/if}}>Aircraft</option>
+          <option value="water" {{#if (eq system.vehicleType "water")}}selected{{/if}}>Watercraft</option>
+          <option value="drone" {{#if (eq system.vehicleType "drone")}}selected{{/if}}>Drone</option>
+        </select>
+        <i class="{{vehicleTypeIcon}}"></i>
+      </div>
+    </div>
+  </header>
+
+  {{!-- Sheet Tab Navigation --}}
+  <nav class="sheet-tabs tabs" data-group="primary">
+    <a class="item" data-tab="stats">Vehicle Stats</a>
+    <a class="item" data-tab="equipment">Equipment</a>
+    <a class="item" data-tab="notes">Notes</a>
+  </nav>
+
+  {{!-- Sheet Body --}}
+  <section class="sheet-body">
+
+    {{!-- Vehicle Stats Tab --}}
+    <div class="tab stats" data-group="primary" data-tab="stats">
+      <div class="vehicle-stats">
+        <h3>Vehicle Statistics</h3>
+        
+        <div class="stats-grid">
+          <div class="stat-group">
+            <h4>Performance</h4>
+            <div class="stat">
+              <label>Handling (On/Off):</label>
+              <div class="handling-inputs">
+                <input type="number" name="system.handling.on" value="{{system.handling.on}}" data-dtype="Number" min="0" max="10" title="On-Road Handling"/>
+                <span>/</span>
+                <input type="number" name="system.handling.off" value="{{system.handling.off}}" data-dtype="Number" min="0" max="10" title="Off-Road Handling"/>
+              </div>
+            </div>
+            <div class="stat">
+              <label>Speed:</label>
+              <input type="number" name="system.speed" value="{{system.speed}}" data-dtype="Number" min="0"/>
+              <span>km/h</span>
+            </div>
+            <div class="stat">
+              <label>Acceleration:</label>
+              <input type="number" name="system.accel" value="{{system.accel}}" data-dtype="Number" min="0"/>
+              <span>m/turn</span>
+            </div>
+          </div>
+
+          <div class="stat-group">
+            <h4>Structure</h4>
+            <div class="stat">
+              <label>Body:</label>
+              <input type="number" name="system.body" value="{{system.body}}" data-dtype="Number" min="0" max="20"/>
+            </div>
+            <div class="stat">
+              <label>Armor:</label>
+              <input type="number" name="system.armor" value="{{system.armor}}" data-dtype="Number" min="0" max="50"/>
+            </div>
+            <div class="stat">
+              <label>Signature:</label>
+              <input type="number" name="system.sig" value="{{system.sig}}" data-dtype="Number" min="0" max="20"/>
+            </div>
+          </div>
+
+          <div class="stat-group">
+            <h4>Electronics</h4>
+            <div class="stat">
+              <label>Autonav:</label>
+              <input type="number" name="system.autonav" value="{{system.autonav}}" data-dtype="Number" min="0" max="10"/>
+            </div>
+            <div class="stat">
+              <label>Pilot:</label>
+              <input type="number" name="system.pilot" value="{{system.pilot}}" data-dtype="Number" min="0" max="10"/>
+            </div>
+            <div class="stat">
+              <label>Sensor:</label>
+              <input type="number" name="system.sensor" value="{{system.sensor}}" data-dtype="Number" min="0" max="10"/>
+            </div>
+          </div>
+
+          <div class="stat-group">
+            <h4>Capacity</h4>
+            <div class="stat">
+              <label>Cargo:</label>
+              <input type="number" name="system.cargo" value="{{system.cargo}}" data-dtype="Number" min="0"/>
+              <span>CF</span>
+            </div>
+            <div class="stat">
+              <label>Load:</label>
+              <input type="number" name="system.load" value="{{system.load}}" data-dtype="Number" min="0"/>
+              <span>kg</span>
+            </div>
+            <div class="stat">
+              <label>Seating:</label>
+              <input type="text" name="system.seating" value="{{system.seating}}" placeholder="e.g. 2+4b"/>
+            </div>
+          </div>
+        </div>
+
+        <div class="condition-section">
+          <h4>Condition Monitor</h4>
+          <div class="damage-monitor">
+            <label>Vehicle Damage:</label>
+            <div class="damage-track">
+              {{#times system.health.max}}
+                <div class="damage-box {{#if (lte @index ../system.health.value)}}damaged{{/if}}" 
+                     data-damage="{{@index}}"></div>
+              {{/times}}
+            </div>
+            <div class="damage-controls">
+              <input type="number" name="system.health.value" value="{{system.health.value}}" 
+                     data-dtype="Number" min="0" max="{{system.health.max}}" title="Current Damage"/>
+              <span>/ {{system.health.max}}</span>
+              <button type="button" class="repair-damage" data-amount="1" title="Repair 1 Damage">
+                <i class="fas fa-wrench"></i>
+              </button>
+              <button type="button" class="repair-damage" data-amount="{{system.health.value}}" title="Full Repair">
+                <i class="fas fa-tools"></i>
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <div class="vehicle-info">
+          <div class="info-field">
+            <label>Cost:</label>
+            <input type="number" name="system.cost" value="{{system.cost}}" data-dtype="Number" min="0"/>
+            <span>¥</span>
+          </div>
+          <div class="info-field">
+            <label>Street Index:</label>
+            <input type="number" name="system.streetIndex" value="{{system.streetIndex}}" data-dtype="Number" step="0.1" min="0"/>
+          </div>
+          <div class="info-field">
+            <label>Availability:</label>
+            <input type="text" name="system.availability" value="{{system.availability}}" placeholder="e.g. 4/7days"/>
+          </div>
+          <div class="info-field">
+            <label>Source:</label>
+            <input type="text" name="system.bookPage" value="{{system.bookPage}}" placeholder="Book reference"/>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    {{!-- Equipment Tab --}}
+    <div class="tab equipment" data-group="primary" data-tab="equipment">
+      
+      {{!-- Weapons Section --}}
+      <div class="weapons-section">
+        <div class="items-header">
+          <h3>Weapons</h3>
+          <div class="item-controls">
+            <a class="item-control item-create" title="Add Weapon" data-type="weapon">
+              <i class="fas fa-plus"></i> Add Weapon
+            </a>
+          </div>
+        </div>
+
+        <div class="items-list">
+          <div class="items-table-header">
+            <div class="item-name">Weapon</div>
+            <div class="item-damage">Damage</div>
+            <div class="item-ammo">Ammo</div>
+            <div class="item-actions">Actions</div>
+          </div>
+          
+          {{#each weapons as |weapon id|}}
+          <div class="item-row" data-item-id="{{weapon._id}}">
+            <div class="item-name">
+              <img src="{{weapon.img}}" title="{{weapon.name}}" width="20" height="20"/>
+              <span>{{weapon.name}}</span>
+            </div>
+            <div class="item-damage">
+              <input type="text" name="items.{{weapon._id}}.system.damage" value="{{weapon.system.damage}}" 
+                     placeholder="e.g. 6M"/>
+            </div>
+            <div class="item-ammo">
+              <input type="number" name="items.{{weapon._id}}.system.ammo.current" value="{{weapon.system.ammo.current}}" 
+                     data-dtype="Number" min="0"/>
+              <span>/</span>
+              <input type="number" name="items.{{weapon._id}}.system.ammo.max" value="{{weapon.system.ammo.max}}" 
+                     data-dtype="Number" min="0"/>
+            </div>
+            <div class="item-actions">
+              <button type="button" class="item-delete" data-item-id="{{weapon._id}}" title="Delete Weapon">
+                <i class="fas fa-trash"></i>
+              </button>
+            </div>
+          </div>
+          {{/each}}
+          
+          {{#unless weapons}}
+          <div class="no-items">
+            <p>No weapons installed.</p>
+          </div>
+          {{/unless}}
+        </div>
+      </div>
+
+      {{!-- Modifications Section --}}
+      <div class="modifications-section">
+        <div class="items-header">
+          <h3>Modifications</h3>
+          <div class="item-controls">
+            <a class="item-control item-create" title="Add Modification" data-type="gear">
+              <i class="fas fa-plus"></i> Add Modification
+            </a>
+          </div>
+        </div>
+
+        <div class="items-list">
+          <div class="items-table-header">
+            <div class="item-name">Modification</div>
+            <div class="item-rating">Rating</div>
+            <div class="item-cost">Cost</div>
+            <div class="item-actions">Actions</div>
+          </div>
+          
+          {{#each modifications as |mod id|}}
+          <div class="item-row" data-item-id="{{mod._id}}">
+            <div class="item-name">
+              <img src="{{mod.img}}" title="{{mod.name}}" width="20" height="20"/>
+              <span>{{mod.name}}</span>
+            </div>
+            <div class="item-rating">
+              <input type="number" name="items.{{mod._id}}.system.rating" value="{{mod.system.rating}}" 
+                     data-dtype="Number" min="0"/>
+            </div>
+            <div class="item-cost">
+              <span>¥{{mod.system.price}}</span>
+            </div>
+            <div class="item-actions">
+              <button type="button" class="item-delete" data-item-id="{{mod._id}}" title="Delete Modification">
+                <i class="fas fa-trash"></i>
+              </button>
+            </div>
+          </div>
+          {{/each}}
+          
+          {{#unless modifications}}
+          <div class="no-items">
+            <p>No modifications installed.</p>
+          </div>
+          {{/unless}}
+        </div>
+      </div>
+
+      {{!-- Gear Section --}}
+      <div class="gear-section">
+        <div class="items-header">
+          <h3>Equipment & Gear</h3>
+          <div class="item-controls">
+            <a class="item-control item-create" title="Add Gear" data-type="gear">
+              <i class="fas fa-plus"></i> Add Gear
+            </a>
+          </div>
+        </div>
+
+        <div class="items-list">
+          <div class="items-table-header">
+            <div class="item-name">Item</div>
+            <div class="item-quantity">Qty</div>
+            <div class="item-weight">Weight</div>
+            <div class="item-actions">Actions</div>
+          </div>
+          
+          {{#each gear as |item id|}}
+          <div class="item-row" data-item-id="{{item._id}}">
+            <div class="item-name">
+              <img src="{{item.img}}" title="{{item.name}}" width="20" height="20"/>
+              <span>{{item.name}}</span>
+            </div>
+            <div class="item-quantity">
+              <input type="number" name="items.{{item._id}}.system.quantity" value="{{item.system.quantity}}" 
+                     data-dtype="Number" min="1"/>
+            </div>
+            <div class="item-weight">
+              <span>{{math item.system.weight '*' item.system.quantity}} kg</span>
+            </div>
+            <div class="item-actions">
+              <button type="button" class="item-delete" data-item-id="{{item._id}}" title="Delete Item">
+                <i class="fas fa-trash"></i>
+              </button>
+            </div>
+          </div>
+          {{/each}}
+          
+          {{#unless gear}}
+          <div class="no-items">
+            <p>No equipment installed.</p>
+          </div>
+          {{/unless}}
+        </div>
+      </div>
+
+      <div class="weight-summary">
+        <strong>Total Equipment Weight: {{totalWeight}} kg</strong>
+      </div>
+    </div>
+
+    {{!-- Notes Tab --}}
+    <div class="tab notes" data-group="primary" data-tab="notes">
+      <div class="notes-section">
+        <label for="system.notes">Vehicle Notes:</label>
+        <textarea name="system.notes" rows="10" placeholder="Vehicle modifications, special features, etc...">{{system.notes}}</textarea>
+      </div>
+      
+      <div class="biography-section">
+        <label for="system.biography">Description:</label>
+        <textarea name="system.biography" rows="10" placeholder="Vehicle description and background...">{{system.biography}}</textarea>
+      </div>
+    </div>
+
+  </section>
+</form>

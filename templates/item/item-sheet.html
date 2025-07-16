@@ -70,6 +70,44 @@
       </div>
       {{/if}}
 
+      {{#if (eq item.type "program")}}
+      <div class="form-group">
+        <label>Rating</label>
+        <input type="number" name="system.rating" value="{{system.rating}}" data-dtype="Number" min="1" max="10"/>
+      </div>
+      
+      <div class="form-group">
+        <label>Program Type</label>
+        <select name="system.type" data-dtype="String">
+          <option value="utility" {{#if (eq system.type "utility")}}selected{{/if}}>Utility</option>
+          <option value="attack" {{#if (eq system.type "attack")}}selected{{/if}}>Attack</option>
+          <option value="defense" {{#if (eq system.type "defense")}}selected{{/if}}>Defense</option>
+          <option value="detection" {{#if (eq system.type "detection")}}selected{{/if}}>Detection</option>
+          <option value="operation" {{#if (eq system.type "operation")}}selected{{/if}}>Operation</option>
+        </select>
+      </div>
+      
+      <div class="form-group">
+        <label>Memory Size (MP)</label>
+        <input type="number" name="system.memorySize" value="{{system.memorySize}}" data-dtype="Number" min="1"/>
+      </div>
+      
+      <div class="form-group">
+        <label>Load Time</label>
+        <input type="number" name="system.loadTime" value="{{system.loadTime}}" data-dtype="Number" min="1"/>
+      </div>
+      
+      <div class="form-group">
+        <label>Availability</label>
+        <input type="text" name="system.availability" value="{{system.availability}}" placeholder="e.g. 4/7days"/>
+      </div>
+      
+      <div class="form-group">
+        <label>Street Index</label>
+        <input type="number" name="system.streetIndex" value="{{system.streetIndex}}" data-dtype="Number" step="0.1" min="0"/>
+      </div>
+      {{/if}}
+
     </div>
 
   </section>

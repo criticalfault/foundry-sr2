@@ -16,6 +16,9 @@ export class SR2DataImporter {
       await this.importSpells();
       await this.importAdeptPowers();
       await this.importSkills();
+      await this.importCyberdecks();
+      await this.importVehicles();
+      await this.importDrones();
 
       console.log("SR2E | Data import completed successfully");
       ui.notifications.info("Shadowrun 2E data imported successfully!");
@@ -333,6 +336,325 @@ export class SR2DataImporter {
 
     } catch (error) {
       console.error("SR2E | Failed to import skills:", error);
+    }
+  }
+
+  /**
+   * Import cyberdecks from JSON as actors
+   */
+  static async importCyberdecks() {
+    const pack = game.packs.get("shadowrun2e.cyberdecks");
+    if (!pack) {
+      console.warn("SR2E | Cyberdecks compendium not found");
+      return;
+    }
+
+    console.log("SR2E | Importing cyberdecks...");
+
+    try {
+      // Unlock the compendium for editing
+      if (pack.locked) {
+        await pack.configure({ locked: false });
+      }
+
+      const response = await fetch('/systems/shadowrun2e/data/cyberdeck.json');
+      const data = await response.json();
+
+      const actors = [];
+
+      for (const deck of data) {
+        const actorData = {
+          name: deck.Name.trim(),
+          type: "cyberdeck",
+          img: "systems/shadowrun2e/icons/cyberware.svg", // Use cyberware icon for now
+          system: {
+            model: deck.Name.trim(),
+            persona: deck.Persona,
+            hardening: deck.Hardening,
+            memory: {
+              total: deck.Memory,
+              used: 0
+            },
+            storage: {
+              total: deck.Storage,
+              used: 0
+            },
+            load: deck.Load,
+            ioSpeed: deck["I/O Speed"],
+            responseIncrease: deck["Response Increase"],
+            damage: {
+              icon: {
+                value: 0,
+                max: 10
+              }
+            },
+            cost: deck.Cost,
+            streetIndex: parseFloat(deck["Street Index"]),
+            availability: deck.Availability,
+            bookPage: deck.BookPage,
+            biography: `Model: ${deck.Name}\nPersona: ${deck.Persona}\nHardening: ${deck.Hardening}\nMemory: ${deck.Memory} MP\nStorage: ${deck.Storage} MP\nLoad: ${deck.Load}\nI/O Speed: ${deck["I/O Speed"]}\nResponse Increase: ${deck["Response Increase"]}\nCost: ¥${deck.Cost}\nAvailability: ${deck.Availability}\nSource: ${deck.BookPage}`
+          }
+        };
+        actors.push(actorData);
+      }
+
+      await Actor.createDocuments(actors, { pack: pack.collection });
+      console.log(`SR2E | Imported ${actors.length} cyberdeck actors`);
+
+      // Lock the compendium again after import
+      await pack.configure({ locked: true });
+
+    } catch (error) {
+      console.error("SR2E | Failed to import cyberdecks:", error);
+    }
+  }
+
+  /**
+   * Import vehicles from JSON as actors
+   */
+  static async importVehicles() {
+    const pack = game.packs.get("shadowrun2e.vehicles");
+    if (!pack) {
+      console.warn("SR2E | Vehicles compendium not found");
+      return;
+    }
+
+    console.log("SR2E | Importing vehicles...");
+
+    try {
+      // Unlock the compendium for editing
+      if (pack.locked) {
+        await pack.configure({ locked: false });
+      }
+
+      const response = await fetch('/systems/shadowrun2e/data/vehicles.json');
+      const data = await response.json();
+
+      const actors = [];
+
+      for (const vehicle of data) {
+        // Parse handling (format: "3/4" or "3")
+        let handlingOn = 0, handlingOff = 0;
+        if (vehicle.Handling) {
+          const handlingParts = vehicle.Handling.toString().split('/');
+          handlingOn = parseInt(handlingParts[0]) || 0;
+          handlingOff = parseInt(handlingParts[1]) || handlingOn;
+        }
+
+        // Parse speed/accel (format: "120/8")
+        let speed = 0, accel = 0;
+        if (vehicle["Speed/Accel"]) {
+          const speedParts = vehicle["Speed/Accel"].toString().split('/');
+          speed = parseInt(speedParts[0]) || 0;
+          accel = parseInt(speedParts[1]) || 0;
+        }
+
+        // Parse body/armor (format: "3/2")
+        let body = 0, armor = 0;
+        if (vehicle["Body/Armor"]) {
+          const bodyParts = vehicle["Body/Armor"].toString().split('/');
+          body = parseInt(bodyParts[0]) || 0;
+          armor = parseInt(bodyParts[1]) || 0;
+        }
+
+        // Parse sig/autonav (format: "2/3" or "2/-")
+        let sig = 0, autonav = 0;
+        if (vehicle["Sig/Autonav"]) {
+          const sigParts = vehicle["Sig/Autonav"].toString().split('/');
+          sig = parseInt(sigParts[0]) || 0;
+          autonav = sigParts[1] === '-' ? 0 : parseInt(sigParts[1]) || 0;
+        }
+
+        // Parse pilot/sensor (format: "2/1" or "-/1")
+        let pilot = 0, sensor = 0;
+        if (vehicle["Pilot/Sensor"]) {
+          const pilotParts = vehicle["Pilot/Sensor"].toString().split('/');
+          pilot = pilotParts[0] === '-' ? 0 : parseInt(pilotParts[0]) || 0;
+          sensor = parseInt(pilotParts[1]) || 0;
+        }
+
+        // Parse cargo/load (format: "12/110")
+        let cargo = 0, load = 0;
+        if (vehicle["Cargo/Load"]) {
+          const cargoParts = vehicle["Cargo/Load"].toString().split('/');
+          cargo = parseInt(cargoParts[0]) || 0;
+          load = parseInt(cargoParts[1]) || 0;
+        }
+
+        // Determine vehicle type based on name and characteristics
+        let vehicleType = "ground";
+        const name = vehicle.name.toLowerCase();
+        if (name.includes('aircraft') || name.includes('helicopter') || name.includes('plane') || name.includes('vtol')) {
+          vehicleType = "air";
+        } else if (name.includes('boat') || name.includes('ship') || name.includes('marine') || name.includes('hydrofoil')) {
+          vehicleType = "water";
+        }
+
+        const actorData = {
+          name: vehicle.name.trim(),
+          type: "vehicle",
+          img: "icons/svg/item-bag.svg", // Default vehicle icon
+          system: {
+            model: vehicle.name.trim(),
+            vehicleType: vehicleType,
+            handling: {
+              on: handlingOn,
+              off: handlingOff
+            },
+            speed: speed,
+            accel: accel,
+            body: body,
+            armor: armor,
+            sig: sig,
+            autonav: autonav,
+            pilot: pilot,
+            sensor: sensor,
+            cargo: cargo,
+            load: load,
+            seating: vehicle.Seating || "",
+            cost: parseInt(vehicle["$Cost"]?.toString().replace(/[^\d]/g, '')) || 0,
+            availability: vehicle.Availability || "",
+            streetIndex: parseFloat(vehicle["Street Index"]) || 1.0,
+            notes: vehicle.Notes || "",
+            bookPage: vehicle["Book.Page"] || "",
+            health: {
+              value: 0,
+              max: 10
+            },
+            biography: `Model: ${vehicle.name}\nHandling: ${vehicle.Handling}\nSpeed/Accel: ${vehicle["Speed/Accel"]}\nBody/Armor: ${vehicle["Body/Armor"]}\nSig/Autonav: ${vehicle["Sig/Autonav"]}\nPilot/Sensor: ${vehicle["Pilot/Sensor"]}\nCargo/Load: ${vehicle["Cargo/Load"]}\nSeating: ${vehicle.Seating}\nCost: ${vehicle["$Cost"]}\nAvailability: ${vehicle.Availability}\nStreet Index: ${vehicle["Street Index"]}\nNotes: ${vehicle.Notes}\nSource: ${vehicle["Book.Page"]}`
+          }
+        };
+        actors.push(actorData);
+      }
+
+      await Actor.createDocuments(actors, { pack: pack.collection });
+      console.log(`SR2E | Imported ${actors.length} vehicle actors`);
+
+      // Lock the compendium again after import
+      await pack.configure({ locked: true });
+
+    } catch (error) {
+      console.error("SR2E | Failed to import vehicles:", error);
+    }
+  }
+
+  /**
+   * Import drones from JSON as actors
+   */
+  static async importDrones() {
+    const pack = game.packs.get("shadowrun2e.drones");
+    if (!pack) {
+      console.warn("SR2E | Drones compendium not found");
+      return;
+    }
+
+    console.log("SR2E | Importing drones...");
+
+    try {
+      // Unlock the compendium for editing
+      if (pack.locked) {
+        await pack.configure({ locked: false });
+      }
+
+      const response = await fetch('/systems/shadowrun2e/data/drones.json');
+      const data = await response.json();
+
+      const actors = [];
+
+      for (const drone of data) {
+        // Parse handling (format: "3/4" or "3")
+        let handlingOn = 0, handlingOff = 0;
+        if (drone.Handling) {
+          const handlingParts = drone.Handling.toString().split('/');
+          handlingOn = parseInt(handlingParts[0]) || 0;
+          handlingOff = parseInt(handlingParts[1]) || handlingOn;
+        }
+
+        // Parse speed/accel (format: "120/8")
+        let speed = 0, accel = 0;
+        if (drone["Speed/Accel"]) {
+          const speedParts = drone["Speed/Accel"].toString().split('/');
+          speed = parseInt(speedParts[0]) || 0;
+          accel = parseInt(speedParts[1]) || 0;
+        }
+
+        // Parse body/armor (format: "3/2")
+        let body = 0, armor = 0;
+        if (drone["Body/Armor"]) {
+          const bodyParts = drone["Body/Armor"].toString().split('/');
+          body = parseInt(bodyParts[0]) || 0;
+          armor = parseInt(bodyParts[1]) || 0;
+        }
+
+        // Parse sig/autonav (format: "2/3" or "2/-")
+        let sig = 0, autonav = 0;
+        if (drone["Sig/Autonav"]) {
+          const sigParts = drone["Sig/Autonav"].toString().split('/');
+          sig = parseInt(sigParts[0]) || 0;
+          autonav = sigParts[1] === '-' ? 0 : parseInt(sigParts[1]) || 0;
+        }
+
+        // Parse pilot/sensor (format: "2/1" or "-/1")
+        let pilot = 0, sensor = 0;
+        if (drone["Pilot/Sensor"]) {
+          const pilotParts = drone["Pilot/Sensor"].toString().split('/');
+          pilot = pilotParts[0] === '-' ? 0 : parseInt(pilotParts[0]) || 0;
+          sensor = parseInt(pilotParts[1]) || 0;
+        }
+
+        // Parse cargo/load (format: "12/110")
+        let cargo = 0, load = 0;
+        if (drone["Cargo/Load"]) {
+          const cargoParts = drone["Cargo/Load"].toString().split('/');
+          cargo = parseInt(cargoParts[0]) || 0;
+          load = parseInt(cargoParts[1]) || 0;
+        }
+
+        const actorData = {
+          name: drone.name.trim(),
+          type: "vehicle",
+          img: "icons/svg/item-bag.svg", // Default drone icon
+          system: {
+            model: drone.name.trim(),
+            vehicleType: "drone",
+            handling: {
+              on: handlingOn,
+              off: handlingOff
+            },
+            speed: speed,
+            accel: accel,
+            body: body,
+            armor: armor,
+            sig: sig,
+            autonav: autonav,
+            pilot: pilot,
+            sensor: sensor,
+            cargo: cargo,
+            load: load,
+            seating: drone.Seating || "-",
+            cost: parseInt(drone["$Cost"]?.toString().replace(/[^\d]/g, '')) || 0,
+            availability: drone.Availability || "",
+            streetIndex: parseFloat(drone["Street Index"]) || 1.0,
+            notes: drone.Notes || "",
+            bookPage: drone["Book.Page"] || "",
+            health: {
+              value: 0,
+              max: 10
+            },
+            biography: `Model: ${drone.name}\nHandling: ${drone.Handling}\nSpeed/Accel: ${drone["Speed/Accel"]}\nBody/Armor: ${drone["Body/Armor"]}\nSig/Autonav: ${drone["Sig/Autonav"]}\nPilot/Sensor: ${drone["Pilot/Sensor"]}\nCargo/Load: ${drone["Cargo/Load"]}\nSeating: ${drone.Seating}\nCost: ${drone["$Cost"]}\nAvailability: ${drone.Availability}\nStreet Index: ${drone["Street Index"]}\nNotes: ${drone.Notes}\nSource: ${drone["Book.Page"]}`
+          }
+        };
+        actors.push(actorData);
+      }
+
+      await Actor.createDocuments(actors, { pack: pack.collection });
+      console.log(`SR2E | Imported ${actors.length} drone actors`);
+
+      // Lock the compendium again after import
+      await pack.configure({ locked: true });
+
+    } catch (error) {
+      console.error("SR2E | Failed to import drones:", error);
     }
   }
 }

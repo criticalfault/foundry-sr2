@@ -1,6 +1,6 @@
 {
   "Actor": {
-    "types": ["character"],
+    "types": ["character", "cyberdeck", "vehicle"],
     "templates": {
       "base": {
         "health": {
@@ -119,10 +119,67 @@
         "skin": "",
         "concept": ""
       }
+    },
+    "cyberdeck": {
+      "name": "",
+      "model": "",
+      "persona": 1,
+      "hardening": 0,
+      "memory": {
+        "total": 100,
+        "used": 0
+      },
+      "storage": {
+        "total": 500,
+        "used": 0
+      },
+      "load": 5,
+      "ioSpeed": 1,
+      "responseIncrease": 0,
+      "damage": {
+        "icon": {
+          "value": 0,
+          "max": 10
+        }
+      },
+      "cost": 0,
+      "streetIndex": 1.0,
+      "availability": "",
+      "bookPage": "",
+      "biography": ""
+    },
+    "vehicle": {
+      "templates": ["base"],
+      "model": "",
+      "vehicleType": "ground",
+      "handling": {
+        "on": 0,
+        "off": 0
+      },
+      "speed": 0,
+      "accel": 0,
+      "body": 0,
+      "armor": 0,
+      "sig": 0,
+      "autonav": 0,
+      "pilot": 0,
+      "sensor": 0,
+      "cargo": 0,
+      "load": 0,
+      "seating": "",
+      "cost": 0,
+      "availability": "",
+      "streetIndex": 1.0,
+      "notes": "",
+      "bookPage": "",
+      "health": {
+        "value": 0,
+        "max": 10
+      }
     }
   },
   "Item": {
-    "types": ["skill", "weapon", "armor", "gear", "cyberware", "bioware", "spell", "adeptpower", "contact"],
+    "types": ["skill", "weapon", "armor", "gear", "cyberware", "bioware", "spell", "adeptpower", "contact", "program"],
     "templates": {
       "base": {
         "description": "",
@@ -215,6 +272,17 @@
       "archetype": "",
       "connection": "",
       "notes": ""
+    },
+    "program": {
+      "templates": ["base"],
+      "rating": 1,
+      "type": "utility",
+      "memorySize": 1,
+      "loadTime": 1,
+      "isActive": false,
+      "isLoaded": false,
+      "availability": "",
+      "streetIndex": 1.0
     }
   }
 }

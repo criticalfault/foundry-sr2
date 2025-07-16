@@ -5,6 +5,8 @@
 // Import modules
 import { SR2Actor } from "./actor/actor.js";
 import { SR2ActorSheet } from "./actor/actor-sheet.js";
+import { SR2CyberdeckSheet } from "./actor/cyberdeck-sheet.js";
+import { SR2VehicleSheet } from "./actor/vehicle-sheet.js";
 import { SR2Item } from "./item/item.js";
 import { SR2ItemSheet } from "./item/item-sheet.js";
 import { initializeInitiativeTracker } from "./initiative-tracker.js";
@@ -47,6 +49,20 @@ Hooks.once("init", async function () {
         label: "Shadowrun 2E Character Sheet"
     });
     
+    console.log("SR2E | Registering SR2CyberdeckSheet...", SR2CyberdeckSheet);
+    Actors.registerSheet("shadowrun2e", SR2CyberdeckSheet, { 
+        types: ["cyberdeck"], 
+        makeDefault: true,
+        label: "Shadowrun 2E Cyberdeck Sheet"
+    });
+    
+    console.log("SR2E | Registering SR2VehicleSheet...", SR2VehicleSheet);
+    Actors.registerSheet("shadowrun2e", SR2VehicleSheet, { 
+        types: ["vehicle"], 
+        makeDefault: true,
+        label: "Shadowrun 2E Vehicle Sheet"
+    });
+    
     // Force set as default for character actors
     if (!CONFIG.Actor.sheetClasses.character) {
         CONFIG.Actor.sheetClasses.character = {};
@@ -54,6 +70,26 @@ Hooks.once("init", async function () {
     CONFIG.Actor.sheetClasses.character["shadowrun2e.SR2ActorSheet"] = {
         id: "shadowrun2e.SR2ActorSheet",
         cls: SR2ActorSheet,
+        default: true
+    };
+    
+    // Force set as default for cyberdeck actors
+    if (!CONFIG.Actor.sheetClasses.cyberdeck) {
+        CONFIG.Actor.sheetClasses.cyberdeck = {};
+    }
+    CONFIG.Actor.sheetClasses.cyberdeck["shadowrun2e.SR2CyberdeckSheet"] = {
+        id: "shadowrun2e.SR2CyberdeckSheet",
+        cls: SR2CyberdeckSheet,
+        default: true
+    };
+    
+    // Force set as default for vehicle actors
+    if (!CONFIG.Actor.sheetClasses.vehicle) {
+        CONFIG.Actor.sheetClasses.vehicle = {};
+    }
+    CONFIG.Actor.sheetClasses.vehicle["shadowrun2e.SR2VehicleSheet"] = {
+        id: "shadowrun2e.SR2VehicleSheet",
+        cls: SR2VehicleSheet,
         default: true
     };
 
@@ -118,6 +154,8 @@ function registerSystemSettings() {
 function preloadHandlebarsTemplates() {
     const templatePaths = [
         "systems/shadowrun2e/templates/actor/character-sheet.html",
+        "systems/shadowrun2e/templates/actor/cyberdeck-sheet.html",
+        "systems/shadowrun2e/templates/actor/vehicle-sheet.html",
         "systems/shadowrun2e/templates/item/item-sheet.html",
         "systems/shadowrun2e/templates/apps/initiative-tracker.html",
         "systems/shadowrun2e/templates/apps/item-browser.html",
@@ -163,6 +201,34 @@ function registerHandlebarsHelpers() {
     Handlebars.registerHelper('capitalize', function (str) {
         if (typeof str !== 'string') return '';
         return str.charAt(0).toUpperCase() + str.slice(1);
+    });
+
+    // Helper for mathematical operations
+    Handlebars.registerHelper('math', function (lvalue, operator, rvalue, options) {
+        lvalue = parseFloat(lvalue);
+        rvalue = parseFloat(rvalue);
+        
+        return {
+            "+": lvalue + rvalue,
+            "-": lvalue - rvalue,
+            "*": lvalue * rvalue,
+            "/": lvalue / rvalue,
+            "%": lvalue % rvalue
+        }[operator];
+    });
+
+    // Helper for less than or equal comparison
+    Handlebars.registerHelper('lte', function (a, b) {
+        return a <= b;
+    });
+
+    // Helper for creating repeated elements (like damage boxes)
+    Handlebars.registerHelper('times', function (n, block) {
+        let accum = '';
+        for (let i = 0; i < n; ++i) {
+            accum += block.fn({ index: i });
+        }
+        return accum;
     });
 }
 
@@ -227,13 +293,24 @@ class DataImportConfig extends FormApplication {
     }
 
     async _clearAllPacks() {
-        const packNames = ["cyberware", "bioware", "spells", "adeptpowers", "skills"];
+        const itemPackNames = ["cyberware", "bioware", "spells", "adeptpowers", "skills"];
+        const actorPackNames = ["cyberdecks", "vehicles", "drones"];
 
-        for (const packName of packNames) {
+        // Clear item packs
+        for (const packName of itemPackNames) {
             const pack = game.packs.get(`shadowrun2e.${packName}`);
             if (pack) {
                 const documents = await pack.getDocuments();
                 await Item.deleteDocuments(documents.map(d => d.id), { pack: pack.collection });
+            }
+        }
+
+        // Clear actor packs
+        for (const packName of actorPackNames) {
+            const pack = game.packs.get(`shadowrun2e.${packName}`);
+            if (pack) {
+                const documents = await pack.getDocuments();
+                await Actor.deleteDocuments(documents.map(d => d.id), { pack: pack.collection });
             }
         }
     }

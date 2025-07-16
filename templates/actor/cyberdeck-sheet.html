@@ -1,0 +1,204 @@
+<form class="{{cssClass}} {{actor.type}} flexcol" autocomplete="off">
+
+  {{!-- Cyberdeck Header --}}
+  <header class="sheet-header">
+    <img class="profile-img" src="{{actor.img}}" data-edit="img" title="{{actor.name}}" height="80" width="80"/>
+    <div class="header-fields">
+      <h1 class="deckname"><input name="name" type="text" value="{{actor.name}}" placeholder="Cyberdeck Name"/></h1>
+      <div class="deck-model">
+        <label>Model:</label>
+        <input name="system.model" type="text" value="{{system.model}}" placeholder="Cyberdeck Model"/>
+      </div>
+    </div>
+  </header>
+
+  {{!-- Sheet Tab Navigation --}}
+  <nav class="sheet-tabs tabs" data-group="primary">
+    <a class="item" data-tab="deck">Deck Stats</a>
+    <a class="item" data-tab="programs">Programs</a>
+    <a class="item" data-tab="notes">Notes</a>
+  </nav>
+
+  {{!-- Sheet Body --}}
+  <section class="sheet-body">
+
+    {{!-- Deck Stats Tab --}}
+    <div class="tab deck" data-group="primary" data-tab="deck">
+      <div class="deck-stats">
+        <h3>Cyberdeck Statistics</h3>
+        
+        <div class="stats-grid">
+          <div class="stat-group">
+            <h4>Core Stats</h4>
+            <div class="stat">
+              <label>Persona:</label>
+              <input type="number" name="system.persona" value="{{system.persona}}" data-dtype="Number" min="1" max="10"/>
+            </div>
+            <div class="stat">
+              <label>Hardening:</label>
+              <input type="number" name="system.hardening" value="{{system.hardening}}" data-dtype="Number" min="0" max="10"/>
+            </div>
+            <div class="stat">
+              <label>Load:</label>
+              <input type="number" name="system.load" value="{{system.load}}" data-dtype="Number" min="1"/>
+            </div>
+            <div class="stat">
+              <label>I/O Speed:</label>
+              <input type="number" name="system.ioSpeed" value="{{system.ioSpeed}}" data-dtype="Number" min="1"/>
+            </div>
+            <div class="stat">
+              <label>Response Increase:</label>
+              <input type="number" name="system.responseIncrease" value="{{system.responseIncrease}}" data-dtype="Number" min="0"/>
+            </div>
+          </div>
+
+          <div class="stat-group">
+            <h4>Memory & Storage</h4>
+            <div class="memory-stat">
+              <label>Active Memory:</label>
+              <div class="memory-bar">
+                <div class="memory-used" style="width: {{#if system.memory.total}}{{math memoryUsed '/' system.memory.total '*' 100}}{{else}}0{{/if}}%"></div>
+                <span class="memory-text">{{memoryUsed}} / {{system.memory.total}} MP</span>
+              </div>
+              <input type="number" name="system.memory.total" value="{{system.memory.total}}" data-dtype="Number" min="1" title="Total Memory"/>
+            </div>
+            
+            <div class="memory-stat">
+              <label>Storage:</label>
+              <div class="memory-bar">
+                <div class="storage-used" style="width: {{#if system.storage.total}}{{math storageUsed '/' system.storage.total '*' 100}}{{else}}0{{/if}}%"></div>
+                <span class="memory-text">{{storageUsed}} / {{system.storage.total}} MP</span>
+              </div>
+              <input type="number" name="system.storage.total" value="{{system.storage.total}}" data-dtype="Number" min="1" title="Total Storage"/>
+            </div>
+          </div>
+
+          <div class="stat-group">
+            <h4>Condition</h4>
+            <div class="damage-monitor">
+              <label>Icon Damage:</label>
+              <div class="damage-track">
+                {{#times system.damage.icon.max}}
+                  <div class="damage-box {{#if (lte @index ../system.damage.icon.value)}}damaged{{/if}}" 
+                       data-damage="{{@index}}"></div>
+                {{/times}}
+              </div>
+              <div class="damage-controls">
+                <input type="number" name="system.damage.icon.value" value="{{system.damage.icon.value}}" 
+                       data-dtype="Number" min="0" max="{{system.damage.icon.max}}" title="Current Icon Damage"/>
+                <span>/ {{system.damage.icon.max}}</span>
+                <button type="button" class="repair-damage" data-amount="1" title="Repair 1 Damage">
+                  <i class="fas fa-wrench"></i>
+                </button>
+                <button type="button" class="repair-damage" data-amount="{{system.damage.icon.value}}" title="Full Repair">
+                  <i class="fas fa-tools"></i>
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="deck-info">
+          <div class="info-field">
+            <label>Cost:</label>
+            <input type="number" name="system.cost" value="{{system.cost}}" data-dtype="Number" min="0"/>
+            <span>¥</span>
+          </div>
+          <div class="info-field">
+            <label>Street Index:</label>
+            <input type="number" name="system.streetIndex" value="{{system.streetIndex}}" data-dtype="Number" step="0.1" min="0"/>
+          </div>
+          <div class="info-field">
+            <label>Availability:</label>
+            <input type="text" name="system.availability" value="{{system.availability}}" placeholder="e.g. 4/7days"/>
+          </div>
+          <div class="info-field">
+            <label>Source:</label>
+            <input type="text" name="system.bookPage" value="{{system.bookPage}}" placeholder="Book reference"/>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    {{!-- Programs Tab --}}
+    <div class="tab programs" data-group="primary" data-tab="programs">
+      <div class="programs-header">
+        <h3>Programs</h3>
+        <div class="program-summary">
+          <span class="memory-summary">Memory: {{memoryUsed}}/{{system.memory.total}} MP</span>
+          <span class="storage-summary">Storage: {{storageUsed}}/{{system.storage.total}} MP</span>
+        </div>
+        <div class="item-controls">
+          <a class="item-control item-create" title="Add Program" data-type="program">
+            <i class="fas fa-plus"></i> Add Program
+          </a>
+        </div>
+      </div>
+
+      <div class="programs-list">
+        <div class="programs-table-header">
+          <div class="program-name">Program</div>
+          <div class="program-rating">Rating</div>
+          <div class="program-type">Type</div>
+          <div class="program-size">Size</div>
+          <div class="program-status">Status</div>
+          <div class="program-actions">Actions</div>
+        </div>
+        
+        {{#each programs as |program id|}}
+        <div class="program-row" data-item-id="{{program._id}}">
+          <div class="program-name">
+            <img src="{{program.img}}" title="{{program.name}}" width="20" height="20"/>
+            <span>{{program.name}}</span>
+          </div>
+          <div class="program-rating">
+            <input type="number" name="items.{{program._id}}.system.rating" value="{{program.system.rating}}" 
+                   data-dtype="Number" min="1" max="10"/>
+          </div>
+          <div class="program-type">
+            <select name="items.{{program._id}}.system.type" data-dtype="String">
+              <option value="utility" {{#if (eq program.system.type "utility")}}selected{{/if}}>Utility</option>
+              <option value="attack" {{#if (eq program.system.type "attack")}}selected{{/if}}>Attack</option>
+              <option value="defense" {{#if (eq program.system.type "defense")}}selected{{/if}}>Defense</option>
+              <option value="detection" {{#if (eq program.system.type "detection")}}selected{{/if}}>Detection</option>
+              <option value="operation" {{#if (eq program.system.type "operation")}}selected{{/if}}>Operation</option>
+            </select>
+          </div>
+          <div class="program-size">
+            <input type="number" name="items.{{program._id}}.system.memorySize" value="{{program.system.memorySize}}" 
+                   data-dtype="Number" min="1"/>
+            <span>MP</span>
+          </div>
+          <div class="program-status">
+            <button type="button" class="program-toggle {{#if program.system.isLoaded}}loaded{{/if}}" 
+                    data-program-id="{{program._id}}" data-toggle="loaded" title="Toggle Loaded">
+              <i class="fas fa-download"></i>
+            </button>
+            <button type="button" class="program-toggle {{#if program.system.isActive}}active{{/if}}" 
+                    data-program-id="{{program._id}}" data-toggle="active" title="Toggle Active">
+              <i class="fas fa-play"></i>
+            </button>
+          </div>
+          <div class="program-actions">
+            <button type="button" class="item-delete" data-item-id="{{program._id}}" title="Delete Program">
+              <i class="fas fa-trash"></i>
+            </button>
+          </div>
+        </div>
+        {{/each}}
+        
+        {{#unless programs}}
+        <div class="no-programs">
+          <p>No programs installed. Add programs to get started.</p>
+        </div>
+        {{/unless}}
+      </div>
+    </div>
+
+    {{!-- Notes Tab --}}
+    <div class="tab notes" data-group="primary" data-tab="notes">
+      <textarea name="system.biography" rows="20" placeholder="Cyberdeck notes and details...">{{system.biography}}</textarea>
+    </div>
+
+  </section>
+</form>

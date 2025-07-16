@@ -12,12 +12,8 @@
       "name": "Dean Petty"
     }
   ],
-  "esmodules": [
-    "scripts/shadowrun2e.js"
-  ],
-  "styles": [
-    "styles/shadowrun2e.css"
-  ],
+  "esmodules": ["scripts/shadowrun2e.js"],
+  "styles": ["styles/shadowrun2e.css"],
   "languages": [
     {
       "lang": "en",
@@ -34,7 +30,7 @@
       "system": "shadowrun2e"
     },
     {
-      "name": "bioware", 
+      "name": "bioware",
       "label": "Bioware",
       "path": "packs/bioware.db",
       "type": "Item",
@@ -43,7 +39,7 @@
     {
       "name": "spells",
       "label": "Spells",
-      "path": "packs/spells.db", 
+      "path": "packs/spells.db",
       "type": "Item",
       "system": "shadowrun2e"
     },
@@ -51,7 +47,7 @@
       "name": "adeptpowers",
       "label": "Adept Powers",
       "path": "packs/adeptpowers.db",
-      "type": "Item", 
+      "type": "Item",
       "system": "shadowrun2e"
     },
     {
@@ -59,6 +55,27 @@
       "label": "Skills",
       "path": "packs/skills.db",
       "type": "Item",
+      "system": "shadowrun2e"
+    },
+    {
+      "name": "cyberdecks",
+      "label": "Cyberdecks",
+      "path": "packs/cyberdecks.db",
+      "type": "Actor",
+      "system": "shadowrun2e"
+    },
+    {
+      "name": "vehicles",
+      "label": "Vehicles",
+      "path": "packs/vehicles.db",
+      "type": "Actor",
+      "system": "shadowrun2e"
+    },
+    {
+      "name": "drones",
+      "label": "Drones",
+      "path": "packs/drones.db",
+      "type": "Actor",
       "system": "shadowrun2e"
     }
   ],
