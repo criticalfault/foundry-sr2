@@ -229,4 +229,25 @@ export class SR2Actor extends Actor {
     ChatMessage.create(chatData);
     return { successes: totalSuccesses, ones: totalOnes, isCriticalFailure: isCriticalFailure };
   }
+
+  /**
+   * Prepare a data object which is passed to any Roll formulas
+   */
+  getRollData() {
+    const data = {};
+
+    // Copy the actor's system data
+    if (this.system) {
+      data.actor = foundry.utils.deepClone(this.system);
+    }
+
+    // Add level for easier access, or fall back to 0
+    if (this.system.details?.level) {
+      data.lvl = this.system.details.level;
+    } else {
+      data.lvl = 0;
+    }
+
+    return data;
+  }
 }

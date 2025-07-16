@@ -51,7 +51,7 @@ export class SR2ActorSheet extends ActorSheet {
     const skills = [];
 
     for (let i of context.items) {
-      i.img = i.img || DEFAULT_TOKEN;
+      i.img = i.img || "icons/svg/item-bag.svg";
       
       if (i.type === 'skill') {
         skills.push(i);
@@ -288,7 +288,7 @@ export class SR2ActorSheet extends ActorSheet {
     const itemType = event.currentTarget.dataset.type;
     
     // Import the item browser dynamically
-    const { SR2ItemBrowser } = await import("../item-browser.js");
+    const { SR2ItemBrowser } = await import("/systems/shadowrun2e/scripts/item-browser.js");
     const browser = new SR2ItemBrowser(this.actor, itemType);
     browser.render(true);
   }

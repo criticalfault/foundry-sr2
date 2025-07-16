@@ -9,11 +9,15 @@
   },
   "authors": [
     {
-      "name": "Dean Petty"
+      "name": "Your Name"
     }
   ],
-  "esmodules": ["scripts/shadowrun2e.js"],
-  "styles": ["styles/shadowrun2e.css"],
+  "esmodules": [
+    "scripts/shadowrun2e.js"
+  ],
+  "styles": [
+    "styles/shadowrun2e.css"
+  ],
   "languages": [
     {
       "lang": "en",
@@ -26,7 +30,7 @@
   "primaryTokenAttribute": "health",
   "secondaryTokenAttribute": "stun",
   "url": "https://github.com/criticalfault/foundry-sr2",
-  "manifest": "https://github.com/criticalfault/foundry-sr2/releases/latest/download/module.json",
+  "manifest": "https://github.com/criticalfault/foundry-sr2/releases/latest/download/system.json",
   "download": "https://github.com/criticalfault/foundry-sr2/releases/latest/download/foundry-sr2.zip",
   "license": "LICENSE",
   "readme": "README.md"
