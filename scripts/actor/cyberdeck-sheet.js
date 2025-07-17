@@ -85,15 +85,37 @@ export class SR2CyberdeckSheet extends ActorSheet {
     // Delete Program
     html.find('.item-delete').click(ev => {
       ev.preventDefault();
-      const li = $(ev.currentTarget).parents(".program-row, .item");
-      const itemId = li.data("itemId") || li.data("item-id");
-      const item = this.actor.items.get(itemId);
-      if (item) {
-        const confirmDelete = confirm(`Delete ${item.name}?`);
-        if (confirmDelete) {
-          item.delete();
-          li.slideUp(200, () => this.render(false));
+      ev.stopPropagation();
+      
+      try {
+        // Get item ID from button's data attribute or parent element
+        const button = $(ev.currentTarget);
+        const itemId = button.data("itemId") || button.data("item-id") || 
+                      button.parents(".program-row, .item, .item-row").data("itemId") || 
+                      button.parents(".program-row, .item, .item-row").data("item-id");
+        
+        if (!itemId) {
+          console.warn("SR2E | No item ID found for delete operation");
+          return;
         }
+        
+        const item = this.actor.items.get(itemId);
+        if (item) {
+          // Confirm deletion
+          const confirmDelete = game.settings.get("core", "noCanvas") || 
+                               confirm(`Delete ${item.name}?`);
+          
+          if (confirmDelete) {
+            item.delete();
+            const row = button.parents(".program-row, .item, .item-row");
+            row.slideUp(200, () => this.render(false));
+          }
+        } else {
+          console.warn(`SR2E | Item with ID ${itemId} not found`);
+        }
+      } catch (error) {
+        console.error("SR2E | Error deleting item:", error);
+        ui.notifications.error("Failed to delete item. Check console for details.");
       }
     });
 

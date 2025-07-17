@@ -5147,4 +5147,121 @@
 .shadowrun2e .notification.success {
   border-left-color: var(--cyber-accent-green);
   box-shadow: var(--cyber-glow-green);
+}/* 
+===== CYBERPUNK DELETE BUTTON FIXES ===== */
+.shadowrun2e .item-delete,
+.shadowrun2e button.item-delete {
+  background: linear-gradient(135deg, var(--cyber-bg-secondary), var(--cyber-bg-tertiary));
+  color: var(--cyber-accent-red);
+  border: 1px solid var(--cyber-accent-red);
+  padding: 4px 8px;
+  cursor: pointer;
+  font-size: 10px;
+  font-weight: bold;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  transition: all 0.3s ease;
+  position: relative;
+  z-index: 10;
+  margin: 2px;
+}
+
+.shadowrun2e .item-delete:hover,
+.shadowrun2e button.item-delete:hover {
+  background: linear-gradient(135deg, var(--cyber-bg-tertiary), var(--cyber-bg-secondary));
+  color: var(--cyber-accent-red);
+  border-color: var(--cyber-accent-red);
+  box-shadow: var(--cyber-glow-red);
+  transform: translateY(-1px);
+}
+
+.shadowrun2e .item-delete:active,
+.shadowrun2e button.item-delete:active {
+  transform: translateY(0);
+  box-shadow: inset 0 2px 4px rgba(255, 0, 64, 0.3);
+}
+
+/* Ensure delete buttons don't get cut off or hidden */
+.shadowrun2e .item-actions {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 4px;
+  min-height: 32px;
+  position: relative;
+  z-index: 5;
+}
+
+.shadowrun2e .item-actions button {
+  flex-shrink: 0;
+  min-width: 28px;
+  height: 28px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* Fix for vehicle sheet specific styling */
+.shadowrun2e.vehicle .item-actions {
+  padding: 4px;
+}
+
+.shadowrun2e.vehicle .item-delete {
+  min-width: 32px;
+  height: 32px;
+}
+
+/* Fix for cyberdeck sheet specific styling */
+.shadowrun2e.cyberdeck .program-actions {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 4px;
+  min-height: 32px;
+}
+
+.shadowrun2e.cyberdeck .program-actions button {
+  flex-shrink: 0;
+  min-width: 28px;
+  height: 28px;
+}
+
+/* Ensure proper stacking context for all interactive elements */
+.shadowrun2e .item-row,
+.shadowrun2e .program-row {
+  position: relative;
+  z-index: 1;
+}
+
+.shadowrun2e .item-row:hover,
+.shadowrun2e .program-row:hover {
+  z-index: 2;
+}
+
+/* Fix any potential overflow issues */
+.shadowrun2e .items-list,
+.shadowrun2e .programs-list {
+  overflow: visible;
+}
+
+.shadowrun2e .item-row,
+.shadowrun2e .program-row {
+  overflow: visible;
+}
+
+/* Ensure buttons are always clickable */
+.shadowrun2e button,
+.shadowrun2e .button,
+.shadowrun2e input[type="button"],
+.shadowrun2e input[type="submit"] {
+  pointer-events: auto;
+  position: relative;
+  z-index: 10;
+}
+
+/* Fix for any potential CSS conflicts */
+.shadowrun2e .item-delete {
+  display: inline-flex !important;
+  visibility: visible !important;
+  opacity: 1 !important;
 }

@@ -208,8 +208,11 @@ export class SR2ActorSheet extends ActorSheet {
       ev.stopPropagation();
       
       try {
-        const li = $(ev.currentTarget).parents(".item, .skill-item, .item-row");
-        const itemId = li.data("itemId") || li.data("item-id");
+        // Get item ID from button's data attribute or parent element
+        const button = $(ev.currentTarget);
+        const itemId = button.data("itemId") || button.data("item-id") || 
+                      button.parents(".item, .skill-item, .item-row").data("itemId") || 
+                      button.parents(".item, .skill-item, .item-row").data("item-id");
         
         if (!itemId) {
           console.warn("SR2E | No item ID found for delete operation");
@@ -224,7 +227,8 @@ export class SR2ActorSheet extends ActorSheet {
           
           if (confirmDelete) {
             item.delete();
-            li.slideUp(200, () => this.render(false));
+            const row = button.parents(".item, .skill-item, .item-row");
+            row.slideUp(200, () => this.render(false));
           }
         } else {
           console.warn(`SR2E | Item with ID ${itemId} not found`);

@@ -96,10 +96,39 @@ export class SR2VehicleSheet extends ActorSheet {
 
     // Delete Item
     html.find('.item-delete').click(ev => {
-      const li = $(ev.currentTarget).parents(".item");
-      const item = this.actor.items.get(li.data("itemId"));
-      item.delete();
-      li.slideUp(200, () => this.render(false));
+      ev.preventDefault();
+      ev.stopPropagation();
+      
+      try {
+        // Get item ID from button's data attribute or parent element
+        const button = $(ev.currentTarget);
+        const itemId = button.data("itemId") || button.data("item-id") || 
+                      button.parents(".item, .item-row").data("itemId") || 
+                      button.parents(".item, .item-row").data("item-id");
+        
+        if (!itemId) {
+          console.warn("SR2E | No item ID found for delete operation");
+          return;
+        }
+        
+        const item = this.actor.items.get(itemId);
+        if (item) {
+          // Confirm deletion
+          const confirmDelete = game.settings.get("core", "noCanvas") || 
+                               confirm(`Delete ${item.name}?`);
+          
+          if (confirmDelete) {
+            item.delete();
+            const row = button.parents(".item, .item-row");
+            row.slideUp(200, () => this.render(false));
+          }
+        } else {
+          console.warn(`SR2E | Item with ID ${itemId} not found`);
+        }
+      } catch (error) {
+        console.error("SR2E | Error deleting item:", error);
+        ui.notifications.error("Failed to delete item. Check console for details.");
+      }
     });
 
     // Repair damage
