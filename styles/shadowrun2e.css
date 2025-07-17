@@ -2935,6 +2935,98 @@
 .shadowrun2e.spirit .spirit-type .fa-user { color: #f1c40f; }
 .shadowrun2e.spirit .spirit-type .fa-skull-crossbones { color: #8e44ad; }
 
+/* Character Import Styles */
+.shadowrun2e.character-import {
+  background: #f8f9fa;
+  color: #333;
+}
+
+.shadowrun2e.character-import .import-header {
+  text-align: center;
+  margin-bottom: 20px;
+  padding-bottom: 15px;
+  border-bottom: 2px solid #007acc;
+}
+
+.shadowrun2e.character-import .import-header h2 {
+  margin: 0 0 10px 0;
+  color: #007acc;
+  font-size: 24px;
+}
+
+.shadowrun2e.character-import .import-header p {
+  margin: 0;
+  color: #666;
+  font-style: italic;
+}
+
+.shadowrun2e.character-import .import-info {
+  background: white;
+  border: 1px solid #ddd;
+  border-radius: 6px;
+  padding: 20px;
+  margin-bottom: 20px;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}
+
+.shadowrun2e.character-import .import-info h3 {
+  margin: 0 0 15px 0;
+  color: #333;
+  border-bottom: 1px solid #eee;
+  padding-bottom: 8px;
+}
+
+.shadowrun2e.character-import .import-info ul {
+  margin: 0;
+  padding-left: 20px;
+}
+
+.shadowrun2e.character-import .import-info li {
+  margin-bottom: 8px;
+  color: #555;
+}
+
+.shadowrun2e.character-import .import-actions {
+  text-align: center;
+  margin-bottom: 20px;
+}
+
+.shadowrun2e.character-import .import-character {
+  background: linear-gradient(135deg, #007acc, #0056b3);
+  color: white;
+  border: none;
+  padding: 15px 30px;
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 16px;
+  font-weight: bold;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin: 0 auto;
+  transition: all 0.3s ease;
+  box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+}
+
+.shadowrun2e.character-import .import-character:hover {
+  background: linear-gradient(135deg, #0056b3, #004085);
+  transform: translateY(-2px);
+  box-shadow: 0 6px 12px rgba(0,0,0,0.3);
+}
+
+.shadowrun2e.character-import .import-footer {
+  text-align: center;
+  color: #666;
+  font-style: italic;
+  border-top: 1px solid #ddd;
+  padding-top: 15px;
+}
+
+.shadowrun2e.character-import .import-footer p {
+  margin: 0;
+  font-size: 14px;
+}
+
 /* Dice Roll Styling */
 .shadowrun2e .dice-roll {
   border: 1px solid #782e22;

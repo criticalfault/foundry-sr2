@@ -157,10 +157,13 @@ export class SR2ActorSheet extends ActorSheet {
 
     // Delete Inventory Item
     html.find('.item-delete').click(ev => {
-      const li = $(ev.currentTarget).parents(".item");
-      const item = this.actor.items.get(li.data("itemId"));
-      item.delete();
-      li.slideUp(200, () => this.render(false));
+      const li = $(ev.currentTarget).parents(".item, .skill-item");
+      const itemId = li.data("itemId") || li.data("item-id");
+      const item = this.actor.items.get(itemId);
+      if (item) {
+        item.delete();
+        li.slideUp(200, () => this.render(false));
+      }
     });
 
     // Active Effect management

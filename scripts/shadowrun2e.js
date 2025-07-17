@@ -13,6 +13,7 @@ import { SR2ItemSheet } from "./item/item-sheet.js";
 import { initializeInitiativeTracker } from "./initiative-tracker.js";
 import { SR2ItemBrowser } from "./item-browser.js";
 import { SR2DataImporter } from "./data-importer.js";
+import { SR2CharacterImporter } from "./character-importer.js";
 
 /* -------------------------------------------- */
 /*  Foundry VTT Initialization                  */
@@ -163,6 +164,15 @@ function registerSystemSettings() {
         type: DataImportConfig,
         restricted: true
     });
+
+    game.settings.registerMenu("shadowrun2e", "characterImport", {
+        name: "Import Character",
+        label: "Import Character",
+        hint: "Import a character from JSON file",
+        icon: "fas fa-user-plus",
+        type: CharacterImportConfig,
+        restricted: false
+    });
 }
 
 /* -------------------------------------------- */
@@ -179,6 +189,7 @@ function preloadHandlebarsTemplates() {
         "systems/shadowrun2e/templates/apps/initiative-tracker.html",
         "systems/shadowrun2e/templates/apps/item-browser.html",
         "systems/shadowrun2e/templates/apps/data-import.html",
+        "systems/shadowrun2e/templates/apps/character-import.html",
         "systems/shadowrun2e/templates/chat/dice-roll.html"
     ];
 
@@ -332,6 +343,38 @@ class DataImportConfig extends FormApplication {
                 await Actor.deleteDocuments(documents.map(d => d.id), { pack: pack.collection });
             }
         }
+    }
+}
+
+/* -------------------------------------------- */
+/*  Character Import Configuration              */
+/* -------------------------------------------- */
+
+class CharacterImportConfig extends FormApplication {
+    static get defaultOptions() {
+        return foundry.utils.mergeObject(super.defaultOptions, {
+            id: "sr2-character-import",
+            title: "Import Shadowrun 2E Character",
+            template: "systems/shadowrun2e/templates/apps/character-import.html",
+            width: 400,
+            height: 250,
+            classes: ["shadowrun2e", "character-import"]
+        });
+    }
+
+    getData() {
+        return {};
+    }
+
+    activateListeners(html) {
+        super.activateListeners(html);
+        html.find('.import-character').click(this._onImportCharacter.bind(this));
+    }
+
+    async _onImportCharacter(event) {
+        event.preventDefault();
+        this.close();
+        SR2CharacterImporter.showImportDialog();
     }
 }
 
