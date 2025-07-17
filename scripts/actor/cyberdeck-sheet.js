@@ -90,12 +90,22 @@ export class SR2CyberdeckSheet extends ActorSheet {
       try {
         // Get item ID from button's data attribute or parent element
         const button = $(ev.currentTarget);
-        const itemId = button.data("itemId") || button.data("item-id") || 
-                      button.parents(".program-row, .item, .item-row").data("itemId") || 
-                      button.parents(".program-row, .item, .item-row").data("item-id");
+        
+        // Try multiple ways to get the item ID
+        let itemId = button.attr("data-item-id") || 
+                     button.data("item-id") || 
+                     button.data("itemId") ||
+                     button.parents(".program-row, .item-row").attr("data-item-id") ||
+                     button.parents(".program-row, .item-row").data("item-id") ||
+                     button.parents(".program-row, .item-row").data("itemId");
+        
+        console.log("SR2E | Delete program button clicked, itemId:", itemId);
+        console.log("SR2E | Button data attributes:", button.get(0).dataset);
+        console.log("SR2E | Available programs:", this.actor.items.filter(i => i.type === 'program').map(i => ({id: i.id, name: i.name})));
         
         if (!itemId) {
           console.warn("SR2E | No item ID found for delete operation");
+          ui.notifications.error("Could not find program to delete. Check console for details.");
           return;
         }
         
@@ -106,16 +116,19 @@ export class SR2CyberdeckSheet extends ActorSheet {
                                confirm(`Delete ${item.name}?`);
           
           if (confirmDelete) {
-            item.delete();
+            await item.delete();
             const row = button.parents(".program-row, .item, .item-row");
             row.slideUp(200, () => this.render(false));
+            ui.notifications.info(`${item.name} deleted successfully.`);
           }
         } else {
-          console.warn(`SR2E | Item with ID ${itemId} not found`);
+          console.warn(`SR2E | Program with ID ${itemId} not found in actor items`);
+          console.warn("SR2E | Available program IDs:", this.actor.items.filter(i => i.type === 'program').map(i => i.id));
+          ui.notifications.error(`Could not find program with ID: ${itemId}`);
         }
       } catch (error) {
-        console.error("SR2E | Error deleting item:", error);
-        ui.notifications.error("Failed to delete item. Check console for details.");
+        console.error("SR2E | Error deleting program:", error);
+        ui.notifications.error("Failed to delete program. Check console for details.");
       }
     });
 

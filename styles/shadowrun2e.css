@@ -884,7 +884,6 @@
 
 /* Item Browser Styles */
 .item-browser {
-  padding: 15px;
   background: #f8f9fa;
 }
 
@@ -2242,6 +2241,10 @@
 .shadowrun2e.vehicle .sheet-tabs {
   background: #34495e;
   border-radius: 6px 6px 0 0;
+}
+
+header.window-header.flexrow.draggable.resizable {
+  background: black;
 }
 
 .shadowrun2e.vehicle .sheet-tabs .item {
