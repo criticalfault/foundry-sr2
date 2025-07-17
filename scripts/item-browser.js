@@ -33,7 +33,8 @@ export class SR2ItemBrowser extends Application {
       cyberware: "Cyberware Browser",
       bioware: "Bioware Browser", 
       spell: "Spell Browser",
-      adeptpower: "Adept Power Browser"
+      adeptpower: "Adept Power Browser",
+      totem: "Totem Browser"
     };
     return typeNames[this.itemType] || "Item Browser";
   }
@@ -109,6 +110,12 @@ export class SR2ItemBrowser extends Application {
           response = await fetch('systems/shadowrun2e/data/AdeptPowers.json');
           data = await response.json();
           this.items = this._processAdeptPowerData(data);
+          break;
+          
+        case 'totem':
+          response = await fetch('systems/shadowrun2e/data/totems.json');
+          data = await response.json();
+          this.items = this._processTotemData(data);
           break;
       }
     } catch (error) {
@@ -209,6 +216,56 @@ export class SR2ItemBrowser extends Application {
   }
 
   /**
+   * Process totem data from JSON
+   */
+  _processTotemData(data) {
+    const items = [];
+    
+    // Process all totems from the TOTEMS array
+    if (data.TOTEMS && Array.isArray(data.TOTEMS)) {
+      for (const totem of data.TOTEMS) {
+        items.push({
+          name: totem.name,
+          category: this._getTotemCategory(totem),
+          environment: totem.environment,
+          advantages: totem.advantages,
+          disadvantages: totem.disadvantages,
+          bookPage: "SR2E Core",
+          type: 'totem'
+        });
+      }
+    }
+    
+    return items;
+  }
+
+  /**
+   * Determine totem category based on name and environment
+   */
+  _getTotemCategory(totem) {
+    const name = totem.name.toLowerCase();
+    const env = totem.environment.toLowerCase();
+    
+    // Elemental totems
+    if (['moon', 'mountain', 'oak', 'sea', 'stream', 'sun', 'wind'].includes(name)) {
+      return "Elemental Totems";
+    }
+    
+    // Urban totems
+    if (env.includes('urban') || ['cat', 'dog', 'rat', 'gator'].includes(name)) {
+      return "Urban Totems";
+    }
+    
+    // Voodoo totems
+    if (['azaca', 'damballah', 'erzulie', 'ghede', 'legba', 'obatala', 'ogoun', 'shango'].includes(name)) {
+      return "Voodoo Totems";
+    }
+    
+    // Default to Animal Totems
+    return "Animal Totems";
+  }
+
+  /**
    * Get available categories for filtering
    */
   _getCategories() {
@@ -263,6 +320,13 @@ export class SR2ItemBrowser extends Application {
     
     if (!itemData) return;
 
+    await this.addItem(itemData);
+  }
+
+  /**
+   * Add item to character (can be overridden for custom behavior)
+   */
+  async addItem(itemData) {
     // Create the item data for Foundry
     const newItemData = {
       name: itemData.name,
@@ -271,11 +335,13 @@ export class SR2ItemBrowser extends Application {
     };
 
     try {
-      await this.actor.createEmbeddedDocuments("Item", [newItemData]);
+      const createdItems = await this.actor.createEmbeddedDocuments("Item", [newItemData]);
       ui.notifications.info(`Added ${itemData.name} to ${this.actor.name}`);
+      return createdItems[0];
     } catch (error) {
       console.error("Failed to add item:", error);
       ui.notifications.error("Failed to add item to character");
+      return null;
     }
   }
 
@@ -328,6 +394,17 @@ export class SR2ItemBrowser extends Application {
           maxLevel: 6,
           mods: itemData.mods,
           notes: itemData.notes
+        };
+        
+      case 'totem':
+        return {
+          ...baseData,
+          environment: itemData.environment,
+          advantages: itemData.advantages,
+          disadvantages: itemData.disadvantages,
+          isSelected: false,
+          quantity: 1,
+          weight: 0
         };
     }
     

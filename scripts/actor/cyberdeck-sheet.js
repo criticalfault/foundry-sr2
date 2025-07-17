@@ -48,13 +48,20 @@ export class SR2CyberdeckSheet extends ActorSheet {
 
     context.programs = programs;
     
+    // Calculate program memory sizes dynamically
+    programs.forEach(program => {
+      const rating = program.system.rating || 1;
+      const multiplier = program.system.multiplier || 1;
+      program.system.calculatedSize = rating * rating * multiplier;
+    });
+
     // Calculate memory and storage usage
     context.memoryUsed = programs
       .filter(p => p.system.isLoaded)
-      .reduce((total, p) => total + (p.system.memorySize || 0), 0);
+      .reduce((total, p) => total + (p.system.calculatedSize || p.system.memorySize || 0), 0);
     
     context.storageUsed = programs
-      .reduce((total, p) => total + (p.system.memorySize || 0), 0);
+      .reduce((total, p) => total + (p.system.calculatedSize || p.system.memorySize || 0), 0);
     
     // Update the actor's memory and storage usage
     context.system.memory.used = context.memoryUsed;
@@ -77,14 +84,27 @@ export class SR2CyberdeckSheet extends ActorSheet {
 
     // Delete Program
     html.find('.item-delete').click(ev => {
-      const li = $(ev.currentTarget).parents(".item");
-      const item = this.actor.items.get(li.data("itemId"));
-      item.delete();
-      li.slideUp(200, () => this.render(false));
+      ev.preventDefault();
+      const li = $(ev.currentTarget).parents(".program-row, .item");
+      const itemId = li.data("itemId") || li.data("item-id");
+      const item = this.actor.items.get(itemId);
+      if (item) {
+        const confirmDelete = confirm(`Delete ${item.name}?`);
+        if (confirmDelete) {
+          item.delete();
+          li.slideUp(200, () => this.render(false));
+        }
+      }
     });
 
     // Toggle program loaded/active status
     html.find('.program-toggle').click(this._onProgramToggle.bind(this));
+    
+    // Program rating change - recalculate size
+    html.find('input[name*="system.rating"]').change(this._onProgramRatingChange.bind(this));
+    
+    // Browse programs
+    html.find('.browse-items').click(this._onBrowsePrograms.bind(this));
     
     // Repair damage
     html.find('.repair-damage').click(this._onRepairDamage.bind(this));
@@ -141,6 +161,53 @@ export class SR2CyberdeckSheet extends ActorSheet {
 
     await program.update(updateData);
     this.render(false);
+  }
+
+  /**
+   * Handle program rating change - recalculate memory size
+   */
+  async _onProgramRatingChange(event) {
+    event.preventDefault();
+    const input = event.currentTarget;
+    const programId = input.name.match(/items\.(.+?)\.system\.rating/)[1];
+    const program = this.actor.items.get(programId);
+    
+    if (!program) return;
+
+    const newRating = parseInt(input.value) || 1;
+    const multiplier = program.system.multiplier || 1;
+    const newMemorySize = newRating * newRating * multiplier;
+
+    // Update both rating and calculated memory size
+    await program.update({
+      'system.rating': newRating,
+      'system.memorySize': newMemorySize
+    });
+
+    // Re-render to update memory usage displays
+    this.render(false);
+  }
+
+  /**
+   * Handle browsing programs and VR programs
+   */
+  async _onBrowsePrograms(event) {
+    event.preventDefault();
+    const programType = event.currentTarget.dataset.type;
+
+    // Import the item browser dynamically
+    const { SR2ItemBrowser } = await import("/systems/shadowrun2e/scripts/item-browser.js");
+    
+    // Determine which compendium to browse
+    let compendiumName;
+    if (programType === 'vrprogram') {
+      compendiumName = 'shadowrun2e.vrprograms';
+    } else {
+      compendiumName = 'shadowrun2e.programs';
+    }
+    
+    const browser = new SR2ItemBrowser(this.actor, 'program', compendiumName);
+    browser.render(true);
   }
 
   /**

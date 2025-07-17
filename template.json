@@ -232,7 +232,7 @@
     }
   },
   "Item": {
-    "types": ["skill", "weapon", "armor", "gear", "cyberware", "bioware", "spell", "adeptpower", "contact", "program"],
+    "types": ["skill", "weapon", "armor", "gear", "cyberware", "bioware", "spell", "adeptpower", "contact", "program", "totem"],
     "templates": {
       "base": {
         "description": "",
@@ -265,6 +265,7 @@
         "type": ""
       },
       "recoil": 0,
+      "rangeType": "",
       "equipped": false
     },
     "armor": {
@@ -330,12 +331,20 @@
       "templates": ["base"],
       "rating": 1,
       "type": "utility",
+      "multiplier": 1,
       "memorySize": 1,
       "loadTime": 1,
       "isActive": false,
       "isLoaded": false,
       "availability": "",
       "streetIndex": 1.0
+    },
+    "totem": {
+      "templates": ["base"],
+      "environment": "",
+      "advantages": "",
+      "disadvantages": "",
+      "isSelected": false
     }
   }
 }

@@ -2,7 +2,7 @@
   "id": "shadowrun2e",
   "title": "Shadowrun 2nd Edition",
   "description": "A comprehensive system for playing Shadowrun 2nd Edition in Foundry VTT",
-  "version": "1.0.9",
+  "version": "1.0.10",
   "compatibility": {
     "minimum": "11",
     "verified": "12"
@@ -77,6 +77,34 @@
       "path": "packs/drones.db",
       "type": "Actor",
       "system": "shadowrun2e"
+    },
+    {
+      "name": "programs",
+      "label": "Programs",
+      "path": "packs/programs.db",
+      "type": "Item",
+      "system": "shadowrun2e"
+    },
+    {
+      "name": "vrprograms",
+      "label": "VR Programs",
+      "path": "packs/vrprograms.db",
+      "type": "Item",
+      "system": "shadowrun2e"
+    },
+    {
+      "name": "gear",
+      "label": "Gear & Equipment",
+      "path": "packs/gear.db",
+      "type": "Item",
+      "system": "shadowrun2e"
+    },
+    {
+      "name": "totems",
+      "label": "Totems",
+      "path": "packs/totems.db",
+      "type": "Item",
+      "system": "shadowrun2e"
     }
   ],
   "gridDistance": 1,
@@ -85,7 +113,7 @@
   "secondaryTokenAttribute": "stun",
   "url": "https://github.com/criticalfault/foundry-sr2",
   "manifest": "https://raw.githubusercontent.com/criticalfault/foundry-sr2/main/system.json",
-  "download": "https://github.com/criticalfault/foundry-sr2/archive/refs/tags/v1.0.9.zip",
+  "download": "https://github.com/criticalfault/foundry-sr2/archive/refs/tags/v1.0.10.zip",
   "license": "LICENSE",
   "readme": "README.md"
 }

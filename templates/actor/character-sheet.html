@@ -262,7 +262,252 @@
     </div>
 
     <div class="tab gear" data-group="primary" data-tab="gear">
-      <p>Gear tab content coming soon...</p>
+      
+      {{!-- Weapons Section --}}
+      <div class="items-header">
+        <h3>Weapons</h3>
+        <div class="item-controls">
+          <button class="browse-items" data-type="weapon" title="Browse Weapons">
+            <i class="fas fa-search"></i> Browse Weapons
+          </button>
+          <a class="item-control item-create" title="Add Custom Weapon" data-type="weapon">
+            <i class="fas fa-plus"></i> Add Custom
+          </a>
+        </div>
+      </div>
+
+      <div class="items-list">
+        <div class="items-table-header">
+          <div class="item-name">Weapon</div>
+          <div class="item-damage">Damage</div>
+          <div class="item-conceal">Conceal</div>
+          <div class="item-ammo">Ammo</div>
+          <div class="item-equipped">Equipped</div>
+          <div class="item-actions">Actions</div>
+        </div>
+        
+        {{#each weapons as |item id|}}
+        <div class="item-row" data-item-id="{{item._id}}">
+          <div class="item-name">
+            <img src="{{item.img}}" title="{{item.name}}" width="24" height="24"/>
+            <span>{{item.name}}</span>
+          </div>
+          <div class="item-damage">
+            <input type="text" name="items.{{item._id}}.system.damage" value="{{item.system.damage}}" placeholder="e.g. 6M"/>
+          </div>
+          <div class="item-conceal">
+            <input type="number" name="items.{{item._id}}.system.concealability" value="{{item.system.concealability}}" data-dtype="Number" min="0"/>
+          </div>
+          <div class="item-ammo">
+            <input type="number" name="items.{{item._id}}.system.ammo.current" value="{{item.system.ammo.current}}" data-dtype="Number" min="0"/>
+            <span>/</span>
+            <input type="number" name="items.{{item._id}}.system.ammo.max" value="{{item.system.ammo.max}}" data-dtype="Number" min="0"/>
+          </div>
+          <div class="item-equipped">
+            <input type="checkbox" name="items.{{item._id}}.system.equipped" {{#if item.system.equipped}}checked{{/if}}/>
+          </div>
+          <div class="item-actions">
+            <button class="weapon-attack" data-item-id="{{item._id}}" title="Attack with Weapon">
+              <i class="fas fa-crosshairs"></i>
+            </button>
+            <button class="item-delete" data-item-id="{{item._id}}" title="Delete Weapon">
+              <i class="fas fa-trash"></i>
+            </button>
+          </div>
+        </div>
+        {{/each}}
+        
+        {{#unless weapons}}
+        <div class="no-items">
+          <p>No weapons equipped. Browse the weapon catalog to add weapons.</p>
+        </div>
+        {{/unless}}
+      </div>
+
+      {{!-- Armor Section --}}
+      <div class="items-header">
+        <h3>Armor</h3>
+        <div class="item-controls">
+          <button class="browse-items" data-type="armor" title="Browse Armor">
+            <i class="fas fa-search"></i> Browse Armor
+          </button>
+          <a class="item-control item-create" title="Add Custom Armor" data-type="armor">
+            <i class="fas fa-plus"></i> Add Custom
+          </a>
+        </div>
+      </div>
+
+      <div class="items-list">
+        <div class="items-table-header">
+          <div class="item-name">Armor</div>
+          <div class="item-rating">Rating</div>
+          <div class="item-ballistic">Ballistic</div>
+          <div class="item-impact">Impact</div>
+          <div class="item-conceal">Conceal</div>
+          <div class="item-equipped">Equipped</div>
+          <div class="item-actions">Actions</div>
+        </div>
+        
+        {{#each armor as |item id|}}
+        <div class="item-row" data-item-id="{{item._id}}">
+          <div class="item-name">
+            <img src="{{item.img}}" title="{{item.name}}" width="24" height="24"/>
+            <span>{{item.name}}</span>
+          </div>
+          <div class="item-rating">
+            <input type="number" name="items.{{item._id}}.system.rating" value="{{item.system.rating}}" data-dtype="Number" min="0"/>
+          </div>
+          <div class="item-ballistic">
+            <input type="number" name="items.{{item._id}}.system.ballistic" value="{{item.system.ballistic}}" data-dtype="Number" min="0"/>
+          </div>
+          <div class="item-impact">
+            <input type="number" name="items.{{item._id}}.system.impact" value="{{item.system.impact}}" data-dtype="Number" min="0"/>
+          </div>
+          <div class="item-conceal">
+            <input type="number" name="items.{{item._id}}.system.concealability" value="{{item.system.concealability}}" data-dtype="Number" min="0"/>
+          </div>
+          <div class="item-equipped">
+            <input type="checkbox" name="items.{{item._id}}.system.equipped" {{#if item.system.equipped}}checked{{/if}}/>
+          </div>
+          <div class="item-actions">
+            <button class="item-delete" data-item-id="{{item._id}}" title="Delete Armor">
+              <i class="fas fa-trash"></i>
+            </button>
+          </div>
+        </div>
+        {{/each}}
+        
+        {{#unless armor}}
+        <div class="no-items">
+          <p>No armor equipped. Browse the armor catalog to add armor.</p>
+        </div>
+        {{/unless}}
+      </div>
+
+      {{!-- General Equipment Section --}}
+      <div class="items-header">
+        <h3>Equipment & Gear</h3>
+        <div class="item-controls">
+          <button class="browse-items" data-type="gear" title="Browse Equipment">
+            <i class="fas fa-search"></i> Browse Equipment
+          </button>
+          <a class="item-control item-create" title="Add Custom Equipment" data-type="gear">
+            <i class="fas fa-plus"></i> Add Custom
+          </a>
+        </div>
+      </div>
+
+      <div class="items-list">
+        <div class="items-table-header">
+          <div class="item-name">Item</div>
+          <div class="item-category">Category</div>
+          <div class="item-rating">Rating</div>
+          <div class="item-quantity">Qty</div>
+          <div class="item-weight">Weight</div>
+          <div class="item-equipped">Equipped</div>
+          <div class="item-actions">Actions</div>
+        </div>
+        
+        {{#each gear as |item id|}}
+        <div class="item-row" data-item-id="{{item._id}}">
+          <div class="item-name">
+            <img src="{{item.img}}" title="{{item.name}}" width="24" height="24"/>
+            <span>{{item.name}}</span>
+          </div>
+          <div class="item-category">
+            <span class="category-tag">{{item.system.category}}</span>
+          </div>
+          <div class="item-rating">
+            <input type="number" name="items.{{item._id}}.system.rating" value="{{item.system.rating}}" data-dtype="Number" min="0"/>
+          </div>
+          <div class="item-quantity">
+            <input type="number" name="items.{{item._id}}.system.quantity" value="{{item.system.quantity}}" data-dtype="Number" min="1"/>
+          </div>
+          <div class="item-weight">
+            <span>{{math item.system.weight '*' item.system.quantity}} kg</span>
+          </div>
+          <div class="item-equipped">
+            <input type="checkbox" name="items.{{item._id}}.system.equipped" {{#if item.system.equipped}}checked{{/if}}/>
+          </div>
+          <div class="item-actions">
+            <button class="item-delete" data-item-id="{{item._id}}" title="Delete Item">
+              <i class="fas fa-trash"></i>
+            </button>
+          </div>
+        </div>
+        {{/each}}
+        
+        {{#unless gear}}
+        <div class="no-items">
+          <p>No equipment carried. Browse the equipment catalog to add gear.</p>
+        </div>
+        {{/unless}}
+      </div>
+
+      {{!-- Range Calculator --}}
+      <div class="range-calculator">
+        <h3>Range Calculator</h3>
+        <div class="range-controls">
+          <div class="weapon-select">
+            <label>Weapon:</label>
+            <select id="range-weapon-select" class="range-weapon-select">
+              <option value="">Select a ranged weapon...</option>
+              {{#each weapons as |weapon|}}
+                {{#if (eq weapon.system.weaponType "ranged")}}
+                  <option value="{{weapon._id}}" data-range-type="{{weapon.system.rangeType}}">{{weapon.name}}</option>
+                {{/if}}
+              {{/each}}
+            </select>
+          </div>
+          <div class="distance-input">
+            <label>Distance to Target:</label>
+            <input type="number" id="range-distance" class="range-distance" min="1" max="10000" placeholder="meters"/>
+            <span>meters</span>
+          </div>
+          <div class="range-result">
+            <label>Range Category:</label>
+            <span id="range-category" class="range-category">-</span>
+            <span id="range-modifier" class="range-modifier"></span>
+          </div>
+        </div>
+        <div class="range-bands" id="range-bands" style="display: none;">
+          <div class="range-band short">
+            <label>Short:</label>
+            <span id="short-range">-</span>m
+          </div>
+          <div class="range-band medium">
+            <label>Medium:</label>
+            <span id="medium-range">-</span>m
+          </div>
+          <div class="range-band long">
+            <label>Long:</label>
+            <span id="long-range">-</span>m
+          </div>
+          <div class="range-band extreme">
+            <label>Extreme:</label>
+            <span id="extreme-range">-</span>m
+          </div>
+        </div>
+      </div>
+
+      {{!-- Gear Summary --}}
+      <div class="gear-summary">
+        <div class="summary-stats">
+          <div class="stat">
+            <label>Total Weight:</label>
+            <span class="total-weight">{{totalWeight}} kg</span>
+          </div>
+          <div class="stat">
+            <label>Total Value:</label>
+            <span class="total-value">¥{{totalValue}}</span>
+          </div>
+          <div class="stat">
+            <label>Items Carried:</label>
+            <span class="total-items">{{totalItems}}</span>
+          </div>
+        </div>
+      </div>
+
     </div>
 
     {{!-- Cyberware Tab --}}
@@ -401,6 +646,43 @@
               <span>{{system.pools.spell.current}} / {{system.pools.spell.max}}</span>
             </div>
           </div>
+
+          {{#if (eq system.magic.tradition "shamanic")}}
+          <div class="totem-section">
+            <h4>Totem Selection</h4>
+            <div class="totem-controls">
+              {{#if selectedTotem}}
+                <div class="totem-display">
+                  <div class="totem-header">
+                    <h5>{{selectedTotem.name}}</h5>
+                    <button type="button" class="change-totem" title="Change Totem">
+                      <i class="fas fa-exchange-alt"></i> Change
+                    </button>
+                  </div>
+                  <div class="totem-details">
+                    <div class="totem-environment">
+                      <strong>Environment:</strong> {{selectedTotem.system.environment}}
+                    </div>
+                    <div class="totem-advantages">
+                      <strong>Advantages:</strong> {{selectedTotem.system.advantages}}
+                    </div>
+                    <div class="totem-disadvantages">
+                      <strong>Disadvantages:</strong> {{selectedTotem.system.disadvantages}}
+                    </div>
+                  </div>
+                </div>
+              {{else}}
+                <div class="no-totem">
+                  <p>No totem selected. Shamans must choose a totem to guide their magic.</p>
+                  <button type="button" class="browse-totems" title="Browse Totems">
+                    <i class="fas fa-search"></i> Browse Totems
+                  </button>
+                </div>
+              {{/if}}
+            </div>
+          </div>
+          {{/if}}
+
           {{/if}}
         </div>
       </div>

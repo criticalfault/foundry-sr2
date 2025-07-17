@@ -129,8 +129,14 @@
           <span class="storage-summary">Storage: {{storageUsed}}/{{system.storage.total}} MP</span>
         </div>
         <div class="item-controls">
-          <a class="item-control item-create" title="Add Program" data-type="program">
-            <i class="fas fa-plus"></i> Add Program
+          <button class="browse-items" data-type="program" title="Browse Programs">
+            <i class="fas fa-search"></i> Browse Programs
+          </button>
+          <button class="browse-items" data-type="vrprogram" title="Browse VR Programs">
+            <i class="fas fa-search"></i> Browse VR Programs
+          </button>
+          <a class="item-control item-create" title="Add Custom Program" data-type="program">
+            <i class="fas fa-plus"></i> Add Custom
           </a>
         </div>
       </div>
@@ -165,9 +171,9 @@
             </select>
           </div>
           <div class="program-size">
-            <input type="number" name="items.{{program._id}}.system.memorySize" value="{{program.system.memorySize}}" 
-                   data-dtype="Number" min="1"/>
+            <span class="calculated-size">{{program.system.calculatedSize}}</span>
             <span>MP</span>
+            <input type="hidden" name="items.{{program._id}}.system.memorySize" value="{{program.system.calculatedSize}}"/>
           </div>
           <div class="program-status">
             <button type="button" class="program-toggle {{#if program.system.isLoaded}}loaded{{/if}}" 

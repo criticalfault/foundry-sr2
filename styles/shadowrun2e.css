@@ -1,10 +1,181 @@
-/* Shadowrun 2E System Styles */
+/* Shadowrun 2E System Styles - Cyberpunk Theme */
 
-/* Initiative Tracker Styles */
+/* ===== CYBERPUNK THEME VARIABLES ===== */
+:root {
+  --cyber-bg-primary: #0a0a0a;
+  --cyber-bg-secondary: #1a1a1a;
+  --cyber-bg-tertiary: #2a2a2a;
+  --cyber-accent-cyan: #00ffff;
+  --cyber-accent-magenta: #ff00ff;
+  --cyber-accent-yellow: #ffff00;
+  --cyber-accent-green: #00ff00;
+  --cyber-accent-red: #ff0040;
+  --cyber-accent-orange: #ff8000;
+  --cyber-text-primary: #e0e0e0;
+  --cyber-text-secondary: #b0b0b0;
+  --cyber-text-muted: #808080;
+  --cyber-border: #333333;
+  --cyber-border-bright: #555555;
+  --cyber-glow-cyan: 0 0 10px rgba(0, 255, 255, 0.5);
+  --cyber-glow-magenta: 0 0 10px rgba(255, 0, 255, 0.5);
+  --cyber-glow-green: 0 0 10px rgba(0, 255, 0, 0.5);
+  --cyber-glow-red: 0 0 10px rgba(255, 0, 64, 0.5);
+}
+
+/* ===== GLOBAL CYBERPUNK OVERRIDES ===== */
+.shadowrun2e {
+  background: var(--cyber-bg-primary);
+  color: var(--cyber-text-primary);
+  font-family: 'Courier New', 'Consolas', monospace;
+  border: 1px solid var(--cyber-border);
+}
+
+.shadowrun2e * {
+  scrollbar-width: thin;
+  scrollbar-color: var(--cyber-accent-cyan) var(--cyber-bg-secondary);
+}
+
+.shadowrun2e *::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+.shadowrun2e *::-webkit-scrollbar-track {
+  background: var(--cyber-bg-secondary);
+}
+
+.shadowrun2e *::-webkit-scrollbar-thumb {
+  background: var(--cyber-accent-cyan);
+  border-radius: 4px;
+}
+
+.shadowrun2e *::-webkit-scrollbar-thumb:hover {
+  background: var(--cyber-accent-magenta);
+}
+
+/* ===== CYBERPUNK BUTTONS ===== */
+.shadowrun2e button,
+.shadowrun2e .button {
+  background: linear-gradient(135deg, var(--cyber-bg-secondary), var(--cyber-bg-tertiary));
+  color: var(--cyber-accent-cyan);
+  border: 1px solid var(--cyber-accent-cyan);
+  padding: 8px 16px;
+  border-radius: 0;
+  cursor: pointer;
+  font-family: inherit;
+  font-weight: bold;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  transition: all 0.3s ease;
+  position: relative;
+  overflow: hidden;
+}
+
+.shadowrun2e button:before,
+.shadowrun2e .button:before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(90deg, transparent, rgba(0, 255, 255, 0.2), transparent);
+  transition: left 0.5s;
+}
+
+.shadowrun2e button:hover,
+.shadowrun2e .button:hover {
+  background: linear-gradient(135deg, var(--cyber-bg-tertiary), var(--cyber-bg-secondary));
+  color: var(--cyber-accent-magenta);
+  border-color: var(--cyber-accent-magenta);
+  box-shadow: var(--cyber-glow-magenta);
+  transform: translateY(-2px);
+}
+
+.shadowrun2e button:hover:before,
+.shadowrun2e .button:hover:before {
+  left: 100%;
+}
+
+.shadowrun2e button:active,
+.shadowrun2e .button:active {
+  transform: translateY(0);
+  box-shadow: var(--cyber-glow-cyan);
+}
+
+/* ===== CYBERPUNK INPUTS ===== */
+.shadowrun2e input,
+.shadowrun2e select,
+.shadowrun2e textarea {
+  background: var(--cyber-bg-secondary);
+  color: var(--cyber-text-primary);
+  border: 1px solid var(--cyber-border);
+  padding: 8px 12px;
+  border-radius: 0;
+  font-family: inherit;
+  transition: all 0.3s ease;
+}
+
+.shadowrun2e input:focus,
+.shadowrun2e select:focus,
+.shadowrun2e textarea:focus {
+  outline: none;
+  border-color: var(--cyber-accent-cyan);
+  box-shadow: var(--cyber-glow-cyan);
+  background: var(--cyber-bg-primary);
+}
+
+.shadowrun2e input::placeholder {
+  color: var(--cyber-text-muted);
+  font-style: italic;
+}
+
+/* ===== CYBERPUNK HEADERS ===== */
+.shadowrun2e h1,
+.shadowrun2e h2,
+.shadowrun2e h3,
+.shadowrun2e h4,
+.shadowrun2e h5,
+.shadowrun2e h6 {
+  color: var(--cyber-accent-cyan);
+  text-transform: uppercase;
+  letter-spacing: 2px;
+  font-weight: bold;
+  text-shadow: var(--cyber-glow-cyan);
+  border-bottom: 1px solid var(--cyber-accent-cyan);
+  padding-bottom: 4px;
+  margin-bottom: 12px;
+}
+
+/* ===== CYBERPUNK PANELS ===== */
+.shadowrun2e .panel,
+.shadowrun2e .section {
+  background: linear-gradient(135deg, var(--cyber-bg-secondary), var(--cyber-bg-primary));
+  border: 1px solid var(--cyber-border);
+  border-left: 3px solid var(--cyber-accent-cyan);
+  padding: 16px;
+  margin: 12px 0;
+  position: relative;
+}
+
+.shadowrun2e .panel:before {
+  content: '';
+  position: absolute;
+  top: 0;
+  right: 0;
+  width: 20px;
+  height: 20px;
+  background: linear-gradient(-45deg, var(--cyber-accent-cyan), transparent);
+  clip-path: polygon(0 0, 100% 0, 100% 100%);
+}
+
+/* ===== CYBERPUNK INITIATIVE TRACKER ===== */
 .initiative-tracker {
-  padding: 10px;
-  background: #f8f8f8;
-  border: 1px solid #ccc;
+  padding: 16px;
+  background: linear-gradient(135deg, var(--cyber-bg-primary), var(--cyber-bg-secondary));
+  border: 2px solid var(--cyber-accent-cyan);
+  border-radius: 0;
+  box-shadow: var(--cyber-glow-cyan);
 }
 
 .tracker-header {
@@ -13,28 +184,59 @@
   align-items: center;
   margin-bottom: 15px;
   padding-bottom: 10px;
-  border-bottom: 2px solid #333;
+  border-bottom: 2px solid var(--cyber-accent-cyan);
+  position: relative;
+}
+
+.tracker-header:after {
+  content: '';
+  position: absolute;
+  bottom: -2px;
+  left: 0;
+  width: 100%;
+  height: 2px;
+  background: linear-gradient(90deg, var(--cyber-accent-cyan), var(--cyber-accent-magenta), var(--cyber-accent-cyan));
+  animation: pulse 2s infinite;
+}
+
+@keyframes pulse {
+
+  0%,
+  100% {
+    opacity: 1;
+  }
+
+  50% {
+    opacity: 0.5;
+  }
 }
 
 .tracker-header h2 {
   margin: 0;
-  color: #333;
+  color: var(--cyber-accent-cyan);
+  text-transform: uppercase;
+  letter-spacing: 2px;
+  text-shadow: var(--cyber-glow-cyan);
 }
 
 .phase-indicator {
   display: flex;
   align-items: center;
-  gap: 5px;
+  gap: 8px;
   font-weight: bold;
+  color: var(--cyber-text-primary);
 }
 
 .phase-number {
-  background: #007acc;
-  color: white;
-  padding: 4px 8px;
-  border-radius: 4px;
-  min-width: 20px;
+  background: linear-gradient(135deg, var(--cyber-accent-cyan), var(--cyber-accent-magenta));
+  color: var(--cyber-bg-primary);
+  padding: 6px 12px;
+  border: 1px solid var(--cyber-accent-cyan);
+  min-width: 30px;
   text-align: center;
+  font-weight: bold;
+  text-transform: uppercase;
+  box-shadow: var(--cyber-glow-cyan);
 }
 
 .tracker-controls {
@@ -45,41 +247,57 @@
 }
 
 .tracker-controls button {
-  padding: 6px 12px;
-  border: 1px solid #ccc;
-  background: #fff;
-  border-radius: 4px;
+  background: linear-gradient(135deg, var(--cyber-bg-secondary), var(--cyber-bg-tertiary));
+  color: var(--cyber-accent-cyan);
+  border: 1px solid var(--cyber-accent-cyan);
+  padding: 8px 12px;
   cursor: pointer;
   display: flex;
   align-items: center;
-  gap: 4px;
-  font-size: 12px;
+  gap: 6px;
+  font-size: 11px;
+  font-weight: bold;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  transition: all 0.3s ease;
+  position: relative;
+  overflow: hidden;
 }
 
 .tracker-controls button:hover {
-  background: #f0f0f0;
+  background: linear-gradient(135deg, var(--cyber-bg-tertiary), var(--cyber-bg-secondary));
+  color: var(--cyber-accent-magenta);
+  border-color: var(--cyber-accent-magenta);
+  box-shadow: var(--cyber-glow-magenta);
+  transform: translateY(-1px);
 }
 
 .tracker-controls button:active {
-  background: #e0e0e0;
+  transform: translateY(0);
+  box-shadow: var(--cyber-glow-cyan);
 }
 
+/* ===== CYBERPUNK COMBATANTS LIST ===== */
 .combatants-list {
-  border: 1px solid #ccc;
-  border-radius: 4px;
+  border: 2px solid var(--cyber-accent-cyan);
+  background: var(--cyber-bg-secondary);
   overflow: hidden;
+  box-shadow: var(--cyber-glow-cyan);
 }
 
 .combatant-header {
   display: grid;
   grid-template-columns: 2fr 1fr 80px 80px 100px;
   gap: 10px;
-  padding: 8px 12px;
-  background: #333;
-  color: white;
+  padding: 12px;
+  background: linear-gradient(135deg, var(--cyber-bg-tertiary), var(--cyber-bg-secondary));
+  color: var(--cyber-accent-cyan);
   font-weight: bold;
-  font-size: 12px;
+  font-size: 11px;
   text-align: center;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  border-bottom: 1px solid var(--cyber-accent-cyan);
 }
 
 .combatant-header .name-col {
@@ -90,10 +308,12 @@
   display: grid;
   grid-template-columns: 2fr 1fr 80px 80px 100px;
   gap: 10px;
-  padding: 8px 12px;
-  border-bottom: 1px solid #eee;
+  padding: 12px;
+  border-bottom: 1px solid var(--cyber-border);
   align-items: center;
-  background: white;
+  background: var(--cyber-bg-primary);
+  color: var(--cyber-text-primary);
+  transition: all 0.3s ease;
 }
 
 .combatant:last-child {
@@ -101,8 +321,10 @@
 }
 
 .combatant.active {
-  background: #e6f3ff;
-  border-left: 4px solid #007acc;
+  background: linear-gradient(135deg, var(--cyber-bg-secondary), var(--cyber-bg-primary));
+  border-left: 4px solid var(--cyber-accent-magenta);
+  box-shadow: var(--cyber-glow-magenta);
+  color: var(--cyber-accent-magenta);
 }
 
 .combatant-info {
@@ -156,7 +378,8 @@
   border-color: #005a99;
 }
 
-.dice-display, .reaction-display {
+.dice-display,
+.reaction-display {
   text-align: center;
   font-weight: bold;
 }
@@ -728,11 +951,11 @@
   border: 1px solid #ddd;
   border-radius: 6px;
   padding: 15px;
-  box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
 }
 
 .item-card:hover {
-  box-shadow: 0 4px 8px rgba(0,0,0,0.15);
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
 }
 
 .item-header {
@@ -1423,7 +1646,7 @@
   font-weight: bold;
 }
 
-.shadowrun2e .items-header > * {
+.shadowrun2e .items-header>* {
   font-size: 14px;
   text-align: center;
 }
@@ -1460,7 +1683,8 @@
   display: flex;
 }
 
-.shadowrun2e .items-list .item-name h3, .shadowrun2e .items-list .item-name h4 {
+.shadowrun2e .items-list .item-name h3,
+.shadowrun2e .items-list .item-name h4 {
   margin: 0;
   white-space: nowrap;
   overflow-x: hidden;
@@ -1544,6 +1768,7 @@
   text-decoration: underline;
   text-shadow: none;
 }
+
 /* Cyberdeck Sheet Styles */
 .shadowrun2e.cyberdeck {
   background: #1a1a1a;
@@ -1709,7 +1934,7 @@
   color: #000;
   font-weight: bold;
   font-size: 12px;
-  text-shadow: 1px 1px 2px rgba(255,255,255,0.8);
+  text-shadow: 1px 1px 2px rgba(255, 255, 255, 0.8);
 }
 
 .shadowrun2e.cyberdeck .damage-monitor {
@@ -1978,9 +2203,9 @@
 }
 
 .shadowrun2e.vehicle .vehiclename input {
-  background: rgba(255,255,255,0.1);
+  background: rgba(255, 255, 255, 0.1);
   color: white;
-  border: 1px solid rgba(255,255,255,0.3);
+  border: 1px solid rgba(255, 255, 255, 0.3);
   font-weight: bold;
   font-size: 18px;
 }
@@ -2002,9 +2227,9 @@
 
 .shadowrun2e.vehicle .vehicle-model input,
 .shadowrun2e.vehicle .vehicle-type select {
-  background: rgba(255,255,255,0.1);
+  background: rgba(255, 255, 255, 0.1);
   color: white;
-  border: 1px solid rgba(255,255,255,0.3);
+  border: 1px solid rgba(255, 255, 255, 0.3);
   padding: 4px 8px;
   border-radius: 4px;
 }
@@ -2055,7 +2280,7 @@
   border: 1px solid #bdc3c7;
   border-radius: 8px;
   padding: 20px;
-  box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
 }
 
 .shadowrun2e.vehicle .stat-group h4 {
@@ -2120,7 +2345,7 @@
   border-radius: 8px;
   padding: 20px;
   margin-bottom: 20px;
-  box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
 }
 
 .shadowrun2e.vehicle .condition-section h4 {
@@ -2205,7 +2430,7 @@
   border: 1px solid #bdc3c7;
   border-radius: 8px;
   padding: 20px;
-  box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
 }
 
 .shadowrun2e.vehicle .info-field {
@@ -2241,7 +2466,7 @@
   border-radius: 8px;
   padding: 20px;
   margin-bottom: 20px;
-  box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
 }
 
 .shadowrun2e.vehicle .items-header {
@@ -2411,7 +2636,7 @@
   border-radius: 8px;
   padding: 20px;
   margin-bottom: 20px;
-  box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
 }
 
 .shadowrun2e.vehicle .notes-section label,
@@ -2442,10 +2667,21 @@
 }
 
 /* Vehicle Type Icons */
-.shadowrun2e.vehicle .vehicle-type .fa-car { color: #e67e22; }
-.shadowrun2e.vehicle .vehicle-type .fa-plane { color: #3498db; }
-.shadowrun2e.vehicle .vehicle-type .fa-ship { color: #2980b9; }
-.shadowrun2e.vehicle .vehicle-type .fa-robot { color: #9b59b6; }
+.shadowrun2e.vehicle .vehicle-type .fa-car {
+  color: #e67e22;
+}
+
+.shadowrun2e.vehicle .vehicle-type .fa-plane {
+  color: #3498db;
+}
+
+.shadowrun2e.vehicle .vehicle-type .fa-ship {
+  color: #2980b9;
+}
+
+.shadowrun2e.vehicle .vehicle-type .fa-robot {
+  color: #9b59b6;
+}
 
 /* Spirit Sheet Styles */
 .shadowrun2e.spirit {
@@ -2459,13 +2695,13 @@
   border-radius: 10px;
   padding: 20px;
   margin-bottom: 15px;
-  box-shadow: 0 4px 8px rgba(0,0,0,0.3);
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
 }
 
 .shadowrun2e.spirit .spiritname input {
-  background: rgba(255,255,255,0.1);
+  background: rgba(255, 255, 255, 0.1);
   color: white;
-  border: 2px solid rgba(255,255,255,0.3);
+  border: 2px solid rgba(255, 255, 255, 0.3);
   font-weight: bold;
   font-size: 20px;
   border-radius: 6px;
@@ -2489,9 +2725,9 @@
 
 .shadowrun2e.spirit .spirit-type select,
 .shadowrun2e.spirit .spirit-summoner input {
-  background: rgba(255,255,255,0.1);
+  background: rgba(255, 255, 255, 0.1);
   color: white;
-  border: 1px solid rgba(255,255,255,0.3);
+  border: 1px solid rgba(255, 255, 255, 0.3);
   padding: 6px 10px;
   border-radius: 4px;
   flex: 1;
@@ -2506,7 +2742,7 @@
 .shadowrun2e.spirit .sheet-tabs {
   background: #0f3460;
   border-radius: 8px 8px 0 0;
-  box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
 }
 
 .shadowrun2e.spirit .sheet-tabs .item {
@@ -2519,7 +2755,7 @@
 .shadowrun2e.spirit .sheet-tabs .item.active {
   background: linear-gradient(135deg, #533483, #7209b7);
   color: white;
-  box-shadow: inset 0 2px 4px rgba(0,0,0,0.2);
+  box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.2);
 }
 
 .shadowrun2e.spirit .sheet-tabs .item:hover {
@@ -2556,7 +2792,7 @@
   padding: 15px;
   text-align: center;
   transition: all 0.3s ease;
-  box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
 }
 
 .shadowrun2e.spirit .attribute:hover {
@@ -2590,9 +2826,9 @@
 }
 
 .shadowrun2e.spirit .attribute input {
-  background: rgba(0,0,0,0.3);
+  background: rgba(0, 0, 0, 0.3);
   color: white;
-  border: 1px solid rgba(255,255,255,0.2);
+  border: 1px solid rgba(255, 255, 255, 0.2);
   padding: 8px;
   border-radius: 4px;
   width: 80px;
@@ -2675,7 +2911,7 @@
   width: 30px;
   height: 30px;
   border: 2px solid #7209b7;
-  background: rgba(0,0,0,0.3);
+  background: rgba(0, 0, 0, 0.3);
   cursor: pointer;
   border-radius: 4px;
   transition: all 0.3s ease;
@@ -2700,9 +2936,9 @@
 }
 
 .shadowrun2e.spirit .damage-controls input {
-  background: rgba(0,0,0,0.3);
+  background: rgba(0, 0, 0, 0.3);
   color: white;
-  border: 1px solid rgba(255,255,255,0.2);
+  border: 1px solid rgba(255, 255, 255, 0.2);
   padding: 6px 10px;
   border-radius: 4px;
   width: 60px;
@@ -2722,7 +2958,7 @@
   border-radius: 4px;
   cursor: pointer;
   transition: all 0.3s ease;
-  box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
 }
 
 .shadowrun2e.spirit .heal-damage:hover {
@@ -2827,9 +3063,9 @@
 }
 
 .shadowrun2e.spirit .services-input input {
-  background: rgba(0,0,0,0.3);
+  background: rgba(0, 0, 0, 0.3);
   color: white;
-  border: 1px solid rgba(255,255,255,0.2);
+  border: 1px solid rgba(255, 255, 255, 0.2);
   padding: 6px 10px;
   border-radius: 4px;
   width: 80px;
@@ -2853,8 +3089,8 @@
 }
 
 .shadowrun2e.spirit .powers-description {
-  background: rgba(0,0,0,0.2);
-  border: 1px solid rgba(255,255,255,0.1);
+  background: rgba(0, 0, 0, 0.2);
+  border: 1px solid rgba(255, 255, 255, 0.1);
   border-radius: 4px;
   padding: 15px;
   margin-bottom: 15px;
@@ -2868,7 +3104,7 @@
 
 .shadowrun2e.spirit .powers-section textarea {
   width: 100%;
-  background: rgba(0,0,0,0.4);
+  background: rgba(0, 0, 0, 0.4);
   color: #e0e6ed;
   border: 2px solid #533483;
   padding: 15px;
@@ -2902,7 +3138,7 @@
 
 .shadowrun2e.spirit .biography-section textarea {
   width: 100%;
-  background: rgba(0,0,0,0.4);
+  background: rgba(0, 0, 0, 0.4);
   color: #e0e6ed;
   border: 2px solid #533483;
   padding: 15px;
@@ -2919,21 +3155,1027 @@
 }
 
 /* Spirit Type Icons with Colors */
-.shadowrun2e.spirit .spirit-type .fa-fire { color: #e74c3c; }
-.shadowrun2e.spirit .spirit-type .fa-leaf { color: #27ae60; }
-.shadowrun2e.spirit .spirit-type .fa-city { color: #95a5a6; }
-.shadowrun2e.spirit .spirit-type .fa-home { color: #f39c12; }
-.shadowrun2e.spirit .spirit-type .fa-ghost { color: #9b59b6; }
-.shadowrun2e.spirit .spirit-type .fa-cog { color: #34495e; }
-.shadowrun2e.spirit .spirit-type .fa-compass { color: #3498db; }
-.shadowrun2e.spirit .spirit-type .fa-seedling { color: #2ecc71; }
-.shadowrun2e.spirit .spirit-type .fa-paw { color: #d35400; }
-.shadowrun2e.spirit .spirit-type .fa-water { color: #3498db; }
-.shadowrun2e.spirit .spirit-type .fa-wind { color: #ecf0f1; }
-.shadowrun2e.spirit .spirit-type .fa-mountain { color: #8b4513; }
-.shadowrun2e.spirit .spirit-type .fa-fire-flame-curved { color: #e74c3c; }
-.shadowrun2e.spirit .spirit-type .fa-user { color: #f1c40f; }
-.shadowrun2e.spirit .spirit-type .fa-skull-crossbones { color: #8e44ad; }
+.shadowrun2e.spirit .spirit-type .fa-fire {
+  color: #e74c3c;
+}
+
+.shadowrun2e.spirit .spirit-type .fa-leaf {
+  color: #27ae60;
+}
+
+.shadowrun2e.spirit .spirit-type .fa-city {
+  color: #95a5a6;
+}
+
+.shadowrun2e.spirit .spirit-type .fa-home {
+  color: #f39c12;
+}
+
+.shadowrun2e.spirit .spirit-type .fa-ghost {
+  color: #9b59b6;
+}
+
+.shadowrun2e.spirit .spirit-type .fa-cog {
+  color: #34495e;
+}
+
+.shadowrun2e.spirit .spirit-type .fa-compass {
+  color: #3498db;
+}
+
+.shadowrun2e.spirit .spirit-type .fa-seedling {
+  color: #2ecc71;
+}
+
+.shadowrun2e.spirit .spirit-type .fa-paw {
+  color: #d35400;
+}
+
+.shadowrun2e.spirit .spirit-type .fa-water {
+  color: #3498db;
+}
+
+.shadowrun2e.spirit .spirit-type .fa-wind {
+  color: #ecf0f1;
+}
+
+.shadowrun2e.spirit .spirit-type .fa-mountain {
+  color: #8b4513;
+}
+
+.shadowrun2e.spirit .spirit-type .fa-fire-flame-curved {
+  color: #e74c3c;
+}
+
+.shadowrun2e.spirit .spirit-type .fa-user {
+  color: #f1c40f;
+}
+
+.shadowrun2e.spirit .spirit-type .fa-skull-crossbones {
+  color: #8e44ad;
+}
+
+/* Dialog and Window Close Button Fixes */
+.shadowrun2e .window-header .close,
+.shadowrun2e.item-browser .window-header .close,
+.shadowrun2e.data-import .window-header .close,
+.shadowrun2e.character-import .window-header .close {
+  color: #333 !important;
+  background: rgba(255, 255, 255, 0.8) !important;
+  border: 1px solid #ccc !important;
+  border-radius: 3px !important;
+  width: 24px !important;
+  height: 24px !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  font-size: 14px !important;
+  font-weight: bold !important;
+  transition: all 0.2s ease !important;
+}
+
+.shadowrun2e .window-header .close:hover,
+.shadowrun2e.item-browser .window-header .close:hover,
+.shadowrun2e.data-import .window-header .close:hover,
+.shadowrun2e.character-import .window-header .close:hover {
+  color: #fff !important;
+  background: #dc3545 !important;
+  border-color: #c82333 !important;
+  transform: scale(1.1) !important;
+}
+
+/* Ensure window headers have proper contrast */
+.shadowrun2e .window-header,
+.shadowrun2e.item-browser .window-header,
+.shadowrun2e.data-import .window-header,
+.shadowrun2e.character-import .window-header {
+  background: linear-gradient(135deg, #2c3e50, #34495e) !important;
+  color: white !important;
+  border-bottom: 2px solid #007acc !important;
+}
+
+.shadowrun2e .window-title,
+.shadowrun2e.item-browser .window-title,
+.shadowrun2e.data-import .window-title,
+.shadowrun2e.character-import .window-title {
+  color: white !important;
+  font-weight: bold !important;
+}
+
+/* Gear Tab Styles */
+.shadowrun2e .gear-summary {
+  background: white;
+  border: 1px solid #ddd;
+  border-radius: 6px;
+  padding: 20px;
+  margin-top: 20px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.shadowrun2e .summary-stats {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 20px;
+}
+
+.shadowrun2e .summary-stats .stat {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 10px 15px;
+  background: #f8f9fa;
+  border-radius: 4px;
+  border-left: 4px solid #007acc;
+}
+
+.shadowrun2e .summary-stats .stat label {
+  font-weight: bold;
+  color: #333;
+}
+
+.shadowrun2e .summary-stats .stat span {
+  font-weight: bold;
+  color: #007acc;
+  font-size: 16px;
+}
+
+.shadowrun2e .category-tag {
+  background: #e9ecef;
+  color: #495057;
+  padding: 2px 8px;
+  border-radius: 12px;
+  font-size: 11px;
+  font-weight: bold;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.shadowrun2e .weapon-attack {
+  border: 1px solid #dc3545;
+  border-radius: 4px;
+  padding: 10px;
+  background: #f8d7da;
+  margin: 5px 0;
+}
+
+.shadowrun2e .weapon-attack h3 {
+  margin: 0 0 10px 0;
+  color: #721c24;
+}
+
+.shadowrun2e .weapon-attack p {
+  margin: 5px 0;
+  color: #721c24;
+}
+
+.shadowrun2e .weapon-attack-button {
+  background: #dc3545;
+  color: white;
+  border: none;
+  padding: 4px 8px;
+  border-radius: 2px;
+  cursor: pointer;
+  font-size: 11px;
+}
+
+.shadowrun2e .weapon-attack-button:hover {
+  background: #c82333;
+}
+
+.shadowrun2e .item-ammo {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+}
+
+.shadowrun2e .item-ammo input {
+  width: 40px;
+  text-align: center;
+}
+
+.shadowrun2e .item-ammo span {
+  color: #666;
+  font-weight: bold;
+}
+
+.shadowrun2e .items-table-header .item-category,
+.shadowrun2e .item-row .item-category {
+  text-align: center;
+}
+
+.shadowrun2e .items-table-header .item-ballistic,
+.shadowrun2e .item-row .item-ballistic,
+.shadowrun2e .items-table-header .item-impact,
+.shadowrun2e .item-row .item-impact {
+  text-align: center;
+}
+
+.shadowrun2e .items-table-header .item-conceal,
+.shadowrun2e .item-row .item-conceal {
+  text-align: center;
+}
+
+.shadowrun2e .items-table-header .item-equipped,
+.shadowrun2e .item-row .item-equipped {
+  text-align: center;
+}
+
+.shadowrun2e .items-table-header .item-weight,
+.shadowrun2e .item-row .item-weight {
+  text-align: center;
+  font-size: 12px;
+  color: #666;
+}
+
+/* Range Calculator Styles */
+.shadowrun2e .range-calculator {
+  background: white;
+  border: 2px solid #007acc;
+  border-radius: 8px;
+  padding: 20px;
+  margin: 20px 0;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+}
+
+.shadowrun2e .range-calculator h3 {
+  margin: 0 0 15px 0;
+  color: #007acc;
+  border-bottom: 2px solid #007acc;
+  padding-bottom: 8px;
+  font-size: 18px;
+}
+
+.shadowrun2e .range-controls {
+  display: grid;
+  grid-template-columns: 2fr 1fr 1fr;
+  gap: 20px;
+  align-items: end;
+  margin-bottom: 20px;
+}
+
+.shadowrun2e .weapon-select,
+.shadowrun2e .distance-input,
+.shadowrun2e .range-result {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+}
+
+.shadowrun2e .weapon-select label,
+.shadowrun2e .distance-input label,
+.shadowrun2e .range-result label {
+  font-weight: bold;
+  color: #333;
+  font-size: 14px;
+}
+
+.shadowrun2e .range-weapon-select,
+.shadowrun2e .range-distance {
+  padding: 8px 12px;
+  border: 2px solid #ddd;
+  border-radius: 4px;
+  font-size: 14px;
+  transition: border-color 0.3s ease;
+}
+
+.shadowrun2e .range-weapon-select:focus,
+.shadowrun2e .range-distance:focus {
+  border-color: #007acc;
+  outline: none;
+  box-shadow: 0 0 5px rgba(0, 122, 204, 0.3);
+}
+
+.shadowrun2e .distance-input {
+  display: flex;
+  flex-direction: column;
+}
+
+.shadowrun2e .distance-input>div {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.shadowrun2e .distance-input span {
+  color: #666;
+  font-weight: bold;
+}
+
+.shadowrun2e .range-result {
+  text-align: center;
+}
+
+.shadowrun2e .range-category {
+  font-size: 18px;
+  font-weight: bold;
+  padding: 8px 16px;
+  border-radius: 4px;
+  display: inline-block;
+  min-width: 100px;
+}
+
+.shadowrun2e .range-category.short {
+  background: #d4edda;
+  color: #155724;
+  border: 1px solid #c3e6cb;
+}
+
+.shadowrun2e .range-category.medium {
+  background: #fff3cd;
+  color: #856404;
+  border: 1px solid #ffeaa7;
+}
+
+.shadowrun2e .range-category.long {
+  background: #f8d7da;
+  color: #721c24;
+  border: 1px solid #f5c6cb;
+}
+
+.shadowrun2e .range-category.extreme {
+  background: #d1ecf1;
+  color: #0c5460;
+  border: 1px solid #bee5eb;
+}
+
+.shadowrun2e .range-category.impossible {
+  background: #f8d7da;
+  color: #721c24;
+  border: 1px solid #f5c6cb;
+}
+
+.shadowrun2e .range-modifier {
+  display: block;
+  font-size: 14px;
+  font-weight: bold;
+  margin-top: 5px;
+}
+
+.shadowrun2e .range-modifier.short {
+  color: #28a745;
+}
+
+/* TN 4 */
+.shadowrun2e .range-modifier.medium {
+  color: #ffc107;
+}
+
+/* TN 5 */
+.shadowrun2e .range-modifier.long {
+  color: #dc3545;
+}
+
+/* TN 6 */
+.shadowrun2e .range-modifier.extreme {
+  color: #17a2b8;
+}
+
+/* TN 8 */
+.shadowrun2e .range-modifier.impossible {
+  color: #dc3545;
+}
+
+/* Impossible */
+
+.shadowrun2e .range-bands {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 15px;
+  padding: 15px;
+  background: #f8f9fa;
+  border-radius: 6px;
+  border: 1px solid #dee2e6;
+}
+
+.shadowrun2e .range-band {
+  text-align: center;
+  padding: 10px;
+  border-radius: 4px;
+  border: 2px solid transparent;
+  transition: all 0.3s ease;
+}
+
+.shadowrun2e .range-band.short {
+  background: #d4edda;
+  border-color: #c3e6cb;
+}
+
+.shadowrun2e .range-band.medium {
+  background: #fff3cd;
+  border-color: #ffeaa7;
+}
+
+.shadowrun2e .range-band.long {
+  background: #f8d7da;
+  border-color: #f5c6cb;
+}
+
+.shadowrun2e .range-band.extreme {
+  background: #d1ecf1;
+  border-color: #bee5eb;
+}
+
+.shadowrun2e .range-band label {
+  display: block;
+  font-weight: bold;
+  color: #333;
+  margin-bottom: 5px;
+  font-size: 12px;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.shadowrun2e .range-band span {
+  font-size: 16px;
+  font-weight: bold;
+  color: #007acc;
+}
+
+/* Responsive design for smaller screens */
+@media (max-width: 768px) {
+  .shadowrun2e .range-controls {
+    grid-template-columns: 1fr;
+    gap: 15px;
+  }
+
+  .shadowrun2e .range-bands {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 10px;
+  }
+}
+
+/* ===== CYBERPUNK ITEM BROWSER ===== */
+.shadowrun2e.item-browser {
+  background: var(--cyber-bg-primary);
+  color: var(--cyber-text-primary);
+  border: 2px solid var(--cyber-accent-cyan);
+  box-shadow: var(--cyber-glow-cyan);
+}
+
+.shadowrun2e .item-browser {
+  padding: 20px;
+  background: linear-gradient(135deg, var(--cyber-bg-primary), var(--cyber-bg-secondary));
+}
+
+.shadowrun2e .browser-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 20px;
+  padding-bottom: 15px;
+  border-bottom: 2px solid var(--cyber-accent-cyan);
+  position: relative;
+}
+
+.shadowrun2e .browser-header:after {
+  content: '';
+  position: absolute;
+  bottom: -2px;
+  left: 0;
+  width: 100%;
+  height: 2px;
+  background: linear-gradient(90deg, var(--cyber-accent-cyan), var(--cyber-accent-magenta), var(--cyber-accent-cyan));
+  animation: pulse 2s infinite;
+}
+
+.shadowrun2e .browser-header h2 {
+  margin: 0;
+  color: var(--cyber-accent-cyan);
+  text-transform: uppercase;
+  letter-spacing: 2px;
+  text-shadow: var(--cyber-glow-cyan);
+}
+
+.shadowrun2e .browser-controls {
+  display: flex;
+  gap: 15px;
+  align-items: center;
+}
+
+.shadowrun2e .search-section {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.shadowrun2e .item-search {
+  background: var(--cyber-bg-secondary);
+  color: var(--cyber-text-primary);
+  border: 1px solid var(--cyber-border);
+  padding: 8px 12px;
+  width: 250px;
+  font-family: inherit;
+  transition: all 0.3s ease;
+}
+
+.shadowrun2e .item-search:focus {
+  outline: none;
+  border-color: var(--cyber-accent-cyan);
+  box-shadow: var(--cyber-glow-cyan);
+  background: var(--cyber-bg-primary);
+}
+
+.shadowrun2e .clear-search {
+  background: linear-gradient(135deg, var(--cyber-bg-secondary), var(--cyber-bg-tertiary));
+  color: var(--cyber-accent-red);
+  border: 1px solid var(--cyber-accent-red);
+  padding: 8px 10px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.shadowrun2e .clear-search:hover {
+  background: linear-gradient(135deg, var(--cyber-bg-tertiary), var(--cyber-bg-secondary));
+  box-shadow: var(--cyber-glow-red);
+  transform: translateY(-1px);
+}
+
+.shadowrun2e .category-filter {
+  background: var(--cyber-bg-secondary);
+  color: var(--cyber-text-primary);
+  border: 1px solid var(--cyber-border);
+  padding: 8px 12px;
+  font-family: inherit;
+  transition: all 0.3s ease;
+}
+
+.shadowrun2e .category-filter:focus {
+  outline: none;
+  border-color: var(--cyber-accent-cyan);
+  box-shadow: var(--cyber-glow-cyan);
+}
+
+.shadowrun2e .items-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+  gap: 20px;
+}
+
+.shadowrun2e .item-card {
+  background: linear-gradient(135deg, var(--cyber-bg-secondary), var(--cyber-bg-primary));
+  border: 1px solid var(--cyber-border-bright);
+  border-left: 3px solid var(--cyber-accent-cyan);
+  padding: 16px;
+  transition: all 0.3s ease;
+  position: relative;
+}
+
+.shadowrun2e .item-card:before {
+  content: '';
+  position: absolute;
+  top: 0;
+  right: 0;
+  width: 20px;
+  height: 20px;
+  background: linear-gradient(-45deg, var(--cyber-accent-cyan), transparent);
+  clip-path: polygon(0 0, 100% 0, 100% 100%);
+}
+
+.shadowrun2e .item-card:hover {
+  border-left-color: var(--cyber-accent-magenta);
+  box-shadow: var(--cyber-glow-magenta);
+  transform: translateY(-2px);
+}
+
+.shadowrun2e .item-card:hover:before {
+  background: linear-gradient(-45deg, var(--cyber-accent-magenta), transparent);
+}
+
+.shadowrun2e .item-header {
+  margin-bottom: 12px;
+  padding-bottom: 8px;
+  border-bottom: 1px solid var(--cyber-border);
+}
+
+.shadowrun2e .item-name {
+  margin: 0 0 4px 0;
+  color: var(--cyber-accent-cyan);
+  font-size: 14px;
+  font-weight: bold;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+}
+
+.shadowrun2e .item-category {
+  font-size: 10px;
+  color: var(--cyber-text-muted);
+  text-transform: uppercase;
+  letter-spacing: 1px;
+}
+
+.shadowrun2e .item-details {
+  margin-bottom: 15px;
+}
+
+.shadowrun2e .detail-row {
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: 6px;
+  font-size: 12px;
+}
+
+.shadowrun2e .detail-row .label {
+  font-weight: bold;
+  color: var(--cyber-text-secondary);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.shadowrun2e .detail-row .value {
+  color: var(--cyber-text-primary);
+}
+
+.shadowrun2e .detail-row.source {
+  margin-top: 10px;
+  padding-top: 8px;
+  border-top: 1px solid var(--cyber-border);
+  font-style: italic;
+  color: var(--cyber-text-muted);
+}
+
+.shadowrun2e .item-actions {
+  text-align: center;
+}
+
+.shadowrun2e .add-item {
+  background: linear-gradient(135deg, var(--cyber-bg-secondary), var(--cyber-bg-tertiary));
+  color: var(--cyber-accent-green);
+  border: 1px solid var(--cyber-accent-green);
+  padding: 8px 16px;
+  cursor: pointer;
+  font-size: 11px;
+  font-weight: bold;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin: 0 auto;
+  transition: all 0.3s ease;
+  position: relative;
+  overflow: hidden;
+}
+
+.shadowrun2e .add-item:hover {
+  background: linear-gradient(135deg, var(--cyber-bg-tertiary), var(--cyber-bg-secondary));
+  color: var(--cyber-accent-cyan);
+  border-color: var(--cyber-accent-cyan);
+  box-shadow: var(--cyber-glow-cyan);
+  transform: translateY(-2px);
+}
+
+.shadowrun2e .no-results {
+  text-align: center;
+  padding: 60px 20px;
+  color: var(--cyber-text-muted);
+  background: linear-gradient(135deg, var(--cyber-bg-secondary), var(--cyber-bg-primary));
+  border: 2px dashed var(--cyber-border);
+  margin: 20px 0;
+}
+
+.shadowrun2e .no-results p {
+  margin: 8px 0;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+}
+
+/* ===== CYBERPUNK CHARACTER SHEET OVERRIDES ===== */
+.shadowrun2e .sheet-header {
+  background: linear-gradient(135deg, var(--cyber-bg-secondary), var(--cyber-bg-primary));
+  border: 2px solid var(--cyber-accent-cyan);
+  border-left: 4px solid var(--cyber-accent-cyan);
+  padding: 15px;
+  margin-bottom: 15px;
+  position: relative;
+}
+
+.shadowrun2e .sheet-header:before {
+  content: '';
+  position: absolute;
+  top: 0;
+  right: 0;
+  width: 30px;
+  height: 30px;
+  background: linear-gradient(-45deg, var(--cyber-accent-cyan), transparent);
+  clip-path: polygon(0 0, 100% 0, 100% 100%);
+}
+
+.shadowrun2e .sheet-header .profile-img {
+  border: 2px solid var(--cyber-accent-cyan);
+  box-shadow: var(--cyber-glow-cyan);
+}
+
+.shadowrun2e .sheet-header h1.charname input {
+  background: var(--cyber-bg-primary);
+  color: var(--cyber-accent-cyan);
+  border: 1px solid var(--cyber-border);
+  font-weight: bold;
+  text-transform: uppercase;
+  letter-spacing: 2px;
+  text-shadow: var(--cyber-glow-cyan);
+}
+
+.shadowrun2e .sheet-tabs {
+  border-bottom: 2px solid var(--cyber-accent-cyan);
+}
+
+.shadowrun2e .sheet-tabs .item {
+  background: linear-gradient(135deg, var(--cyber-bg-secondary), var(--cyber-bg-tertiary));
+  color: var(--cyber-text-secondary);
+  border: 1px solid var(--cyber-border);
+  margin-right: 2px;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  font-weight: bold;
+  transition: all 0.3s ease;
+}
+
+.shadowrun2e .sheet-tabs .item.active {
+  background: linear-gradient(135deg, var(--cyber-accent-cyan), var(--cyber-accent-magenta));
+  color: var(--cyber-bg-primary);
+  border-color: var(--cyber-accent-cyan);
+  box-shadow: var(--cyber-glow-cyan);
+}
+
+.shadowrun2e .sheet-tabs .item:hover {
+  background: linear-gradient(135deg, var(--cyber-bg-tertiary), var(--cyber-bg-secondary));
+  color: var(--cyber-accent-cyan);
+  border-color: var(--cyber-accent-cyan);
+}
+
+/* ===== CYBERPUNK ATTRIBUTES SECTION ===== */
+.shadowrun2e .attributes-section h3 {
+  color: var(--cyber-accent-cyan);
+  border-bottom: 2px solid var(--cyber-accent-cyan);
+  text-transform: uppercase;
+  letter-spacing: 2px;
+  text-shadow: var(--cyber-glow-cyan);
+}
+
+.shadowrun2e .attributes-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 15px;
+  margin-bottom: 20px;
+}
+
+.shadowrun2e .attribute {
+  background: linear-gradient(135deg, var(--cyber-bg-secondary), var(--cyber-bg-primary));
+  border: 1px solid var(--cyber-border-bright);
+  border-left: 3px solid var(--cyber-accent-cyan);
+  padding: 12px;
+  text-align: center;
+  position: relative;
+  transition: all 0.3s ease;
+}
+
+.shadowrun2e .attribute:before {
+  content: '';
+  position: absolute;
+  top: 0;
+  right: 0;
+  width: 15px;
+  height: 15px;
+  background: linear-gradient(-45deg, var(--cyber-accent-cyan), transparent);
+  clip-path: polygon(0 0, 100% 0, 100% 100%);
+}
+
+.shadowrun2e .attribute:hover {
+  border-left-color: var(--cyber-accent-magenta);
+  box-shadow: var(--cyber-glow-magenta);
+}
+
+.shadowrun2e .attribute label {
+  color: var(--cyber-accent-cyan);
+  font-weight: bold;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  font-size: 11px;
+}
+
+.shadowrun2e .attribute input {
+  background: var(--cyber-bg-primary);
+  color: var(--cyber-text-primary);
+  border: 1px solid var(--cyber-border);
+  text-align: center;
+  font-weight: bold;
+  font-size: 16px;
+}
+
+.shadowrun2e .attribute input:focus {
+  border-color: var(--cyber-accent-cyan);
+  box-shadow: var(--cyber-glow-cyan);
+}
+
+.shadowrun2e .modifier-display {
+  color: var(--cyber-accent-green);
+  font-size: 10px;
+  font-weight: bold;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  text-shadow: var(--cyber-glow-green);
+}
+
+/* ===== CYBERPUNK TOTEM SECTION ===== */
+.shadowrun2e .totem-section {
+  background: linear-gradient(135deg, var(--cyber-bg-secondary), var(--cyber-bg-primary));
+  border: 2px solid var(--cyber-accent-magenta);
+  border-left: 4px solid var(--cyber-accent-magenta);
+  padding: 20px;
+  margin: 15px 0;
+  box-shadow: var(--cyber-glow-magenta);
+  position: relative;
+}
+
+.shadowrun2e .totem-section:before {
+  content: '';
+  position: absolute;
+  top: 0;
+  right: 0;
+  width: 30px;
+  height: 30px;
+  background: linear-gradient(-45deg, var(--cyber-accent-magenta), transparent);
+  clip-path: polygon(0 0, 100% 0, 100% 100%);
+}
+
+.shadowrun2e .totem-section h4 {
+  margin: 0 0 15px 0;
+  color: var(--cyber-accent-magenta);
+  border-bottom: 2px solid var(--cyber-accent-magenta);
+  padding-bottom: 8px;
+  font-size: 16px;
+  text-transform: uppercase;
+  letter-spacing: 2px;
+  text-shadow: var(--cyber-glow-magenta);
+}
+
+.shadowrun2e .totem-display {
+  background: linear-gradient(135deg, var(--cyber-bg-primary), var(--cyber-bg-secondary));
+  border: 1px solid var(--cyber-border-bright);
+  padding: 15px;
+  position: relative;
+}
+
+.shadowrun2e .totem-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 15px;
+  padding-bottom: 10px;
+  border-bottom: 1px solid var(--cyber-accent-magenta);
+}
+
+.shadowrun2e .totem-header h5 {
+  margin: 0;
+  color: var(--cyber-accent-magenta);
+  font-size: 18px;
+  font-weight: bold;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  text-shadow: var(--cyber-glow-magenta);
+}
+
+.shadowrun2e .change-totem {
+  background: linear-gradient(135deg, var(--cyber-bg-secondary), var(--cyber-bg-tertiary));
+  color: var(--cyber-accent-magenta);
+  border: 1px solid var(--cyber-accent-magenta);
+  padding: 8px 16px;
+  cursor: pointer;
+  font-size: 11px;
+  font-weight: bold;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  transition: all 0.3s ease;
+  position: relative;
+  overflow: hidden;
+}
+
+.shadowrun2e .change-totem:hover {
+  background: linear-gradient(135deg, var(--cyber-bg-tertiary), var(--cyber-bg-secondary));
+  color: var(--cyber-accent-cyan);
+  border-color: var(--cyber-accent-cyan);
+  box-shadow: var(--cyber-glow-cyan);
+  transform: translateY(-2px);
+}
+
+.shadowrun2e .totem-details {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.shadowrun2e .totem-environment,
+.shadowrun2e .totem-advantages,
+.shadowrun2e .totem-disadvantages {
+  padding: 12px;
+  font-size: 13px;
+  line-height: 1.4;
+  border: 1px solid var(--cyber-border);
+  background: var(--cyber-bg-secondary);
+  color: var(--cyber-text-primary);
+  position: relative;
+}
+
+.shadowrun2e .totem-environment {
+  border-left: 4px solid var(--cyber-accent-cyan);
+  box-shadow: inset 0 0 10px rgba(0, 255, 255, 0.1);
+}
+
+.shadowrun2e .totem-advantages {
+  border-left: 4px solid var(--cyber-accent-green);
+  box-shadow: inset 0 0 10px rgba(0, 255, 0, 0.1);
+}
+
+.shadowrun2e .totem-disadvantages {
+  border-left: 4px solid var(--cyber-accent-red);
+  box-shadow: inset 0 0 10px rgba(255, 0, 64, 0.1);
+}
+
+.shadowrun2e .totem-environment strong,
+.shadowrun2e .totem-advantages strong,
+.shadowrun2e .totem-disadvantages strong {
+  color: var(--cyber-text-primary);
+  display: block;
+  margin-bottom: 8px;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  font-size: 11px;
+}
+
+.shadowrun2e .totem-environment strong {
+  color: var(--cyber-accent-cyan);
+  text-shadow: var(--cyber-glow-cyan);
+}
+
+.shadowrun2e .totem-advantages strong {
+  color: var(--cyber-accent-green);
+  text-shadow: var(--cyber-glow-green);
+}
+
+.shadowrun2e .totem-disadvantages strong {
+  color: var(--cyber-accent-red);
+  text-shadow: var(--cyber-glow-red);
+}
+
+.shadowrun2e .no-totem {
+  text-align: center;
+  padding: 30px 20px;
+  background: linear-gradient(135deg, var(--cyber-bg-secondary), var(--cyber-bg-primary));
+  border: 2px solid var(--cyber-accent-yellow);
+  box-shadow: var(--cyber-glow-cyan);
+  position: relative;
+}
+
+.shadowrun2e .no-totem:before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: linear-gradient(45deg, transparent 49%, var(--cyber-accent-yellow) 50%, transparent 51%);
+  opacity: 0.1;
+  pointer-events: none;
+}
+
+.shadowrun2e .no-totem p {
+  margin: 0 0 15px 0;
+  color: var(--cyber-accent-yellow);
+  font-weight: bold;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  text-shadow: 0 0 5px rgba(255, 255, 0, 0.5);
+}
+
+.shadowrun2e .browse-totems {
+  background: linear-gradient(135deg, var(--cyber-bg-secondary), var(--cyber-bg-tertiary));
+  color: var(--cyber-accent-magenta);
+  border: 1px solid var(--cyber-accent-magenta);
+  padding: 12px 24px;
+  cursor: pointer;
+  font-size: 12px;
+  font-weight: bold;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin: 0 auto;
+  transition: all 0.3s ease;
+  position: relative;
+  overflow: hidden;
+}
+
+.shadowrun2e .browse-totems:hover {
+  background: linear-gradient(135deg, var(--cyber-bg-tertiary), var(--cyber-bg-secondary));
+  color: var(--cyber-accent-cyan);
+  border-color: var(--cyber-accent-cyan);
+  box-shadow: var(--cyber-glow-cyan);
+  transform: translateY(-2px);
+}
 
 /* Character Import Styles */
 .shadowrun2e.character-import {
@@ -2966,7 +4208,7 @@
   border-radius: 6px;
   padding: 20px;
   margin-bottom: 20px;
-  box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
 }
 
 .shadowrun2e.character-import .import-info h3 {
@@ -3005,13 +4247,13 @@
   gap: 10px;
   margin: 0 auto;
   transition: all 0.3s ease;
-  box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
 }
 
 .shadowrun2e.character-import .import-character:hover {
   background: linear-gradient(135deg, #0056b3, #004085);
   transform: translateY(-2px);
-  box-shadow: 0 6px 12px rgba(0,0,0,0.3);
+  box-shadow: 0 6px 12px rgba(0, 0, 0, 0.3);
 }
 
 .shadowrun2e.character-import .import-footer {
@@ -3107,4 +4349,527 @@
   color: #dc3545;
   font-weight: bold;
   text-transform: uppercase;
+}
+
+/* 
+===== CYBERPUNK DICE ROLL STYLES ===== */
+.shadowrun2e .dice-roll {
+  background: linear-gradient(135deg, var(--cyber-bg-secondary), var(--cyber-bg-primary));
+  border: 2px solid var(--cyber-accent-cyan);
+  border-left: 4px solid var(--cyber-accent-cyan);
+  padding: 15px;
+  margin: 10px 0;
+  box-shadow: var(--cyber-glow-cyan);
+  position: relative;
+}
+
+.shadowrun2e .dice-roll:before {
+  content: '';
+  position: absolute;
+  top: 0;
+  right: 0;
+  width: 25px;
+  height: 25px;
+  background: linear-gradient(-45deg, var(--cyber-accent-cyan), transparent);
+  clip-path: polygon(0 0, 100% 0, 100% 100%);
+}
+
+.shadowrun2e .dice-roll .dice-formula {
+  color: var(--cyber-accent-cyan);
+  font-weight: bold;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  text-shadow: var(--cyber-glow-cyan);
+}
+
+.shadowrun2e .dice-roll .dice-rolls {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin: 10px 0;
+}
+
+.shadowrun2e .dice-roll .dice-rolls .die {
+  background: linear-gradient(135deg, var(--cyber-bg-tertiary), var(--cyber-bg-secondary));
+  color: var(--cyber-text-primary);
+  border: 2px solid var(--cyber-border-bright);
+  padding: 8px 12px;
+  font-weight: bold;
+  min-width: 35px;
+  text-align: center;
+  transition: all 0.3s ease;
+}
+
+.shadowrun2e .dice-roll .dice-rolls .die.success {
+  border-color: var(--cyber-accent-green);
+  background: linear-gradient(135deg, var(--cyber-bg-secondary), var(--cyber-bg-primary));
+  color: var(--cyber-accent-green);
+  box-shadow: var(--cyber-glow-green);
+  text-shadow: var(--cyber-glow-green);
+}
+
+.shadowrun2e .dice-roll .dice-rolls .die.failure {
+  border-color: var(--cyber-accent-red);
+  background: linear-gradient(135deg, var(--cyber-bg-secondary), var(--cyber-bg-primary));
+  color: var(--cyber-accent-red);
+  box-shadow: var(--cyber-glow-red);
+  text-shadow: var(--cyber-glow-red);
+}
+
+.shadowrun2e .dice-roll .dice-total {
+  color: var(--cyber-accent-magenta);
+  font-weight: bold;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  text-shadow: var(--cyber-glow-magenta);
+  font-size: 16px;
+}
+
+.shadowrun2e .dice-roll .critical-failure {
+  color: var(--cyber-accent-red);
+  font-weight: bold;
+  text-transform: uppercase;
+  text-shadow: var(--cyber-glow-red);
+  animation: pulse 1s infinite;
+}
+
+/* ===== CYBERPUNK WINDOW OVERRIDES ===== */
+.shadowrun2e .window-content {
+  background: var(--cyber-bg-primary);
+  color: var(--cyber-text-primary);
+  border: 2px solid var(--cyber-accent-cyan);
+  box-shadow: var(--cyber-glow-cyan);
+}
+
+.shadowrun2e .window-header {
+  background: linear-gradient(135deg, var(--cyber-bg-secondary), var(--cyber-bg-tertiary));
+  color: var(--cyber-accent-cyan);
+  border-bottom: 2px solid var(--cyber-accent-cyan);
+  text-transform: uppercase;
+  letter-spacing: 2px;
+  font-weight: bold;
+}
+
+.shadowrun2e .window-title {
+  color: var(--cyber-accent-cyan);
+  text-shadow: var(--cyber-glow-cyan);
+}
+
+.shadowrun2e .close {
+  color: var(--cyber-accent-red);
+  border: 1px solid var(--cyber-accent-red);
+  background: var(--cyber-bg-secondary);
+  transition: all 0.3s ease;
+}
+
+.shadowrun2e .close:hover {
+  background: var(--cyber-accent-red);
+  color: var(--cyber-bg-primary);
+  box-shadow: var(--cyber-glow-red);
+}
+
+/* ===== CYBERPUNK FORM ELEMENTS ===== */
+.shadowrun2e .form-group {
+  margin-bottom: 15px;
+}
+
+.shadowrun2e .form-group label {
+  color: var(--cyber-accent-cyan);
+  font-weight: bold;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  font-size: 11px;
+  margin-bottom: 5px;
+  display: block;
+}
+
+.shadowrun2e .form-fields {
+  display: flex;
+  gap: 10px;
+  align-items: center;
+}
+
+.shadowrun2e .form-fields input,
+.shadowrun2e .form-fields select {
+  flex: 1;
+}
+
+/* ===== CYBERPUNK TABS ===== */
+.shadowrun2e .tabs {
+  border-bottom: 2px solid var(--cyber-accent-cyan);
+  margin-bottom: 15px;
+}
+
+.shadowrun2e .tabs .item {
+  background: linear-gradient(135deg, var(--cyber-bg-secondary), var(--cyber-bg-tertiary));
+  color: var(--cyber-text-secondary);
+  border: 1px solid var(--cyber-border);
+  border-bottom: none;
+  padding: 8px 16px;
+  margin-right: 2px;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  font-weight: bold;
+  font-size: 11px;
+  transition: all 0.3s ease;
+  position: relative;
+  overflow: hidden;
+}
+
+.shadowrun2e .tabs .item:before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(90deg, transparent, rgba(0, 255, 255, 0.2), transparent);
+  transition: left 0.5s;
+}
+
+.shadowrun2e .tabs .item.active {
+  background: linear-gradient(135deg, var(--cyber-accent-cyan), var(--cyber-accent-magenta));
+  color: var(--cyber-bg-primary);
+  border-color: var(--cyber-accent-cyan);
+  box-shadow: var(--cyber-glow-cyan);
+  transform: translateY(-2px);
+}
+
+.shadowrun2e .tabs .item:hover {
+  background: linear-gradient(135deg, var(--cyber-bg-tertiary), var(--cyber-bg-secondary));
+  color: var(--cyber-accent-cyan);
+  border-color: var(--cyber-accent-cyan);
+  transform: translateY(-1px);
+}
+
+.shadowrun2e .tabs .item:hover:before {
+  left: 100%;
+}
+
+/* ===== CYBERPUNK LISTS ===== */
+.shadowrun2e .items-list {
+  background: var(--cyber-bg-secondary);
+  border: 1px solid var(--cyber-border-bright);
+}
+
+.shadowrun2e .items-list .item {
+  background: var(--cyber-bg-primary);
+  border-bottom: 1px solid var(--cyber-border);
+  color: var(--cyber-text-primary);
+  transition: all 0.3s ease;
+}
+
+.shadowrun2e .items-list .item:hover {
+  background: linear-gradient(135deg, var(--cyber-bg-secondary), var(--cyber-bg-primary));
+  border-left: 3px solid var(--cyber-accent-cyan);
+  box-shadow: inset 0 0 10px rgba(0, 255, 255, 0.1);
+}
+
+.shadowrun2e .items-list .item-name h3,
+.shadowrun2e .items-list .item-name h4 {
+  color: var(--cyber-accent-cyan);
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  font-size: 12px;
+}
+
+.shadowrun2e .items-list .item-controls a {
+  background: linear-gradient(135deg, var(--cyber-bg-secondary), var(--cyber-bg-tertiary));
+  color: var(--cyber-accent-cyan);
+  border: 1px solid var(--cyber-accent-cyan);
+  padding: 4px 8px;
+  margin: 0 2px;
+  text-decoration: none;
+  font-size: 10px;
+  font-weight: bold;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  transition: all 0.3s ease;
+}
+
+.shadowrun2e .items-list .item-controls a:hover {
+  background: linear-gradient(135deg, var(--cyber-bg-tertiary), var(--cyber-bg-secondary));
+  color: var(--cyber-accent-magenta);
+  border-color: var(--cyber-accent-magenta);
+  box-shadow: var(--cyber-glow-magenta);
+  transform: translateY(-1px);
+}
+
+.shadowrun2e .items-list .item-controls a.item-delete {
+  color: var(--cyber-accent-red);
+  border-color: var(--cyber-accent-red);
+}
+
+.shadowrun2e .items-list .item-controls a.item-delete:hover {
+  color: var(--cyber-accent-red);
+  border-color: var(--cyber-accent-red);
+  box-shadow: var(--cyber-glow-red);
+}
+
+/* ===== CYBERPUNK SPECIFIC OVERRIDES ===== */
+.shadowrun2e .combatant-name {
+  color: var(--cyber-text-primary);
+  font-weight: bold;
+}
+
+.shadowrun2e .combatant-image {
+  border: 1px solid var(--cyber-accent-cyan);
+  box-shadow: var(--cyber-glow-cyan);
+}
+
+.shadowrun2e .edit-initiative {
+  background: var(--cyber-bg-secondary);
+  color: var(--cyber-text-primary);
+  border: 1px solid var(--cyber-border);
+  text-align: center;
+}
+
+.shadowrun2e .edit-initiative:focus {
+  border-color: var(--cyber-accent-cyan);
+  box-shadow: var(--cyber-glow-cyan);
+}
+
+.shadowrun2e .phase-init {
+  background: var(--cyber-bg-secondary);
+  color: var(--cyber-text-primary);
+  border: 1px solid var(--cyber-border);
+  font-size: 10px;
+  font-weight: bold;
+}
+
+.shadowrun2e .phase-init.current {
+  background: linear-gradient(135deg, var(--cyber-accent-cyan), var(--cyber-accent-magenta));
+  color: var(--cyber-bg-primary);
+  border-color: var(--cyber-accent-cyan);
+  box-shadow: var(--cyber-glow-cyan);
+}
+
+.shadowrun2e .dice-count,
+.shadowrun2e .reaction-value {
+  color: var(--cyber-text-primary);
+  font-weight: bold;
+}
+
+.shadowrun2e .not-rolled {
+  color: var(--cyber-text-muted);
+  font-style: italic;
+}
+
+.shadowrun2e .combatant-actions button {
+  background: linear-gradient(135deg, var(--cyber-bg-secondary), var(--cyber-bg-tertiary));
+  color: var(--cyber-accent-cyan);
+  border: 1px solid var(--cyber-accent-cyan);
+  padding: 4px 8px;
+  font-size: 10px;
+  font-weight: bold;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  transition: all 0.3s ease;
+}
+
+.shadowrun2e .combatant-actions button:hover {
+  background: linear-gradient(135deg, var(--cyber-bg-tertiary), var(--cyber-bg-secondary));
+  color: var(--cyber-accent-magenta);
+  border-color: var(--cyber-accent-magenta);
+  box-shadow: var(--cyber-glow-magenta);
+  transform: translateY(-1px);
+}
+
+.shadowrun2e .roll-initiative {
+  color: var(--cyber-accent-cyan) !important;
+  border-color: var(--cyber-accent-cyan) !important;
+}
+
+.shadowrun2e .remove-combatant {
+  color: var(--cyber-accent-red) !important;
+  border-color: var(--cyber-accent-red) !important;
+}
+
+.shadowrun2e .remove-combatant:hover {
+  color: var(--cyber-accent-red) !important;
+  border-color: var(--cyber-accent-red) !important;
+  box-shadow: var(--cyber-glow-red) !important;
+}
+
+/* ===== CYBERPUNK CHAT MESSAGES ===== */
+.shadowrun2e .initiative-roll {
+  background: linear-gradient(135deg, var(--cyber-bg-secondary), var(--cyber-bg-primary));
+  border: 2px solid var(--cyber-accent-cyan);
+  border-left: 4px solid var(--cyber-accent-cyan);
+  box-shadow: var(--cyber-glow-cyan);
+}
+
+.shadowrun2e .initiative-roll h3 {
+  color: var(--cyber-accent-cyan);
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  text-shadow: var(--cyber-glow-cyan);
+}
+
+.shadowrun2e .roll-result {
+  color: var(--cyber-text-primary);
+  font-weight: bold;
+}
+
+.shadowrun2e .dice-result {
+  color: var(--cyber-accent-green);
+  text-shadow: var(--cyber-glow-green);
+}
+
+.shadowrun2e .reaction-bonus {
+  color: var(--cyber-accent-cyan);
+  text-shadow: var(--cyber-glow-cyan);
+}
+
+.shadowrun2e .total-initiative {
+  color: var(--cyber-accent-magenta);
+  text-shadow: var(--cyber-glow-magenta);
+}
+
+.shadowrun2e .roll-details {
+  color: var(--cyber-text-muted);
+}
+
+.shadowrun2e .turn-announcement {
+  background: linear-gradient(135deg, var(--cyber-bg-secondary), var(--cyber-bg-primary));
+  border: 2px solid var(--cyber-accent-yellow);
+  border-left: 4px solid var(--cyber-accent-yellow);
+  box-shadow: 0 0 10px rgba(255, 255, 0, 0.5);
+}
+
+.shadowrun2e .turn-announcement h3 {
+  color: var(--cyber-accent-yellow);
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  text-shadow: 0 0 5px rgba(255, 255, 0, 0.5);
+}
+
+.shadowrun2e .turn-announcement p {
+  color: var(--cyber-text-primary);
+}
+
+/* ===== CYBERPUNK EMPTY STATES ===== */
+.shadowrun2e .empty-tracker,
+.shadowrun2e .no-skills,
+.shadowrun2e .no-items,
+.shadowrun2e .no-magic {
+  background: linear-gradient(135deg, var(--cyber-bg-secondary), var(--cyber-bg-primary));
+  border: 2px dashed var(--cyber-border-bright);
+  color: var(--cyber-text-muted);
+  text-align: center;
+  padding: 40px 20px;
+  margin: 20px 0;
+}
+
+.shadowrun2e .empty-tracker p,
+.shadowrun2e .no-skills p,
+.shadowrun2e .no-items p,
+.shadowrun2e .no-magic p {
+  color: var(--cyber-text-muted);
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  font-style: italic;
+}
+
+/* ===== CYBERPUNK RESPONSIVE DESIGN ===== */
+@media (max-width: 768px) {
+  .shadowrun2e .browser-controls {
+    flex-direction: column;
+    gap: 10px;
+  }
+
+  .shadowrun2e .item-search {
+    width: 100%;
+  }
+
+  .shadowrun2e .items-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .shadowrun2e .attributes-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+
+  .shadowrun2e .combatant-header,
+  .shadowrun2e .combatant {
+    grid-template-columns: 2fr 1fr 60px 60px 80px;
+    font-size: 10px;
+  }
+}
+
+/* ===== CYBERPUNK ANIMATIONS ===== */
+@keyframes cyber-scan {
+  0% {
+    transform: translateX(-100%);
+  }
+
+  100% {
+    transform: translateX(100%);
+  }
+}
+
+@keyframes cyber-glow {
+
+  0%,
+  100% {
+    box-shadow: var(--cyber-glow-cyan);
+    border-color: var(--cyber-accent-cyan);
+  }
+
+  50% {
+    box-shadow: var(--cyber-glow-magenta);
+    border-color: var(--cyber-accent-magenta);
+  }
+}
+
+.shadowrun2e .cyber-animate {
+  animation: cyber-glow 3s infinite;
+}
+
+.shadowrun2e .cyber-scan:after {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: linear-gradient(90deg, transparent, rgba(0, 255, 255, 0.3), transparent);
+  animation: cyber-scan 2s infinite;
+  pointer-events: none;
+}
+
+/* ===== CYBERPUNK FINAL OVERRIDES ===== */
+.shadowrun2e * {
+  border-radius: 0 !important;
+}
+
+.shadowrun2e .window-resizable-handle {
+  background: var(--cyber-accent-cyan);
+  opacity: 0.3;
+}
+
+.shadowrun2e .window-resizable-handle:hover {
+  opacity: 1;
+  box-shadow: var(--cyber-glow-cyan);
+}
+
+/* Fix any remaining floating elements */
+.shadowrun2e button,
+.shadowrun2e .button,
+.shadowrun2e input[type="button"],
+.shadowrun2e input[type="submit"] {
+  position: relative;
+  z-index: 1;
+  margin: 2px;
+}
+
+/* Ensure proper stacking context */
+.shadowrun2e .window-content {
+  position: relative;
+  z-index: 0;
+}
+
+.shadowrun2e .sheet-header {
+  position: relative;
+  z-index: 1;
 }

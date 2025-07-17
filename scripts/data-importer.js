@@ -19,6 +19,10 @@ export class SR2DataImporter {
       await this.importCyberdecks();
       await this.importVehicles();
       await this.importDrones();
+      await this.importPrograms();
+      await this.importVRPrograms();
+      await this.importGear();
+      await this.importTotems();
 
       console.log("SR2E | Data import completed successfully");
       ui.notifications.info("Shadowrun 2E data imported successfully!");
@@ -366,7 +370,7 @@ export class SR2DataImporter {
         const actorData = {
           name: deck.Name.trim(),
           type: "cyberdeck",
-          img: "systems/shadowrun2e/icons/cyberware.svg", // Use cyberware icon for now
+          img: "systems/shadowrun2e/icons/cyberdeck.png",
           system: {
             model: deck.Name.trim(),
             persona: deck.Persona,
@@ -493,7 +497,7 @@ export class SR2DataImporter {
         const actorData = {
           name: vehicle.name.trim(),
           type: "vehicle",
-          img: "icons/svg/item-bag.svg", // Default vehicle icon
+          img: "systems/shadowrun2e/icons/vehicle.png",
           system: {
             model: vehicle.name.trim(),
             vehicleType: vehicleType,
@@ -613,7 +617,7 @@ export class SR2DataImporter {
         const actorData = {
           name: drone.name.trim(),
           type: "vehicle",
-          img: "icons/svg/item-bag.svg", // Default drone icon
+          img: "systems/shadowrun2e/icons/drone.png",
           system: {
             model: drone.name.trim(),
             vehicleType: "drone",
@@ -655,6 +659,400 @@ export class SR2DataImporter {
 
     } catch (error) {
       console.error("SR2E | Failed to import drones:", error);
+    }
+  }
+
+  /**
+   * Import programs from JSON as items
+   */
+  static async importPrograms() {
+    const pack = game.packs.get("shadowrun2e.programs");
+    if (!pack) {
+      console.warn("SR2E | Programs compendium not found");
+      return;
+    }
+
+    console.log("SR2E | Importing programs...");
+
+    try {
+      // Unlock the compendium for editing
+      if (pack.locked) {
+        await pack.configure({ locked: false });
+      }
+
+      const response = await fetch('/systems/shadowrun2e/data/programs.json');
+      const data = await response.json();
+
+      const items = [];
+
+      for (const program of data) {
+        const itemData = {
+          name: program.Name.trim(),
+          type: "program",
+          img: "icons/svg/item-bag.svg",
+          system: {
+            description: `Standard Program\nSize Multiplier: ${program.Multiplyer}`,
+            rating: 1,
+            type: "utility",
+            multiplier: program.Multiplyer,
+            memorySize: program.Multiplyer, // Rating 1 * Rating 1 * Multiplier
+            loadTime: 1,
+            isActive: false,
+            isLoaded: false,
+            availability: "",
+            streetIndex: 1.0,
+            quantity: 1,
+            weight: 0,
+            price: 0
+          }
+        };
+        items.push(itemData);
+      }
+
+      await Item.createDocuments(items, { pack: pack.collection });
+      console.log(`SR2E | Imported ${items.length} programs`);
+
+      // Lock the compendium again after import
+      await pack.configure({ locked: true });
+
+    } catch (error) {
+      console.error("SR2E | Failed to import programs:", error);
+    }
+  }
+
+  /**
+   * Import VR programs from JSON as items
+   */
+  static async importVRPrograms() {
+    const pack = game.packs.get("shadowrun2e.vrprograms");
+    if (!pack) {
+      console.warn("SR2E | VR Programs compendium not found");
+      return;
+    }
+
+    console.log("SR2E | Importing VR programs...");
+
+    try {
+      // Unlock the compendium for editing
+      if (pack.locked) {
+        await pack.configure({ locked: false });
+      }
+
+      const response = await fetch('/systems/shadowrun2e/data/VirtualRealityPrograms.json');
+      const data = await response.json();
+
+      const items = [];
+
+      for (const program of data) {
+        const itemData = {
+          name: program.Name.trim(),
+          type: "program",
+          img: "icons/svg/item-bag.svg",
+          system: {
+            description: `Virtual Reality Program\nSize Multiplier: ${program.Multiplyer}`,
+            rating: 1,
+            type: "utility",
+            multiplier: program.Multiplyer,
+            memorySize: program.Multiplyer, // Rating 1 * Rating 1 * Multiplier
+            loadTime: 1,
+            isActive: false,
+            isLoaded: false,
+            availability: "",
+            streetIndex: 1.0,
+            quantity: 1,
+            weight: 0,
+            price: 0
+          }
+        };
+        items.push(itemData);
+      }
+
+      await Item.createDocuments(items, { pack: pack.collection });
+      console.log(`SR2E | Imported ${items.length} VR programs`);
+
+      // Lock the compendium again after import
+      await pack.configure({ locked: true });
+
+    } catch (error) {
+      console.error("SR2E | Failed to import VR programs:", error);
+    }
+  }
+
+  /**
+   * Import gear from JSON as items
+   */
+  static async importGear() {
+    const pack = game.packs.get("shadowrun2e.gear");
+    if (!pack) {
+      console.warn("SR2E | Gear compendium not found");
+      return;
+    }
+
+    console.log("SR2E | Importing gear...");
+
+    try {
+      // Unlock the compendium for editing
+      if (pack.locked) {
+        await pack.configure({ locked: false });
+      }
+
+      const response = await fetch('/systems/shadowrun2e/data/gear.json');
+      const data = await response.json();
+
+      const items = [];
+
+      // Process each category
+      for (const [categoryName, categoryData] of Object.entries(data)) {
+        if (!categoryData.entries || !Array.isArray(categoryData.entries)) {
+          continue;
+        }
+
+        // Process each item in the category
+        for (const item of categoryData.entries) {
+          // Determine item type based on category
+          let itemType = this._determineItemType(categoryName);
+
+          const itemData = {
+            name: item.Name.trim(),
+            type: itemType,
+            img: this._getItemIcon(categoryName, itemType),
+            system: {
+              description: `Category: ${categoryName}\nSource: ${item.BookPage || 'Unknown'}`,
+              category: categoryName,
+              quantity: 1,
+              weight: parseFloat(item.Weight) || 0,
+              price: parseInt(item.Cost) || 0,
+              // Add category-specific fields
+              ...this._getCategorySpecificFields(categoryName, item)
+            }
+          };
+          items.push(itemData);
+        }
+      }
+
+      await Item.createDocuments(items, { pack: pack.collection });
+      console.log(`SR2E | Imported ${items.length} gear items across ${Object.keys(data).length} categories`);
+
+      // Lock the compendium again after import
+      await pack.configure({ locked: true });
+
+    } catch (error) {
+      console.error("SR2E | Failed to import gear:", error);
+    }
+  }
+
+  /**
+   * Determine Foundry item type based on gear category
+   */
+  static _determineItemType(categoryName) {
+    const categoryMap = {
+      'Edged weapon': 'weapon',
+      'Bow and crossbow': 'weapon',
+      'Firearms': 'weapon',
+      'Rockets and Missiles': 'weapon',
+      'Grenades': 'weapon',
+      'Clothing and Armor': 'armor',
+      'Ammunition': 'gear',
+      'Firearms Accessories': 'gear',
+      'Explosives': 'gear',
+      'S+S Vision Enhancers': 'gear',
+      'Surveillance and Security': 'gear',
+      'Cyberdecks': 'gear',
+      'Cyberdeck Other': 'gear',
+      'Biotech': 'gear',
+      'Lifestyle Extras': 'gear',
+      'Lifestyle': 'gear',
+      'Magical Equipment': 'gear',
+      'Vehiclegear': 'gear',
+      'VehicleFire': 'weapon',
+      'Chips': 'gear',
+      'Stuff With Ratings': 'gear',
+      'Drugs': 'gear',
+      'Vehicle modifications': 'gear'
+    };
+
+    return categoryMap[categoryName] || 'gear';
+  }
+
+  /**
+   * Get appropriate icon for item based on category and type
+   */
+  static _getItemIcon(categoryName, itemType) {
+    if (itemType === 'weapon') {
+      return "icons/svg/sword.svg";
+    } else if (itemType === 'armor') {
+      return "icons/svg/armor.svg";
+    } else {
+      return "icons/svg/item-bag.svg";
+    }
+  }
+
+  /**
+   * Get category-specific system fields
+   */
+  static _getCategorySpecificFields(categoryName, item) {
+    const fields = {};
+
+    // Weapon-specific fields
+    if (['Edged weapon', 'Bow and crossbow', 'Firearms', 'Rockets and Missiles', 'Grenades', 'VehicleFire'].includes(categoryName)) {
+      fields.weaponType = categoryName.includes('Firearms') || categoryName.includes('Bow') || categoryName.includes('Rockets') ? 'ranged' : 'melee';
+      fields.concealability = parseInt(item.Concealability) || 0;
+      fields.damage = item.Damage || "1L";
+      fields.reach = parseInt(item.Reach) || 0;
+      fields.mode = item.Mode || "SS";
+      fields.ammo = {
+        current: 0,
+        max: parseInt(item.Ammo) || 0,
+        type: item.AmmoType || ""
+      };
+      fields.recoil = parseInt(item.Recoil) || 0;
+      fields.equipped = false;
+      
+      // Assign range type for ranged weapons
+      if (fields.weaponType === 'ranged') {
+        fields.rangeType = this._determineRangeType(item.Name, categoryName);
+      }m.Name, categoryName);
+      }m.Name, categoryName);
+      }
+    }
+
+    // Armor-specific fields
+    if (categoryName === 'Clothing and Armor') {
+      fields.rating = parseInt(item.Ballistic) || parseInt(item.Impact) || 0;
+      fields.concealability = parseInt(item.Concealability) || 0;
+      fields.equipped = false;
+      fields.ballistic = parseInt(item.Ballistic) || 0;
+      fields.impact = parseInt(item.Impact) || 0;
+    }
+
+    // General gear fields
+    fields.rating = parseInt(item.Rating) || 0;
+    fields.equipped = false;
+    fields.availability = item.Availability || "";
+    fields.streetIndex = parseFloat(item["Street Index"]) || 1.0;
+
+    return fields;
+  }
+}
+  /**
+
+   * Determine range type based on weapon name and category
+   */
+  static _determineRangeType(weaponName, categoryName) {
+    const name = weaponName.toLowerCase();
+    
+    // Pistol categories
+    if (name.includes('hold-out') && name.includes('light')) return '(LHOP)';
+    if (name.includes('hold-out')) return '(HOPist)';
+    if (name.includes('light pistol')) return '(LPist)';
+    if (name.includes('machine pistol')) return '(MaPist):';
+    if (name.includes('heavy pistol')) return '(HPist)';
+    if (name.includes('very heavy pistol')) return '(VHP)';
+    if (name.includes('medium pistol') || name.includes('pistol')) return '(MPist)';
+    
+    // Long guns
+    if (name.includes('assault rifle')) return '(AsRf)';
+    if (name.includes('sniper rifle')) return '(SptR)';
+    if (name.includes('heavy sniper')) return '(HSR)';
+    if (name.includes('sniper')) return '(Snip)';
+    if (name.includes('light carbine')) return 'LCarb';
+    if (name.includes('carbine')) return '(Carb)';
+    if (name.includes('shotgun')) return '(ShtG)';
+    if (name.includes('submachine') || name.includes('smg')) return '(SMG)';
+    
+    // Machine guns
+    if (name.includes('heavy machine gun') || name.includes('hmg')) return '(HMG)';
+    if (name.includes('medium machine gun') || name.includes('mmg')) return '(MMG)';
+    if (name.includes('light machine gun') || name.includes('lmg')) return '(LMG)';
+    if (name.includes('minigun')) return '(MinG)';
+    
+    // Heavy weapons
+    if (name.includes('assault cannon')) return '(ACan)';
+    if (name.includes('grenade launcher')) return '(GrLn)';
+    if (name.includes('missile launcher')) return '(MisLn)';
+    if (name.includes('mortar')) return '(Mrtr)';
+    if (name.includes('flamethrower')) return '(FlThr)';
+    
+    // Bows and crossbows
+    if (name.includes('heavy crossbow')) return '(HCB)';
+    if (name.includes('medium crossbow')) return '(MCB)';
+    if (name.includes('light crossbow')) return '(LCB)';
+    if (name.includes('crossbow')) return '(MCB)';
+    if (name.includes('bow')) return '(Bow)';
+    
+    // Thrown weapons
+    if (name.includes('shuriken')) return '(SH)';
+    if (name.includes('throwing knife') || name.includes('thrown knife')) return '(TK)';
+    if (name.includes('net')) return '(Net)';
+    
+    // Special weapons
+    if (name.includes('taser')) return '(Tasr)';
+    if (name.includes('spear gun')) return '(SpGn)';
+    if (name.includes('blowgun')) return '(BG)';
+    if (name.includes('slingshot')) return '(SS)';
+    if (name.includes('sling')) return '(SL)';
+    
+    // Default based on category
+    if (categoryName === 'Firearms') return '(MPist)'; // Default to medium pistol
+    if (categoryName === 'Bow and crossbow') return '(Bow)';
+    if (categoryName === 'Rockets and Missiles') return '(MisLn)';
+    
+    return '(MPist)'; // Default fallback
+  }
+
+  /**
+   * Import totems from JSON as items
+   */
+  static async importTotems() {
+    const pack = game.packs.get("shadowrun2e.totems");
+    if (!pack) {
+      console.warn("SR2E | Totems compendium not found");
+      return;
+    }
+
+    console.log("SR2E | Importing totems...");
+
+    try {
+      // Unlock the compendium for editing
+      if (pack.locked) {
+        await pack.configure({ locked: false });
+      }
+
+      const response = await fetch('/systems/shadowrun2e/data/totems.json');
+      const data = await response.json();
+
+      const items = [];
+
+      // Process both ANIMAL TOTEMS and TOTEMS sections
+      const allTotems = [...(data["ANIMAL TOTEMS"] || []), ...(data["TOTEMS"] || [])];
+
+      for (const totem of allTotems) {
+        const itemData = {
+          name: totem.name.trim(),
+          type: "totem",
+          img: "systems/shadowrun2e/icons/spirit.png",
+          system: {
+            description: `Environment: ${totem.environment}\n\nAdvantages:\n${totem.advantages}\n\nDisadvantages:\n${totem.disadvantages}`,
+            environment: totem.environment,
+            advantages: totem.advantages,
+            disadvantages: totem.disadvantages,
+            isSelected: false,
+            quantity: 1,
+            weight: 0,
+            price: 0
+          }
+        };
+        items.push(itemData);
+      }
+
+      await Item.createDocuments(items, { pack: pack.collection });
+      console.log(`SR2E | Imported ${items.length} totems`);
+
+      // Lock the compendium again after import
+      await pack.configure({ locked: true });
+
+    } catch (error) {
+      console.error("SR2E | Failed to import totems:", error);
     }
   }
 }

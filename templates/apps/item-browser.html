@@ -113,6 +113,21 @@
                 {{/if}}
               {{/if}}
               
+              {{#if (eq ../itemType "totem")}}
+                <div class="detail-row">
+                  <span class="label">Environment:</span>
+                  <span class="value">{{environment}}</span>
+                </div>
+                <div class="detail-row">
+                  <span class="label">Advantages:</span>
+                  <span class="value">{{advantages}}</span>
+                </div>
+                <div class="detail-row">
+                  <span class="label">Disadvantages:</span>
+                  <span class="value">{{disadvantages}}</span>
+                </div>
+              {{/if}}
+              
               <div class="detail-row source">
                 <span class="label">Source:</span>
                 <span class="value">{{bookPage}}</span>

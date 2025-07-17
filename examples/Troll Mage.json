@@ -1,0 +1,289 @@
+{
+  "allowedBooks": ["sr2", "sr1"],
+  "age": 18,
+  "bookTogglesSR3": {
+    "cc": true,
+    "mits": true,
+    "sr3": true,
+    "mm": true,
+    "mat": true,
+    "r3": true
+  },
+  "bookTogglesSR2": { "sr2": true, "sr1": true },
+  "edition": "SR2",
+  "cgmethod": "priorities",
+  "step": "chargen",
+  "plevel": 2,
+  "priorities": {
+    "Race": "A",
+    "Magic": "B",
+    "Attributes": "C",
+    "Skills": "D",
+    "Resources": "E"
+  },
+  "maxSkillPoints": 20,
+  "maxAttributePoints": 20,
+  "pointbuySkillPoints": 1,
+  "pointbuyAttributePoints": 1,
+  "pointbuyExtraForce": 0,
+  "pointsRemaining": 0,
+  "name": "",
+  "street_name": "New Runner",
+  "availableRaces": ["Troll", "Ork", "Dwarf", "Elf", "Human"],
+  "availableMagics": [
+    "Metahuman Full Magician",
+    "Human Physical Adept",
+    "Human Shamanist",
+    "Human Sorcerer"
+  ],
+  "magicalChoice": "Metahuman Full Magician",
+  "maxSpellPoints": 5,
+  "race": "Troll",
+  "bodyIndex": 2,
+  "magicalAttributeBonuses": {
+    "Body": 0,
+    "Quickness": 0,
+    "Strength": 0,
+    "Charisma": 0,
+    "Willpower": 0,
+    "Intelligence": 0,
+    "Reaction": 0,
+    "Initative": 0,
+    "Impact": 0,
+    "Ballastic": 0
+  },
+  "cyberAttributeBonuses": {
+    "Body": 0,
+    "Quickness": 0,
+    "Strength": 0,
+    "Charisma": 0,
+    "Willpower": 0,
+    "Intelligence": 0,
+    "Reaction": 0,
+    "Initative": 0
+  },
+  "raceBonuses": {
+    "Body": 5,
+    "Quickness": -1,
+    "Strength": 4,
+    "Charisma": -2,
+    "Willpower": -1,
+    "Intelligence": -2,
+    "Notes": "Thermographic Vision, +1 Reach for Armed/Unarmed Combat, Dermal Armor (+1 Body)"
+  },
+  "attributes": {
+    "Body": 4,
+    "Quickness": 2,
+    "Strength": 1,
+    "Charisma": 6,
+    "Willpower": 6,
+    "Intelligence": 1,
+    "Essence": 6,
+    "Initative": 1,
+    "Magic": 6,
+    "Reaction": 4
+  },
+  "characterTabs": {
+    "Magic": false,
+    "Decking": false,
+    "Otaku": false,
+    "Rigger": false
+  },
+  "inventory": [],
+  "weapons": [],
+  "vehicles": [],
+  "drones": [],
+  "contacts": [
+    {
+      "Name": "Contact 1",
+      "Type": "free",
+      "Archtype": "Fixer",
+      "Level": 1,
+      "GeneralInfo": "Helps with gear"
+    },
+    {
+      "Name": "Contact 2",
+      "Type": "free",
+      "Archtype": "Street Shaman",
+      "Level": 1,
+      "GeneralInfo": "Provides magical advice"
+    }
+  ],
+  "mods": [],
+  "decks": [],
+  "selectedDeckIndex": false,
+  "cyberware": [],
+  "bioware": [],
+  "skills": [
+    {
+      "name": "Sorcery",
+      "requiresConcentration": false,
+      "Concentrations": [
+        { "name": "Astral Sorcery", "Specializations": ["*aspect"] },
+        { "name": "Combat Spells", "Specializations": ["*technique"] },
+        { "name": "Detection Spells", "Specializations": ["*technique"] },
+        { "name": "Forensic Magic", "Specializations": [] },
+        { "name": "Health Spells", "Specializations": ["*technique"] },
+        { "name": "Illusion Spells", "Specializations": ["*technique"] },
+        { "name": "Manipulation Spells", "Specializations": ["*technique"] },
+        { "name": "Ritual Sorcery", "Specializations": ["category"] },
+        { "name": "Spellcasting", "Specializations": ["*spell category"] },
+        { "name": "Spell Defense", "Specializations": ["*spell category"] }
+      ],
+      "rating": 5,
+      "totalCost": 5,
+      "selectedConcentrations": [],
+      "type": "Active"
+    },
+    {
+      "name": "Conjuring",
+      "requiresConcentration": false,
+      "Concentrations": [
+        { "name": "Banishing", "Specializations": ["*type"] },
+        { "name": "Controlling", "Specializations": ["*type"] },
+        { "name": "Elemental", "Specializations": ["*type"] },
+        { "name": "Nature spirit", "Specializations": ["*type"] }
+      ],
+      "rating": 4,
+      "totalCost": 4,
+      "selectedConcentrations": [],
+      "type": "Active"
+    },
+    {
+      "name": "Negotiation",
+      "requiresConcentration": false,
+      "Concentrations": [
+        { "name": "Bargain", "Specializations": [] },
+        { "name": "Bribe", "Specializations": [] },
+        { "name": "Fast Talk", "Specializations": [] }
+      ],
+      "rating": 4,
+      "totalCost": 4,
+      "selectedConcentrations": [],
+      "type": "Active"
+    },
+    {
+      "name": "Stealth",
+      "requiresConcentration": false,
+      "Concentrations": [
+        { "name": "Farmland", "Specializations": ["*aspect"] },
+        { "name": "Urban", "Specializations": ["*aspect"] },
+        { "name": "Wilderness", "Specializations": ["*aspect"] }
+      ],
+      "rating": 4,
+      "totalCost": 4,
+      "selectedConcentrations": [],
+      "type": "Active"
+    },
+    {
+      "name": "Unarmed combat",
+      "requiresConcentration": false,
+      "Concentrations": [
+        { "name": "Cyber Implant Weaponry", "Specializations": ["*weapon"] },
+        { "name": "Martial Arts Style", "Specializations": ["*style"] },
+        { "name": "Subduing Combat", "Specializations": [] }
+      ],
+      "rating": 3,
+      "totalCost": 3,
+      "selectedConcentrations": [],
+      "type": "Active"
+    }
+  ],
+  "gear": [
+    {
+      "Name": "Armor Vest",
+      "Concealability": "12",
+      "Ballistic": "2",
+      "Impact": "1",
+      "Weight": "1",
+      "Availability": "2/36hrs",
+      "Cost": "200",
+      "Street Index": ".8",
+      "Type": "Clothing and Armor",
+      "Amount": 1
+    },
+    {
+      "Name": "Ordinary Clothing",
+      "Concealability": "-",
+      "Ballistic": "-",
+      "Impact": "-",
+      "Weight": "1",
+      "Availability": "Always",
+      "Cost": "50",
+      "Street Index": ".8",
+      "Type": "Clothing and Armor",
+      "Amount": 1
+    },
+    {
+      "Name": "Binoculars",
+      "Concealability": "5",
+      "Magnification": "50x",
+      "Weight": "1",
+      "Availability": "Always",
+      "Cost": "100",
+      "Street Index": ".8",
+      "Type": "S+S Vision Enhancers",
+      "Amount": 1
+    },
+    {
+      "Name": "Knife",
+      "Concealability": "8",
+      "Reach": "-",
+      "Damage": "(STR)L",
+      "Weight": ".5",
+      "Availability": "2/4hrs",
+      "Cost": "30",
+      "Street Index": ".75",
+      "BookPage": "sr2.???",
+      "Type": "Edged weapon",
+      "Amount": 1
+    }
+  ],
+  "isOtaku": false,
+  "isGhoul": false,
+  "isMetaVariant": false,
+  "metaVariantType": "",
+  "otakuPath": "Technoshaman",
+  "complexForms": [],
+  "karma": 0,
+  "karmaPool": 1,
+  "karmaSpent": 0,
+  "magical": true,
+  "initation": false,
+  "submerison": false,
+  "magicalTradition": {
+    "name": "Shaman",
+    "description": "Can use Sorcery and Conjuring skills, access the astral plane, and use foci.  Plus the benefits and disadvantages of their totem/tradition. ",
+    "conjures": "Spirits",
+    "totemList": "TOTEMS"
+  },
+  "magicalTotem": {
+    "name": "Wolf",
+    "environment": "Forest, prairie or mountains",
+    "advantages": "+2 dice for combat and detection spells, +2 dice for forest, prairie or mountain spirits (shaman's choice) ",
+    "disadvantages": "Wolf shamans can go berserk in combat, similar to Bear shamans (p. 163).",
+    "id": 81
+  },
+  "moreMetahumansOption": false,
+  "foci": [],
+  "spells": [
+    {
+      "BookPage": "SR2.???",
+      "Name": "Sleep              ",
+      "Drain": "[(F/2)-1]S",
+      "Type": "M",
+      "Duration": "I",
+      "Class": "C",
+      "Rating": 5,
+      "Fetish": false,
+      "Exclusive": false
+    }
+  ],
+  "powers": [],
+  "chargenCash": 500,
+  "cashSpent": 0,
+  "cash": 0,
+  "log": [],
+  "description": "",
+  "notes": ""
+}

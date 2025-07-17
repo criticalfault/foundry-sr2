@@ -1,0 +1,354 @@
+{
+  "(Tasr)": {
+    "name": "Taser",
+    "abbrivation": "(Tasr)",
+    "short": 5,
+    "medium": 10,
+    "long": 12,
+    "extreme": 15
+  },
+  "(LHOP)": {
+    "name": "Light Hold-out",
+    "abbrivation": "(LHOP)",
+    "short": 3,
+    "medium": 8,
+    "long": 15,
+    "extreme": 25
+  },
+  "(HOPist)": {
+    "name": "Hold-out Pistols",
+    "abbrivation": "(HOPist)",
+    "short": 5,
+    "medium": 15,
+    "long": 30,
+    "extreme": 50
+  },
+  "(LPist)": {
+    "name": "Light Pistol",
+    "abbrivation": "(LPist)",
+    "short": 5,
+    "medium": 15,
+    "long": 30,
+    "extreme": 50
+  },
+  "(MaPist):": {
+    "name": "Machine Pistol",
+    "abbrivation": "(MaPist):",
+    "short": 5,
+    "medium": 15,
+    "long": 30,
+    "extreme": 50
+  },
+  "(MPist)": {
+    "name": "Medium Pistol",
+    "abbrivation": "(MPist)",
+    "short": 5,
+    "medium": 20,
+    "long": 40,
+    "extreme": 60
+  },
+  "(HPist)": {
+    "name": "Heavy Pistol",
+    "abbrivation": "(HPist)",
+    "short": 5,
+    "medium": 20,
+    "long": 40,
+    "extreme": 60
+  },
+  "(VHP)": {
+    "name": "Very Heavy Pistol",
+    "abbrivation": "(VHP)",
+    "short": 10,
+    "medium": 20,
+    "long": 40,
+    "extreme": 60
+  },
+  "(SMG)": {
+    "name": "Shotgun",
+    "abbrivation": "(SMG)",
+    "short": 10,
+    "medium": 40,
+    "long": 80,
+    "extreme": 150
+  },
+  "(ShtG)": {
+    "name": "Shotgun",
+    "abbrivation": "(SMG)",
+    "short": 10,
+    "medium": 20,
+    "long": 50,
+    "extreme": 100
+  },
+  "LCarb": {
+    "name": "Light Carbine",
+    "abbrivation": "(LCarb)",
+    "short": 20,
+    "medium": 50,
+    "long": 100,
+    "extreme": 200
+  },
+  "(Carb)": {
+    "name": "Carbine",
+    "abbrivation": "(Carb)",
+    "short": 40,
+    "medium": 150,
+    "long": 250,
+    "extreme": 350
+  },
+  "(AsRf)": {
+    "name": "Assault Rifle",
+    "abbrivation": "(AsRf)",
+    "short": 50,
+    "medium": 150,
+    "long": 350,
+    "extreme": 550
+  },
+  "(SptR)": {
+    "name": "Sniper Rifle",
+    "abbrivation": "(SptR)",
+    "short": 100,
+    "medium": 250,
+    "long": 500,
+    "extreme": 750
+  },
+  "(Snip)": {
+    "name": "Sniper Rifle",
+    "abbrivation": "(Snip)",
+    "short": 150,
+    "medium": 300,
+    "long": 700,
+    "extreme": 1000
+  },
+  "(HSR)": {
+    "name": "Heavy Sniper Rifle",
+    "abbrivation": "(HSR)",
+    "short": 150,
+    "medium": 350,
+    "long": 900,
+    "extreme": 1800
+  },
+  "(AmRf)": {
+    "name": "Assault Rifle",
+    "abbrivation": "(AmRf)",
+    "short": 100,
+    "medium": 300,
+    "long": 900,
+    "extreme": 2400
+  },
+  "(LMG)": {
+    "name": "Light Machine Gun",
+    "abbrivation": "(LMG)",
+    "short": 75,
+    "medium": 200,
+    "long": 400,
+    "extreme": 800
+  },
+  "(MMG)": {
+    "name": "Medium Machine Gun",
+    "abbrivation": "(MMG)",
+    "short": 80,
+    "medium": 250,
+    "long": 750,
+    "extreme": 1200
+  },
+  "(HMG)": {
+    "name": "Heavy Machine Gun",
+    "abbrivation": "(HMG)",
+    "short": 80,
+    "medium": 250,
+    "long": 800,
+    "extreme": 1500
+  },
+  "(ACan)": {
+    "name": "Assault Cannon",
+    "abbrivation": "(ACan)",
+    "short": 100,
+    "medium": 300,
+    "long": 900,
+    "extreme": 2400
+  },
+  "(MinG)": {
+    "name": "Mini Gun",
+    "abbrivation": "(MinG)",
+    "short": 75,
+    "medium": 200,
+    "long": 400,
+    "extreme": 800
+  },
+  "(Bow)": {
+    "name": "Bow",
+    "abbrivation": "(Bow)",
+    "short": 1,
+    "medium": 10,
+    "long": 30,
+    "extreme": 60
+  },
+  "(LCB)": {
+    "name": "Light Crossbow",
+    "abbrivation": "(LCB)",
+    "short": 2,
+    "medium": 8,
+    "long": 20,
+    "extreme": 40
+  },
+  "(MCB)": {
+    "name": "Medium Crossbow",
+    "abbrivation": "(MCB)",
+    "short": 3,
+    "medium": 12,
+    "long": 30,
+    "extreme": 50
+  },
+  "(HCB)": {
+    "name": "Heavy Crossbow",
+    "abbrivation": "(HCB)",
+    "short": 5,
+    "medium": 15,
+    "long": 40,
+    "extreme": 60
+  },
+  "(SL)": {
+    "name": "Sling Launcher",
+    "abbrivation": "(SL)",
+    "short": 3,
+    "medium": 5,
+    "long": 20,
+    "extreme": 30
+  },
+  "(SS)": {
+    "name": "Slingshot",
+    "abbrivation": "(SS)",
+    "short": 1,
+    "medium": 25,
+    "long": 5,
+    "extreme": 7
+  },
+  "(SpGn)": {
+    "name": "Spear Gun",
+    "abbrivation": "(SS)",
+    "short": 10,
+    "medium": 40,
+    "long": 80,
+    "extreme": 150
+  },
+  "(Ctrp)": {
+    "name": "Caltrops",
+    "abbrivation": "(SS)",
+    "short": 3,
+    "medium": 5,
+    "long": 10,
+    "extreme": 20
+  },
+  "(Net)": {
+    "name": "Nets",
+    "abbrivation": "(Net)",
+    "short": 2,
+    "medium": 4,
+    "long": 6,
+    "extreme": 10
+  },
+  "(SH)": {
+    "name": "Shuriken",
+    "abbrivation": "(SH)",
+    "short": 1,
+    "medium": 2,
+    "long": 5,
+    "extreme": 7
+  },
+  "(TK)": {
+    "name": "Thrown Knife",
+    "abbrivation": "(TK)",
+    "short": 1,
+    "medium": 2,
+    "long": 3,
+    "extreme": 5
+  },
+  "(BG)": {
+    "name": "Blowgun",
+    "abbrivation": "(BG)",
+    "short": 3,
+    "medium": 8,
+    "long": 12,
+    "extreme": 15
+  },
+  "(FlThr)": {
+    "name": "Flamethrower",
+    "abbrivation": "(FlThr)",
+    "short": 10,
+    "medium": 20,
+    "long": 50,
+    "extreme": 100
+  },
+  "(GJPist)": {
+    "name": "Gyrojet Pistol",
+    "abbrivation": "(GJPist)",
+    "short": 10,
+    "medium": 20,
+    "long": 50,
+    "extreme": 100
+  },
+  "(NtGn)": {
+    "name": "Netguns",
+    "abbrivation": "(NtGn)",
+    "short": 10,
+    "medium": 20,
+    "long": 50,
+    "extreme": 100
+  },
+  "(GrLn)": {
+    "name": "Grenade Launcher",
+    "abbrivation": "(GrLn)",
+    "short": 50,
+    "medium": 100,
+    "long": 150,
+    "extreme": 300
+  },
+  "(Mrtr)": {
+    "name": "Mortar",
+    "abbrivation": "(Mrtr)",
+    "short": 300,
+    "medium": 1000,
+    "long": 4000,
+    "extreme": 6000
+  },
+  "(Blsta)": {
+    "name": "Ballista",
+    "abbrivation": "(Blsta)",
+    "short": 100,
+    "medium": 500,
+    "long": 3000,
+    "extreme": 5000
+  },
+  "(MisLn)": {
+    "name": "Missile Launcher",
+    "abbrivation": "(MisLn)",
+    "short": 150,
+    "medium": 450,
+    "long": 1200,
+    "extreme": 3000
+  },
+  "(GATGM)": {
+    "name": "Great Dragon ATGM",
+    "abbrivation": "(GATGM)",
+    "short": 350,
+    "medium": 750,
+    "long": 1500,
+    "extreme": 5000
+  },
+  "(cig)": {
+    "name": "Cigarete Micro-Rocket",
+    "abbrivation": "(cig)",
+    "short": 5,
+    "medium": 15,
+    "long": 30,
+    "extreme": 50
+  },
+  "(VJMP)": {
+    "name": "Vogeljager Man-Portable",
+    "abbrivation": "(VJMP)",
+    "short": 200,
+    "medium": 600,
+    "long": 2000,
+    "extreme": 4000
+  }
+}

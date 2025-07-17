@@ -40,6 +40,14 @@ Hooks.once("init", async function () {
     CONFIG.Actor.documentClass = SR2Actor;
     CONFIG.Item.documentClass = SR2Item;
 
+    // Set default actor icons
+    CONFIG.Actor.typeIcons = {
+        character: "icons/svg/mystery-man.svg",
+        cyberdeck: "systems/shadowrun2e/icons/cyberdeck.png",
+        vehicle: "systems/shadowrun2e/icons/vehicle.png",
+        spirit: "systems/shadowrun2e/icons/spirit.png"
+    };
+
     // Register sheet application classes
     console.log("SR2E | Unregistering core sheets...");
     Actors.unregisterSheet("core", ActorSheet);
@@ -323,7 +331,7 @@ class DataImportConfig extends FormApplication {
     }
 
     async _clearAllPacks() {
-        const itemPackNames = ["cyberware", "bioware", "spells", "adeptpowers", "skills"];
+        const itemPackNames = ["cyberware", "bioware", "spells", "adeptpowers", "skills", "programs", "vrprograms", "gear", "totems"];
         const actorPackNames = ["cyberdecks", "vehicles", "drones"];
 
         // Clear item packs

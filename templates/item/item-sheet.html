@@ -73,7 +73,7 @@
       {{#if (eq item.type "program")}}
       <div class="form-group">
         <label>Rating</label>
-        <input type="number" name="system.rating" value="{{system.rating}}" data-dtype="Number" min="1" max="10"/>
+        <input type="number" name="system.rating" value="{{system.rating}}" data-dtype="Number" min="1" max="12"/>
       </div>
       
       <div class="form-group">
@@ -88,8 +88,15 @@
       </div>
       
       <div class="form-group">
-        <label>Memory Size (MP)</label>
-        <input type="number" name="system.memorySize" value="{{system.memorySize}}" data-dtype="Number" min="1"/>
+        <label>Size Multiplier</label>
+        <input type="number" name="system.multiplier" value="{{system.multiplier}}" data-dtype="Number" min="1" step="0.1"/>
+        <small>Size = (Rating × Rating) × Multiplier</small>
+      </div>
+      
+      <div class="form-group">
+        <label>Calculated Memory Size (MP)</label>
+        <input type="number" name="system.memorySize" value="{{system.memorySize}}" data-dtype="Number" min="1" readonly/>
+        <small>Auto-calculated from rating and multiplier</small>
       </div>
       
       <div class="form-group">

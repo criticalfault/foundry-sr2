@@ -89,9 +89,34 @@ export class SR2ActorSheet extends ActorSheet {
     context.adeptpowers = adeptpowers;
     context.skills = skills;
 
+    // Prepare totem data for shamanic magicians
+    const totems = [];
+    for (let i of context.items) {
+      if (i.type === 'totem') {
+        totems.push(i);
+      }
+    }
+    context.totems = totems;
+    
+    // Find selected totem
+    context.selectedTotem = totems.find(t => t.system.isSelected);
+
     // Calculate total power points used for adept powers
     context.powerPointsUsed = adeptpowers.reduce((total, power) => {
       return total + (power.system.totalCost || 0);
+    }, 0);
+
+    // Calculate gear summary statistics
+    context.totalWeight = context.items.reduce((total, item) => {
+      return total + ((item.system.weight || 0) * (item.system.quantity || 1));
+    }, 0);
+
+    context.totalValue = context.items.reduce((total, item) => {
+      return total + ((item.system.price || 0) * (item.system.quantity || 1));
+    }, 0);
+
+    context.totalItems = context.items.reduce((total, item) => {
+      return total + (item.system.quantity || 1);
     }, 0);
   }
 
@@ -157,12 +182,34 @@ export class SR2ActorSheet extends ActorSheet {
 
     // Delete Inventory Item
     html.find('.item-delete').click(ev => {
-      const li = $(ev.currentTarget).parents(".item, .skill-item");
-      const itemId = li.data("itemId") || li.data("item-id");
-      const item = this.actor.items.get(itemId);
-      if (item) {
-        item.delete();
-        li.slideUp(200, () => this.render(false));
+      ev.preventDefault();
+      ev.stopPropagation();
+      
+      try {
+        const li = $(ev.currentTarget).parents(".item, .skill-item, .item-row");
+        const itemId = li.data("itemId") || li.data("item-id");
+        
+        if (!itemId) {
+          console.warn("SR2E | No item ID found for delete operation");
+          return;
+        }
+        
+        const item = this.actor.items.get(itemId);
+        if (item) {
+          // Confirm deletion for important items
+          const confirmDelete = game.settings.get("core", "noCanvas") || 
+                               confirm(`Delete ${item.name}?`);
+          
+          if (confirmDelete) {
+            item.delete();
+            li.slideUp(200, () => this.render(false));
+          }
+        } else {
+          console.warn(`SR2E | Item with ID ${itemId} not found`);
+        }
+      } catch (error) {
+        console.error("SR2E | Error deleting item:", error);
+        ui.notifications.error("Failed to delete item. Check console for details.");
       }
     });
 
@@ -181,6 +228,17 @@ export class SR2ActorSheet extends ActorSheet {
 
     // Spell casting
     html.find('.spell-cast').click(this._onSpellCast.bind(this));
+
+    // Weapon attacks
+    html.find('.weapon-attack').click(this._onWeaponAttack.bind(this));
+
+    // Range calculator
+    html.find('.range-weapon-select').change(this._onRangeWeaponChange.bind(this));
+    html.find('.range-distance').on('input', this._onRangeDistanceChange.bind(this));
+
+    // Totem management
+    html.find('.browse-totems').click(this._onBrowseTotems.bind(this));
+    html.find('.change-totem').click(this._onBrowseTotems.bind(this));
   }
 
   /**
@@ -358,6 +416,243 @@ export class SR2ActorSheet extends ActorSheet {
     if (sorcerySkills.length === 0) return 0;
 
     return Math.max(...sorcerySkills.map(skill => skill.system.rating || 0));
+  }
+
+  /**
+   * Handle weapon attacks
+   */
+  async _onWeaponAttack(event) {
+    event.preventDefault();
+    const weaponId = event.currentTarget.dataset.itemId;
+    const weapon = this.actor.items.get(weaponId);
+
+    if (!weapon) return;
+
+    // Get relevant attributes and skills
+    const strength = this.actor.system.attributes.strength.value || 1;
+    const quickness = this.actor.system.attributes.quickness.value || 1;
+    
+    // Determine if it's a melee or ranged weapon
+    const isRanged = weapon.system.weaponType === 'ranged';
+    const attribute = isRanged ? quickness : strength;
+    
+    // Get appropriate combat skill
+    const combatSkills = this.actor.items.filter(i => 
+      i.type === 'skill' && 
+      (i.system.baseSkill === 'Armed Combat' || 
+       i.system.baseSkill === 'Firearms' || 
+       i.system.baseSkill === 'Projectile Weapons')
+    );
+    
+    let skillRating = 0;
+    if (combatSkills.length > 0) {
+      // Use the highest applicable combat skill
+      skillRating = Math.max(...combatSkills.map(skill => skill.system.rating || 0));
+    }
+
+    // Calculate dice pool
+    const dicePool = attribute + skillRating;
+    
+    // Create attack title
+    const attackType = isRanged ? 'Ranged Attack' : 'Melee Attack';
+    const title = `${attackType} with ${weapon.name}`;
+
+    // Roll for attack
+    const result = await this.actor.rollDice(dicePool, 4, title);
+
+    // Display weapon damage in chat
+    const damageCode = weapon.system.damage || "1L";
+    const chatData = {
+      user: game.user.id,
+      speaker: ChatMessage.getSpeaker({ actor: this.actor }),
+      content: `
+        <div class="weapon-attack">
+          <h3>${weapon.name} Attack</h3>
+          <p><strong>Damage Code:</strong> ${damageCode}</p>
+          <p><strong>Concealability:</strong> ${weapon.system.concealability || 0}</p>
+          ${weapon.system.reach ? `<p><strong>Reach:</strong> ${weapon.system.reach}</p>` : ''}
+          ${weapon.system.mode ? `<p><strong>Mode:</strong> ${weapon.system.mode}</p>` : ''}
+        </div>
+      `
+    };
+
+    ChatMessage.create(chatData);
+
+    // Handle ammo consumption for ranged weapons
+    if (isRanged && weapon.system.ammo && weapon.system.ammo.current > 0) {
+      const newAmmo = weapon.system.ammo.current - 1;
+      await weapon.update({'system.ammo.current': newAmmo});
+      
+      if (newAmmo === 0) {
+        ui.notifications.warn(`${weapon.name} is out of ammunition!`);
+      }
+    }
+  }
+
+  /**
+   * Handle range weapon selection change
+   */
+  async _onRangeWeaponChange(event) {
+    event.preventDefault();
+    const weaponId = event.currentTarget.value;
+    const rangeType = event.currentTarget.selectedOptions[0]?.dataset.rangeType;
+
+    if (!weaponId || !rangeType) {
+      this._hideRangeBands();
+      return;
+    }
+
+    // Load ranges data and display range bands
+    const rangesData = await this._loadRangesData();
+    if (rangesData && rangesData[rangeType]) {
+      this._displayRangeBands(rangesData[rangeType]);
+      this._calculateRangeCategory();
+    }
+  }
+
+  /**
+   * Handle distance input change
+   */
+  _onRangeDistanceChange(event) {
+    event.preventDefault();
+    this._calculateRangeCategory();
+  }
+
+  /**
+   * Load ranges data from JSON file
+   */
+  async _loadRangesData() {
+    if (this.rangesData) {
+      return this.rangesData;
+    }
+
+    try {
+      const response = await fetch('/systems/shadowrun2e/data/ranges.json');
+      this.rangesData = await response.json();
+      return this.rangesData;
+    } catch (error) {
+      console.error('Failed to load ranges data:', error);
+      return null;
+    }
+  }
+
+  /**
+   * Display range bands for selected weapon
+   */
+  _displayRangeBands(rangeData) {
+    const rangeBands = document.getElementById('range-bands');
+    if (!rangeBands) return;
+
+    document.getElementById('short-range').textContent = rangeData.short;
+    document.getElementById('medium-range').textContent = rangeData.medium;
+    document.getElementById('long-range').textContent = rangeData.long;
+    document.getElementById('extreme-range').textContent = rangeData.extreme;
+
+    rangeBands.style.display = 'grid';
+  }
+
+  /**
+   * Hide range bands
+   */
+  _hideRangeBands() {
+    const rangeBands = document.getElementById('range-bands');
+    if (rangeBands) {
+      rangeBands.style.display = 'none';
+    }
+
+    const rangeCategory = document.getElementById('range-category');
+    const rangeModifier = document.getElementById('range-modifier');
+    if (rangeCategory) rangeCategory.textContent = '-';
+    if (rangeModifier) rangeModifier.textContent = '';
+  }
+
+  /**
+   * Calculate and display range category based on distance
+   */
+  async _calculateRangeCategory() {
+    const weaponSelect = document.getElementById('range-weapon-select');
+    const distanceInput = document.getElementById('range-distance');
+    const rangeCategorySpan = document.getElementById('range-category');
+    const rangeModifierSpan = document.getElementById('range-modifier');
+
+    if (!weaponSelect || !distanceInput || !rangeCategorySpan) return;
+
+    const weaponId = weaponSelect.value;
+    const rangeType = weaponSelect.selectedOptions[0]?.dataset.rangeType;
+    const distance = parseInt(distanceInput.value);
+
+    if (!weaponId || !rangeType || !distance) {
+      rangeCategorySpan.textContent = '-';
+      rangeModifierSpan.textContent = '';
+      return;
+    }
+
+    const rangesData = await this._loadRangesData();
+    if (!rangesData || !rangesData[rangeType]) return;
+
+    const ranges = rangesData[rangeType];
+    let category = '';
+    let modifier = '';
+    let categoryClass = '';
+
+    if (distance <= ranges.short) {
+      category = 'Short';
+      modifier = '(TN 4)';
+      categoryClass = 'short';
+    } else if (distance <= ranges.medium) {
+      category = 'Medium';
+      modifier = '(TN 5)';
+      categoryClass = 'medium';
+    } else if (distance <= ranges.long) {
+      category = 'Long';
+      modifier = '(TN 6)';
+      categoryClass = 'long';
+    } else if (distance <= ranges.extreme) {
+      category = 'Extreme';
+      modifier = '(TN 8)';
+      categoryClass = 'extreme';
+    } else {
+      category = 'Out of Range';
+      modifier = '(Impossible)';
+      categoryClass = 'impossible';
+    }
+
+    rangeCategorySpan.textContent = category;
+    rangeCategorySpan.className = `range-category ${categoryClass}`;
+    rangeModifierSpan.textContent = modifier;
+    rangeModifierSpan.className = `range-modifier ${categoryClass}`;
+  }
+
+  /**
+   * Handle browsing totems for shamanic magicians
+   */
+  async _onBrowseTotems(event) {
+    event.preventDefault();
+
+    // Import the item browser dynamically
+    const { SR2ItemBrowser } = await import("/systems/shadowrun2e/scripts/item-browser.js");
+    
+    // Create a custom item browser with totem selection handling
+    const browser = new SR2ItemBrowser(this.actor, 'totem', 'shadowrun2e.totems');
+    
+    // Override the default item creation to handle totem selection
+    const originalAddItem = browser.addItem;
+    browser.addItem = async (item) => {
+      // First, unselect any existing totems
+      const existingTotems = this.actor.items.filter(i => i.type === 'totem');
+      for (const existingTotem of existingTotems) {
+        await existingTotem.update({'system.isSelected': false});
+      }
+      
+      // Then add the new totem and mark it as selected
+      const newItem = await originalAddItem.call(browser, item);
+      if (newItem) {
+        await newItem.update({'system.isSelected': true});
+      }
+      return newItem;
+    };
+    
+    browser.render(true);
   }
 
   /**
