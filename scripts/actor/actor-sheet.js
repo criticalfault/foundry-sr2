@@ -101,6 +101,28 @@ export class SR2ActorSheet extends ActorSheet {
     // Find selected totem
     context.selectedTotem = totems.find(t => t.system.isSelected);
 
+    // Calculate essence loss from installed cyberware
+    const installedCyberware = cyberware.filter(c => c.system.installed);
+    const totalEssenceLoss = installedCyberware.reduce((total, cyber) => {
+      return total + (parseFloat(cyber.system.essence) || 0);
+    }, 0);
+    
+    // Calculate current essence (base essence - cyberware essence loss)
+    const baseEssence = this.actor.system.attributes.essence.max || 6;
+    const currentEssence = Math.max(0, baseEssence - totalEssenceLoss);
+    
+    // Update the actor's current essence value
+    if (this.actor.system.attributes.essence.value !== currentEssence) {
+      this.actor.update({'system.attributes.essence.value': currentEssence});
+    }
+    
+    context.essenceData = {
+      base: baseEssence,
+      current: currentEssence,
+      loss: totalEssenceLoss,
+      available: Math.max(0, currentEssence - 0.1) // Must keep at least 0.1 essence
+    };
+
     // Calculate total power points used for adept powers
     context.powerPointsUsed = adeptpowers.reduce((total, power) => {
       return total + (power.system.totalCost || 0);
@@ -239,6 +261,10 @@ export class SR2ActorSheet extends ActorSheet {
     // Totem management
     html.find('.browse-totems').click(this._onBrowseTotems.bind(this));
     html.find('.change-totem').click(this._onBrowseTotems.bind(this));
+
+    // Cyberware installation management
+    html.find('.cyberware-installed').change(this._onCyberwareInstall.bind(this));
+    html.find('.bioware-installed').change(this._onBiowareInstall.bind(this));
   }
 
   /**
@@ -653,6 +679,165 @@ export class SR2ActorSheet extends ActorSheet {
     };
     
     browser.render(true);
+  }
+
+  /**
+   * Handle cyberware installation toggle
+   */
+  async _onCyberwareInstall(event) {
+    event.preventDefault();
+    const checkbox = event.currentTarget;
+    const itemId = checkbox.dataset.itemId;
+    const item = this.actor.items.get(itemId);
+    
+    if (!item) return;
+    
+    const isInstalling = checkbox.checked;
+    const essenceCost = parseFloat(item.system.essence) || 0;
+    
+    if (isInstalling) {
+      // Check if installing this cyberware would reduce essence below 0.1
+      const currentEssence = this.actor.system.attributes.essence.value || 6;
+      const remainingEssence = currentEssence - essenceCost;
+      
+      if (remainingEssence < 0.1) {
+        // Prevent installation
+        checkbox.checked = false;
+        ui.notifications.error(
+          `Cannot install ${item.name}. Essence cost (${essenceCost}) would reduce your Essence below 0.1. ` +
+          `Current Essence: ${currentEssence.toFixed(2)}, Required: ${essenceCost.toFixed(2)}`
+        );
+        return;
+      }
+      
+      // Show confirmation for significant essence loss
+      if (essenceCost >= 1.0) {
+        const confirm = await Dialog.confirm({
+          title: "Cyberware Installation",
+          content: `<p>Installing <strong>${item.name}</strong> will permanently reduce your Essence by <strong>${essenceCost}</strong>.</p>
+                   <p>Current Essence: <strong>${currentEssence.toFixed(2)}</strong></p>
+                   <p>New Essence: <strong>${remainingEssence.toFixed(2)}</strong></p>
+                   <p>This cannot be undone. Continue?</p>`,
+          yes: () => true,
+          no: () => false
+        });
+        
+        if (!confirm) {
+          checkbox.checked = false;
+          return;
+        }
+      }
+      
+      // Install the cyberware
+      await item.update({'system.installed': true});
+      ui.notifications.info(`${item.name} installed. Essence reduced by ${essenceCost}.`);
+      
+    } else {
+      // Uninstall the cyberware
+      const confirm = await Dialog.confirm({
+        title: "Cyberware Removal",
+        content: `<p>Are you sure you want to remove <strong>${item.name}</strong>?</p>
+                 <p>This will restore <strong>${essenceCost}</strong> Essence.</p>
+                 <p><em>Note: In Shadowrun, cyberware removal typically requires surgery and may have complications.</em></p>`,
+        yes: () => true,
+        no: () => false
+      });
+      
+      if (!confirm) {
+        checkbox.checked = true;
+        return;
+      }
+      
+      await item.update({'system.installed': false});
+      ui.notifications.info(`${item.name} removed. Essence restored by ${essenceCost}.`);
+    }
+    
+    // Refresh the sheet to update essence display
+    this.render(false);
+  }
+
+  /**
+   * Handle bioware installation toggle
+   */
+  async _onBiowareInstall(event) {
+    event.preventDefault();
+    const checkbox = event.currentTarget;
+    const itemId = checkbox.dataset.itemId;
+    const item = this.actor.items.get(itemId);
+    
+    if (!item) return;
+    
+    const isInstalling = checkbox.checked;
+    const bioIndex = parseFloat(item.system.bioIndex) || 0;
+    
+    if (isInstalling) {
+      // Calculate current Bio Index usage
+      const installedBioware = this.actor.items.filter(i => 
+        i.type === 'bioware' && i.system.installed && i._id !== itemId
+      );
+      const currentBioIndex = installedBioware.reduce((total, bio) => {
+        return total + (parseFloat(bio.system.bioIndex) || 0);
+      }, 0);
+      
+      // Bio Index limit is typically equal to Essence (rounded down)
+      const essenceValue = Math.floor(this.actor.system.attributes.essence.value || 6);
+      const remainingBioIndex = essenceValue - currentBioIndex;
+      
+      if (bioIndex > remainingBioIndex) {
+        // Prevent installation
+        checkbox.checked = false;
+        ui.notifications.error(
+          `Cannot install ${item.name}. Bio Index cost (${bioIndex}) exceeds available capacity. ` +
+          `Available Bio Index: ${remainingBioIndex.toFixed(2)}, Required: ${bioIndex.toFixed(2)}`
+        );
+        return;
+      }
+      
+      // Show confirmation for bioware installation
+      if (bioIndex >= 1.0) {
+        const confirm = await Dialog.confirm({
+          title: "Bioware Installation",
+          content: `<p>Installing <strong>${item.name}</strong> will use <strong>${bioIndex}</strong> Bio Index.</p>
+                   <p>Current Bio Index Used: <strong>${currentBioIndex.toFixed(2)}</strong></p>
+                   <p>Bio Index Limit: <strong>${essenceValue}</strong></p>
+                   <p>Remaining after installation: <strong>${(remainingBioIndex - bioIndex).toFixed(2)}</strong></p>
+                   <p>Continue?</p>`,
+          yes: () => true,
+          no: () => false
+        });
+        
+        if (!confirm) {
+          checkbox.checked = false;
+          return;
+        }
+      }
+      
+      // Install the bioware
+      await item.update({'system.installed': true});
+      ui.notifications.info(`${item.name} installed. Bio Index used: ${bioIndex}.`);
+      
+    } else {
+      // Uninstall the bioware
+      const confirm = await Dialog.confirm({
+        title: "Bioware Removal",
+        content: `<p>Are you sure you want to remove <strong>${item.name}</strong>?</p>
+                 <p>This will free up <strong>${bioIndex}</strong> Bio Index.</p>
+                 <p><em>Note: In Shadowrun, bioware removal typically requires surgery and may have complications.</em></p>`,
+        yes: () => true,
+        no: () => false
+      });
+      
+      if (!confirm) {
+        checkbox.checked = true;
+        return;
+      }
+      
+      await item.update({'system.installed': false});
+      ui.notifications.info(`${item.name} removed. Bio Index freed: ${bioIndex}.`);
+    }
+    
+    // Refresh the sheet to update displays
+    this.render(false);
   }
 
   /**

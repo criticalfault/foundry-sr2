@@ -1642,7 +1642,6 @@
   padding: 0;
   align-items: center;
   background: rgba(0, 0, 0, 0.05);
-  border: 2px groove #eeede0;
   font-weight: bold;
 }
 
@@ -1754,7 +1753,7 @@
 
 /* Tabs */
 .shadowrun2e .tabs {
-  height: 40px;
+  height: 60px;
   border-top: 1px solid #AAA;
   border-bottom: 1px solid #AAA;
 }
@@ -2198,8 +2197,8 @@
   background: linear-gradient(135deg, #2c3e50, #34495e);
   color: white;
   border-radius: 8px;
-  padding: 15px;
   margin-bottom: 15px;
+  height: 100px;
 }
 
 .shadowrun2e.vehicle .vehiclename input {
@@ -2247,7 +2246,6 @@
 
 .shadowrun2e.vehicle .sheet-tabs .item {
   color: #bdc3c7;
-  border-right: 1px solid #2c3e50;
   padding: 12px 20px;
 }
 
@@ -2481,6 +2479,8 @@
 .shadowrun2e.vehicle .items-header h3 {
   color: #2c3e50;
   margin: 0;
+  font-size: 25px;
+  border-bottom: none;
 }
 
 .shadowrun2e.vehicle .item-create {
@@ -2559,7 +2559,7 @@
   display: flex;
   align-items: center;
   gap: 10px;
-  color: #2c3e50;
+  color: #fff;
   font-weight: bold;
 }
 
@@ -4872,4 +4872,279 @@
 .shadowrun2e .sheet-header {
   position: relative;
   z-index: 1;
+}/
+* ===== CYBERPUNK ESSENCE DISPLAY ===== */
+.shadowrun2e .essence-breakdown {
+  margin-top: 8px;
+  padding: 8px;
+  background: linear-gradient(135deg, var(--cyber-bg-secondary), var(--cyber-bg-primary));
+  border: 1px solid var(--cyber-border);
+  border-left: 3px solid var(--cyber-accent-cyan);
+  font-size: 10px;
+  line-height: 1.3;
+}
+
+.shadowrun2e .essence-breakdown small {
+  display: block;
+  color: var(--cyber-text-secondary);
+  margin-bottom: 2px;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.shadowrun2e .essence-available {
+  color: var(--cyber-accent-green) !important;
+  font-weight: bold;
+  text-shadow: var(--cyber-glow-green);
+}
+
+.shadowrun2e .essence-warning {
+  color: var(--cyber-accent-red) !important;
+  font-weight: bold;
+  text-shadow: var(--cyber-glow-red);
+  animation: pulse 2s infinite;
+}
+
+/* ===== CYBERPUNK CYBERWARE/BIOWARE TABLES ===== */
+.shadowrun2e .items-table-header {
+  background: linear-gradient(135deg, var(--cyber-bg-tertiary), var(--cyber-bg-secondary));
+  color: var(--cyber-accent-cyan);
+  border-bottom: 2px solid var(--cyber-accent-cyan);
+  padding: 12px;
+  font-weight: bold;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  font-size: 11px;
+  display: grid;
+  gap: 10px;
+}
+
+.shadowrun2e .cyberware .items-table-header {
+  grid-template-columns: 2fr 80px 80px 80px 100px;
+}
+
+.shadowrun2e .bioware .items-table-header {
+  grid-template-columns: 2fr 80px 100px 80px 100px;
+}
+
+.shadowrun2e .item-row {
+  display: grid;
+  gap: 10px;
+  padding: 12px;
+  border-bottom: 1px solid var(--cyber-border);
+  align-items: center;
+  background: var(--cyber-bg-primary);
+  color: var(--cyber-text-primary);
+  transition: all 0.3s ease;
+}
+
+.shadowrun2e .cyberware .item-row {
+  grid-template-columns: 2fr 80px 80px 80px 100px;
+}
+
+.shadowrun2e .bioware .item-row {
+  grid-template-columns: 2fr 80px 100px 80px 100px;
+}
+
+.shadowrun2e .item-row:hover {
+  background: linear-gradient(135deg, var(--cyber-bg-secondary), var(--cyber-bg-primary));
+  border-left: 3px solid var(--cyber-accent-cyan);
+  box-shadow: inset 0 0 10px rgba(0, 255, 255, 0.1);
+}
+
+.shadowrun2e .item-row:last-child {
+  border-bottom: none;
+}
+
+.shadowrun2e .item-name {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.shadowrun2e .item-name img {
+  border: 1px solid var(--cyber-border);
+  background: var(--cyber-bg-secondary);
+}
+
+.shadowrun2e .item-name span {
+  color: var(--cyber-text-primary);
+  font-weight: bold;
+}
+
+.shadowrun2e .item-rating input,
+.shadowrun2e .item-essence span,
+.shadowrun2e .item-bioindex span {
+  text-align: center;
+  font-weight: bold;
+  color: var(--cyber-accent-cyan);
+}
+
+.shadowrun2e .item-installed {
+  text-align: center;
+}
+
+.shadowrun2e .item-installed input[type="checkbox"] {
+  width: 18px;
+  height: 18px;
+  accent-color: var(--cyber-accent-green);
+  cursor: pointer;
+}
+
+.shadowrun2e .item-installed input[type="checkbox"]:checked {
+  background: var(--cyber-accent-green);
+  border-color: var(--cyber-accent-green);
+  box-shadow: var(--cyber-glow-green);
+}
+
+.shadowrun2e .item-actions {
+  display: flex;
+  justify-content: center;
+  gap: 4px;
+}
+
+.shadowrun2e .item-actions button {
+  padding: 4px 8px;
+  font-size: 10px;
+  min-width: auto;
+}
+
+/* ===== CYBERPUNK INSTALLATION STATUS INDICATORS ===== */
+.shadowrun2e .item-row[data-installed="true"] {
+  border-left: 3px solid var(--cyber-accent-green);
+  background: linear-gradient(135deg, var(--cyber-bg-primary), rgba(0, 255, 0, 0.05));
+}
+
+.shadowrun2e .item-row[data-installed="true"] .item-name span {
+  color: var(--cyber-accent-green);
+  text-shadow: var(--cyber-glow-green);
+}
+
+.shadowrun2e .item-row[data-installed="false"] {
+  opacity: 0.7;
+}
+
+.shadowrun2e .item-row[data-installed="false"] .item-name span {
+  color: var(--cyber-text-muted);
+}
+
+/* ===== CYBERPUNK ESSENCE WARNING STATES ===== */
+.shadowrun2e .attribute.essence-critical {
+  border-left-color: var(--cyber-accent-red);
+  box-shadow: var(--cyber-glow-red);
+  animation: pulse 2s infinite;
+}
+
+.shadowrun2e .attribute.essence-critical .essence-breakdown {
+  border-left-color: var(--cyber-accent-red);
+  background: linear-gradient(135deg, rgba(255, 0, 64, 0.1), var(--cyber-bg-primary));
+}
+
+.shadowrun2e .attribute.essence-low {
+  border-left-color: var(--cyber-accent-yellow);
+  box-shadow: 0 0 10px rgba(255, 255, 0, 0.3);
+}
+
+.shadowrun2e .attribute.essence-low .essence-breakdown {
+  border-left-color: var(--cyber-accent-yellow);
+  background: linear-gradient(135deg, rgba(255, 255, 0, 0.1), var(--cyber-bg-primary));
+}
+
+/* ===== CYBERPUNK CONFIRMATION DIALOGS ===== */
+.shadowrun2e .dialog {
+  background: var(--cyber-bg-primary);
+  color: var(--cyber-text-primary);
+  border: 2px solid var(--cyber-accent-cyan);
+  box-shadow: var(--cyber-glow-cyan);
+}
+
+.shadowrun2e .dialog .window-header {
+  background: linear-gradient(135deg, var(--cyber-bg-secondary), var(--cyber-bg-tertiary));
+  color: var(--cyber-accent-cyan);
+  border-bottom: 2px solid var(--cyber-accent-cyan);
+}
+
+.shadowrun2e .dialog .window-content {
+  background: var(--cyber-bg-primary);
+  padding: 20px;
+}
+
+.shadowrun2e .dialog .dialog-content p {
+  color: var(--cyber-text-primary);
+  margin-bottom: 12px;
+  line-height: 1.4;
+}
+
+.shadowrun2e .dialog .dialog-content strong {
+  color: var(--cyber-accent-cyan);
+  text-shadow: var(--cyber-glow-cyan);
+}
+
+.shadowrun2e .dialog .dialog-buttons {
+  display: flex;
+  justify-content: flex-end;
+  gap: 10px;
+  margin-top: 20px;
+  padding-top: 15px;
+  border-top: 1px solid var(--cyber-border);
+}
+
+.shadowrun2e .dialog .dialog-button {
+  background: linear-gradient(135deg, var(--cyber-bg-secondary), var(--cyber-bg-tertiary));
+  color: var(--cyber-accent-cyan);
+  border: 1px solid var(--cyber-accent-cyan);
+  padding: 8px 16px;
+  cursor: pointer;
+  font-weight: bold;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  transition: all 0.3s ease;
+}
+
+.shadowrun2e .dialog .dialog-button:hover {
+  background: linear-gradient(135deg, var(--cyber-bg-tertiary), var(--cyber-bg-secondary));
+  color: var(--cyber-accent-magenta);
+  border-color: var(--cyber-accent-magenta);
+  box-shadow: var(--cyber-glow-magenta);
+  transform: translateY(-1px);
+}
+
+.shadowrun2e .dialog .dialog-button.default {
+  color: var(--cyber-accent-green);
+  border-color: var(--cyber-accent-green);
+}
+
+.shadowrun2e .dialog .dialog-button.default:hover {
+  color: var(--cyber-accent-green);
+  border-color: var(--cyber-accent-green);
+  box-shadow: var(--cyber-glow-green);
+}
+
+/* ===== CYBERPUNK NOTIFICATIONS ===== */
+.shadowrun2e .notification {
+  background: linear-gradient(135deg, var(--cyber-bg-secondary), var(--cyber-bg-primary));
+  color: var(--cyber-text-primary);
+  border: 1px solid var(--cyber-border);
+  border-left: 4px solid var(--cyber-accent-cyan);
+  box-shadow: var(--cyber-glow-cyan);
+}
+
+.shadowrun2e .notification.info {
+  border-left-color: var(--cyber-accent-cyan);
+  box-shadow: var(--cyber-glow-cyan);
+}
+
+.shadowrun2e .notification.warn {
+  border-left-color: var(--cyber-accent-yellow);
+  box-shadow: 0 0 10px rgba(255, 255, 0, 0.5);
+}
+
+.shadowrun2e .notification.error {
+  border-left-color: var(--cyber-accent-red);
+  box-shadow: var(--cyber-glow-red);
+}
+
+.shadowrun2e .notification.success {
+  border-left-color: var(--cyber-accent-green);
+  box-shadow: var(--cyber-glow-green);
 }

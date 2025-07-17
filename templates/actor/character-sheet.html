@@ -91,7 +91,13 @@
         <div class="attributes-grid">
           <div class="attribute">
             <label>Essence</label>
-            <input type="number" name="system.attributes.essence.value" value="{{system.attributes.essence.value}}" data-dtype="Number" step="0.1"/>
+            <input type="number" name="system.attributes.essence.value" value="{{system.attributes.essence.value}}" data-dtype="Number" step="0.1" readonly/>
+            {{#if essenceData}}
+              <div class="essence-breakdown">
+                <small>Base: {{essenceData.base}} - Loss: {{essenceData.loss}} = {{essenceData.current}}</small>
+                <small class="essence-available">Available for Cyberware: {{essenceData.available}}</small>
+              </div>
+            {{/if}}
           </div>
           <div class="attribute">
             <label>Magic</label>
@@ -534,7 +540,7 @@
         </div>
         
         {{#each cyberware as |item id|}}
-        <div class="item-row" data-item-id="{{item._id}}">
+        <div class="item-row" data-item-id="{{item._id}}" data-installed="{{item.system.installed}}">
           <div class="item-name">
             <img src="{{item.img}}" title="{{item.name}}" width="24" height="24"/>
             <span>{{item.name}}</span>
@@ -546,7 +552,7 @@
             <span>{{item.system.essence}}</span>
           </div>
           <div class="item-installed">
-            <input type="checkbox" name="items.{{item._id}}.system.installed" {{#if item.system.installed}}checked{{/if}}/>
+            <input type="checkbox" class="cyberware-installed" data-item-id="{{item._id}}" {{#if item.system.installed}}checked{{/if}}/>
           </div>
           <div class="item-actions">
             <button class="item-delete" data-item-id="{{item._id}}" title="Delete Item">
@@ -588,7 +594,7 @@
         </div>
         
         {{#each bioware as |item id|}}
-        <div class="item-row" data-item-id="{{item._id}}">
+        <div class="item-row" data-item-id="{{item._id}}" data-installed="{{item.system.installed}}">
           <div class="item-name">
             <img src="{{item.img}}" title="{{item.name}}" width="24" height="24"/>
             <span>{{item.name}}</span>
@@ -600,7 +606,7 @@
             <span>{{item.system.bioIndex}}</span>
           </div>
           <div class="item-installed">
-            <input type="checkbox" name="items.{{item._id}}.system.installed" {{#if item.system.installed}}checked{{/if}}/>
+            <input type="checkbox" class="bioware-installed" data-item-id="{{item._id}}" {{#if item.system.installed}}checked{{/if}}/>
           </div>
           <div class="item-actions">
             <button class="item-delete" data-item-id="{{item._id}}" title="Delete Item">
