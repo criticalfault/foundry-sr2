@@ -21,18 +21,18 @@ import { SR2CharacterImporter } from "./character-importer.js";
 
 Hooks.once("init", async function () {
     console.log("Shadowrun 2E | Initializing Shadowrun 2nd Edition System");
-    
+
     // Suppress V1 Application deprecation warnings for now
     // TODO: Migrate to ApplicationV2 in future version
     const originalWarn = console.warn;
-    console.warn = function(...args) {
+    console.warn = function (...args) {
         const message = args.join(' ');
         if (message.includes('V1 Application framework is deprecated')) {
             return; // Suppress this specific warning
         }
         originalWarn.apply(console, args);
     };
-    
+
     // Debug: Log that we're starting initialization
     console.log("SR2E | Registering document classes...");
 
@@ -51,35 +51,35 @@ Hooks.once("init", async function () {
     // Register sheet application classes
     console.log("SR2E | Unregistering core sheets...");
     Actors.unregisterSheet("core", ActorSheet);
-    
+
     console.log("SR2E | Registering SR2ActorSheet...", SR2ActorSheet);
-    Actors.registerSheet("shadowrun2e", SR2ActorSheet, { 
-        types: ["character"], 
+    Actors.registerSheet("shadowrun2e", SR2ActorSheet, {
+        types: ["character"],
         makeDefault: true,
         label: "Shadowrun 2E Character Sheet"
     });
-    
+
     console.log("SR2E | Registering SR2CyberdeckSheet...", SR2CyberdeckSheet);
-    Actors.registerSheet("shadowrun2e", SR2CyberdeckSheet, { 
-        types: ["cyberdeck"], 
+    Actors.registerSheet("shadowrun2e", SR2CyberdeckSheet, {
+        types: ["cyberdeck"],
         makeDefault: true,
         label: "Shadowrun 2E Cyberdeck Sheet"
     });
-    
+
     console.log("SR2E | Registering SR2VehicleSheet...", SR2VehicleSheet);
-    Actors.registerSheet("shadowrun2e", SR2VehicleSheet, { 
-        types: ["vehicle"], 
+    Actors.registerSheet("shadowrun2e", SR2VehicleSheet, {
+        types: ["vehicle"],
         makeDefault: true,
         label: "Shadowrun 2E Vehicle Sheet"
     });
-    
+
     console.log("SR2E | Registering SR2SpiritSheet...", SR2SpiritSheet);
-    Actors.registerSheet("shadowrun2e", SR2SpiritSheet, { 
-        types: ["spirit"], 
+    Actors.registerSheet("shadowrun2e", SR2SpiritSheet, {
+        types: ["spirit"],
         makeDefault: true,
         label: "Shadowrun 2E Spirit Sheet"
     });
-    
+
     // Force set as default for character actors
     if (!CONFIG.Actor.sheetClasses.character) {
         CONFIG.Actor.sheetClasses.character = {};
@@ -89,7 +89,7 @@ Hooks.once("init", async function () {
         cls: SR2ActorSheet,
         default: true
     };
-    
+
     // Force set as default for cyberdeck actors
     if (!CONFIG.Actor.sheetClasses.cyberdeck) {
         CONFIG.Actor.sheetClasses.cyberdeck = {};
@@ -99,7 +99,7 @@ Hooks.once("init", async function () {
         cls: SR2CyberdeckSheet,
         default: true
     };
-    
+
     // Force set as default for vehicle actors
     if (!CONFIG.Actor.sheetClasses.vehicle) {
         CONFIG.Actor.sheetClasses.vehicle = {};
@@ -109,7 +109,7 @@ Hooks.once("init", async function () {
         cls: SR2VehicleSheet,
         default: true
     };
-    
+
     // Force set as default for spirit actors
     if (!CONFIG.Actor.sheetClasses.spirit) {
         CONFIG.Actor.sheetClasses.spirit = {};
@@ -121,11 +121,11 @@ Hooks.once("init", async function () {
     };
 
     Items.unregisterSheet("core", ItemSheet);
-    Items.registerSheet("shadowrun2e", SR2ItemSheet, { 
+    Items.registerSheet("shadowrun2e", SR2ItemSheet, {
         makeDefault: true,
         label: "Shadowrun 2E Item Sheet"
     });
-    
+
     console.log("SR2E | Sheet registration completed");
 
     // Register system settings
@@ -139,6 +139,9 @@ Hooks.once("init", async function () {
 
     // Initialize initiative tracker
     initializeInitiativeTracker();
+
+    // Expose data importer globally for debugging
+    window.SR2DataImporter = SR2DataImporter;
 });
 
 /* -------------------------------------------- */
@@ -245,7 +248,7 @@ function registerHandlebarsHelpers() {
     Handlebars.registerHelper('math', function (lvalue, operator, rvalue, options) {
         lvalue = parseFloat(lvalue);
         rvalue = parseFloat(rvalue);
-        
+
         return {
             "+": lvalue + rvalue,
             "-": lvalue - rvalue,
@@ -393,8 +396,8 @@ class CharacterImportConfig extends FormApplication {
 Hooks.once("ready", async function () {
     // Debug: Check if our sheets are registered
     console.log("SR2E | Checking registered actor sheets:", Object.keys(game.system.documentTypes.Actor));
-    console.log("SR2E | Available actor sheet classes:", Actors.registeredSheets);
-    
+    console.log("SR2E | Available actor sheet classes:", CONFIG.Actor.sheetClasses);
+
     // Auto-import data on first world load
     if (game.user.isGM && !game.settings.get("shadowrun2e", "dataImported")) {
         const shouldImport = await Dialog.confirm({

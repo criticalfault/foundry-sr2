@@ -387,7 +387,19 @@ let initiativeTracker = null;
 export function initializeInitiativeTracker() {
     // Add button to token controls
     Hooks.on("getSceneControlButtons", (controls) => {
-        const tokenControls = controls.find(c => c.name === "token");
+        // Handle different possible formats for controls parameter
+        let controlsArray = controls;
+        if (!Array.isArray(controls)) {
+            // In some Foundry versions, controls might be an object with a controls property
+            if (controls && controls.controls && Array.isArray(controls.controls)) {
+                controlsArray = controls.controls;
+            } else {
+                console.warn("SR2E | getSceneControlButtons: Unexpected controls format", controls);
+                return;
+            }
+        }
+
+        const tokenControls = controlsArray.find(c => c.name === "token");
         if (tokenControls) {
             tokenControls.tools.push({
                 name: "initiative-tracker",
