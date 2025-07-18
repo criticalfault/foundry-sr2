@@ -83,7 +83,7 @@ export class SR2CyberdeckSheet extends ActorSheet {
     html.find('.item-create').click(this._onItemCreate.bind(this));
 
     // Delete Program
-    html.find('.item-delete').click(ev => {
+    html.find('.item-delete').click(async ev => {
       ev.preventDefault();
       ev.stopPropagation();
       

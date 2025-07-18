@@ -95,7 +95,7 @@ export class SR2VehicleSheet extends ActorSheet {
     html.find('.item-create').click(this._onItemCreate.bind(this));
 
     // Delete Item
-    html.find('.item-delete').click(ev => {
+    html.find('.item-delete').click(async ev => {
       ev.preventDefault();
       ev.stopPropagation();
       
