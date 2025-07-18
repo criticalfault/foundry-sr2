@@ -97,7 +97,7 @@ export class SR2ActorSheet extends ActorSheet {
       }
     }
     context.totems = totems;
-    
+
     // Find selected totem
     context.selectedTotem = totems.find(t => t.system.isSelected);
 
@@ -106,16 +106,16 @@ export class SR2ActorSheet extends ActorSheet {
     const totalEssenceLoss = installedCyberware.reduce((total, cyber) => {
       return total + (parseFloat(cyber.system.essence) || 0);
     }, 0);
-    
+
     // Calculate current essence (base essence - cyberware essence loss)
     const baseEssence = this.actor.system.attributes.essence.max || 6;
     const currentEssence = Math.max(0, baseEssence - totalEssenceLoss);
-    
+
     // Update the actor's current essence value
     if (this.actor.system.attributes.essence.value !== currentEssence) {
-      this.actor.update({'system.attributes.essence.value': currentEssence});
+      this.actor.update({ 'system.attributes.essence.value': currentEssence });
     }
-    
+
     context.essenceData = {
       base: baseEssence,
       current: currentEssence,
@@ -149,7 +149,7 @@ export class SR2ActorSheet extends ActorSheet {
     // Calculate and display augmentation modifiers
     const modifiers = this.actor._calculateAugmentationModifiers();
     context.augmentationModifiers = modifiers;
-    
+
     // Calculate total modified attributes for display
     const attrs = context.system.attributes;
     context.modifiedAttributes = {
@@ -203,38 +203,38 @@ export class SR2ActorSheet extends ActorSheet {
     html.find('.item-create').click(this._onItemCreate.bind(this));
 
     // Delete Inventory Item
-    html.find('.item-delete').click(ev => {
+    html.find('.item-delete').click(async ev => {
       ev.preventDefault();
       ev.stopPropagation();
-      
+
       try {
         // Get item ID from button's data attribute or parent element
         const button = $(ev.currentTarget);
-        
+
         // Try multiple ways to get the item ID
-        let itemId = button.attr("data-item-id") || 
-                     button.data("item-id") || 
-                     button.data("itemId") ||
-                     button.parents(".item, .skill-item, .item-row").attr("data-item-id") ||
-                     button.parents(".item, .skill-item, .item-row").data("item-id") ||
-                     button.parents(".item, .skill-item, .item-row").data("itemId");
-        
+        let itemId = button.attr("data-item-id") ||
+          button.data("item-id") ||
+          button.data("itemId") ||
+          button.parents(".item, .skill-item, .item-row").attr("data-item-id") ||
+          button.parents(".item, .skill-item, .item-row").data("item-id") ||
+          button.parents(".item, .skill-item, .item-row").data("itemId");
+
         console.log("SR2E | Delete item button clicked, itemId:", itemId);
         console.log("SR2E | Button data attributes:", button.get(0).dataset);
-        console.log("SR2E | Available items:", this.actor.items.map(i => ({id: i.id, name: i.name, type: i.type})));
-        
+        console.log("SR2E | Available items:", this.actor.items.map(i => ({ id: i.id, name: i.name, type: i.type })));
+
         if (!itemId) {
           console.warn("SR2E | No item ID found for delete operation");
           ui.notifications.error("Could not find item to delete. Check console for details.");
           return;
         }
-        
+
         const item = this.actor.items.get(itemId);
         if (item) {
           // Confirm deletion for important items
-          const confirmDelete = game.settings.get("core", "noCanvas") || 
-                               confirm(`Delete ${item.name}?`);
-          
+          const confirmDelete = game.settings.get("core", "noCanvas") ||
+            confirm(`Delete ${item.name}?`);
+
           if (confirmDelete) {
             await item.delete();
             const row = button.parents(".item, .skill-item, .item-row");
@@ -474,19 +474,19 @@ export class SR2ActorSheet extends ActorSheet {
     // Get relevant attributes and skills
     const strength = this.actor.system.attributes.strength.value || 1;
     const quickness = this.actor.system.attributes.quickness.value || 1;
-    
+
     // Determine if it's a melee or ranged weapon
     const isRanged = weapon.system.weaponType === 'ranged';
     const attribute = isRanged ? quickness : strength;
-    
+
     // Get appropriate combat skill
-    const combatSkills = this.actor.items.filter(i => 
-      i.type === 'skill' && 
-      (i.system.baseSkill === 'Armed Combat' || 
-       i.system.baseSkill === 'Firearms' || 
-       i.system.baseSkill === 'Projectile Weapons')
+    const combatSkills = this.actor.items.filter(i =>
+      i.type === 'skill' &&
+      (i.system.baseSkill === 'Armed Combat' ||
+        i.system.baseSkill === 'Firearms' ||
+        i.system.baseSkill === 'Projectile Weapons')
     );
-    
+
     let skillRating = 0;
     if (combatSkills.length > 0) {
       // Use the highest applicable combat skill
@@ -495,7 +495,7 @@ export class SR2ActorSheet extends ActorSheet {
 
     // Calculate dice pool
     const dicePool = attribute + skillRating;
-    
+
     // Create attack title
     const attackType = isRanged ? 'Ranged Attack' : 'Melee Attack';
     const title = `${attackType} with ${weapon.name}`;
@@ -524,8 +524,8 @@ export class SR2ActorSheet extends ActorSheet {
     // Handle ammo consumption for ranged weapons
     if (isRanged && weapon.system.ammo && weapon.system.ammo.current > 0) {
       const newAmmo = weapon.system.ammo.current - 1;
-      await weapon.update({'system.ammo.current': newAmmo});
-      
+      await weapon.update({ 'system.ammo.current': newAmmo });
+
       if (newAmmo === 0) {
         ui.notifications.warn(`${weapon.name} is out of ammunition!`);
       }
@@ -674,27 +674,27 @@ export class SR2ActorSheet extends ActorSheet {
 
     // Import the item browser dynamically
     const { SR2ItemBrowser } = await import("/systems/shadowrun2e/scripts/item-browser.js");
-    
+
     // Create a custom item browser with totem selection handling
     const browser = new SR2ItemBrowser(this.actor, 'totem', 'shadowrun2e.totems');
-    
+
     // Override the default item creation to handle totem selection
     const originalAddItem = browser.addItem;
     browser.addItem = async (item) => {
       // First, unselect any existing totems
       const existingTotems = this.actor.items.filter(i => i.type === 'totem');
       for (const existingTotem of existingTotems) {
-        await existingTotem.update({'system.isSelected': false});
+        await existingTotem.update({ 'system.isSelected': false });
       }
-      
+
       // Then add the new totem and mark it as selected
       const newItem = await originalAddItem.call(browser, item);
       if (newItem) {
-        await newItem.update({'system.isSelected': true});
+        await newItem.update({ 'system.isSelected': true });
       }
       return newItem;
     };
-    
+
     browser.render(true);
   }
 
@@ -706,17 +706,17 @@ export class SR2ActorSheet extends ActorSheet {
     const checkbox = event.currentTarget;
     const itemId = checkbox.dataset.itemId;
     const item = this.actor.items.get(itemId);
-    
+
     if (!item) return;
-    
+
     const isInstalling = checkbox.checked;
     const essenceCost = parseFloat(item.system.essence) || 0;
-    
+
     if (isInstalling) {
       // Check if installing this cyberware would reduce essence below 0.1
       const currentEssence = this.actor.system.attributes.essence.value || 6;
       const remainingEssence = currentEssence - essenceCost;
-      
+
       if (remainingEssence < 0.1) {
         // Prevent installation
         checkbox.checked = false;
@@ -726,7 +726,7 @@ export class SR2ActorSheet extends ActorSheet {
         );
         return;
       }
-      
+
       // Show confirmation for significant essence loss
       if (essenceCost >= 1.0) {
         const confirm = await Dialog.confirm({
@@ -738,17 +738,17 @@ export class SR2ActorSheet extends ActorSheet {
           yes: () => true,
           no: () => false
         });
-        
+
         if (!confirm) {
           checkbox.checked = false;
           return;
         }
       }
-      
+
       // Install the cyberware
-      await item.update({'system.installed': true});
+      await item.update({ 'system.installed': true });
       ui.notifications.info(`${item.name} installed. Essence reduced by ${essenceCost}.`);
-      
+
     } else {
       // Uninstall the cyberware
       const confirm = await Dialog.confirm({
@@ -759,16 +759,16 @@ export class SR2ActorSheet extends ActorSheet {
         yes: () => true,
         no: () => false
       });
-      
+
       if (!confirm) {
         checkbox.checked = true;
         return;
       }
-      
-      await item.update({'system.installed': false});
+
+      await item.update({ 'system.installed': false });
       ui.notifications.info(`${item.name} removed. Essence restored by ${essenceCost}.`);
     }
-    
+
     // Refresh the sheet to update essence display
     this.render(false);
   }
@@ -781,25 +781,25 @@ export class SR2ActorSheet extends ActorSheet {
     const checkbox = event.currentTarget;
     const itemId = checkbox.dataset.itemId;
     const item = this.actor.items.get(itemId);
-    
+
     if (!item) return;
-    
+
     const isInstalling = checkbox.checked;
     const bioIndex = parseFloat(item.system.bioIndex) || 0;
-    
+
     if (isInstalling) {
       // Calculate current Bio Index usage
-      const installedBioware = this.actor.items.filter(i => 
+      const installedBioware = this.actor.items.filter(i =>
         i.type === 'bioware' && i.system.installed && i._id !== itemId
       );
       const currentBioIndex = installedBioware.reduce((total, bio) => {
         return total + (parseFloat(bio.system.bioIndex) || 0);
       }, 0);
-      
+
       // Bio Index limit is typically equal to Essence (rounded down)
       const essenceValue = Math.floor(this.actor.system.attributes.essence.value || 6);
       const remainingBioIndex = essenceValue - currentBioIndex;
-      
+
       if (bioIndex > remainingBioIndex) {
         // Prevent installation
         checkbox.checked = false;
@@ -809,7 +809,7 @@ export class SR2ActorSheet extends ActorSheet {
         );
         return;
       }
-      
+
       // Show confirmation for bioware installation
       if (bioIndex >= 1.0) {
         const confirm = await Dialog.confirm({
@@ -822,17 +822,17 @@ export class SR2ActorSheet extends ActorSheet {
           yes: () => true,
           no: () => false
         });
-        
+
         if (!confirm) {
           checkbox.checked = false;
           return;
         }
       }
-      
+
       // Install the bioware
-      await item.update({'system.installed': true});
+      await item.update({ 'system.installed': true });
       ui.notifications.info(`${item.name} installed. Bio Index used: ${bioIndex}.`);
-      
+
     } else {
       // Uninstall the bioware
       const confirm = await Dialog.confirm({
@@ -843,16 +843,16 @@ export class SR2ActorSheet extends ActorSheet {
         yes: () => true,
         no: () => false
       });
-      
+
       if (!confirm) {
         checkbox.checked = true;
         return;
       }
-      
-      await item.update({'system.installed': false});
+
+      await item.update({ 'system.installed': false });
       ui.notifications.info(`${item.name} removed. Bio Index freed: ${bioIndex}.`);
     }
-    
+
     // Refresh the sheet to update displays
     this.render(false);
   }
