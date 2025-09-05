@@ -2,7 +2,7 @@
   "id": "shadowrun2e",
   "title": "Shadowrun 2nd Edition",
   "description": "A comprehensive system for playing Shadowrun 2nd Edition in Foundry VTT",
-  "version": "1.0.13",
+  "version": "1.0.12",
   "compatibility": {
     "minimum": "11",
     "verified": "12"
