@@ -107,8 +107,10 @@
       "system": "shadowrun2e"
     }
   ],
-  "gridDistance": 1,
-  "gridUnits": "m",
+  "grid": {
+    "distance": 1,
+    "units": "m"
+  },
   "primaryTokenAttribute": "health",
   "secondaryTokenAttribute": "stun",
   "url": "https://github.com/criticalfault/foundry-sr2",
