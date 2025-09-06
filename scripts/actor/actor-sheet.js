@@ -8,7 +8,7 @@ export class SR2ActorSheet extends ActorSheet {
     return foundry.utils.mergeObject(super.defaultOptions, {
       classes: ["shadowrun2e", "sheet", "actor"],
       template: "systems/shadowrun2e/templates/actor/character-sheet.html",
-      width: 720,
+      width: 960,
       height: 680,
       tabs: [{ navSelector: ".sheet-tabs", contentSelector: ".sheet-body", initial: "attributes" }]
     });
@@ -22,7 +22,7 @@ export class SR2ActorSheet extends ActorSheet {
   }
 
   /** @override */
-  getData() {
+  async getData() {
     const context = super.getData();
     const actorData = this.actor.toObject(false);
 
@@ -33,7 +33,7 @@ export class SR2ActorSheet extends ActorSheet {
     if (actorData.type == 'character') {
       this._prepareItems(context);
       this._prepareCharacterData(context);
-      this._prepareSkillsData(context);
+      await this._prepareSkillsData(context);
     }
 
     return context;
@@ -120,7 +120,7 @@ export class SR2ActorSheet extends ActorSheet {
       base: baseEssence,
       current: currentEssence,
       loss: totalEssenceLoss,
-      available: Math.max(0, currentEssence - 0.1) // Must keep at least 0.1 essence
+      available: Math.max(0, currentEssence - 0.01) // Must keep at least 0.01 essence
     };
 
     // Calculate total power points used for adept powers
@@ -173,8 +173,9 @@ export class SR2ActorSheet extends ActorSheet {
       const response = await fetch('/systems/shadowrun2e/data/skills.json');
       const skillsData = await response.json();
       context.availableSkills = skillsData;
+      console.log('SR2E | Skills data loaded successfully:', Object.keys(skillsData).length, 'skills');
     } catch (error) {
-      console.error('Failed to load skills data:', error);
+      console.error('SR2E | Failed to load skills data:', error);
       context.availableSkills = {};
     }
   }
@@ -365,7 +366,43 @@ export class SR2ActorSheet extends ActorSheet {
         'system.concentration': '',
         'name': baseSkill || 'New Skill'
       });
+
+      // Update concentration dropdown
+      await this._updateConcentrationDropdown(skillId, baseSkill);
       this.render(false);
+    }
+  }
+
+  /**
+   * Update concentration dropdown based on selected base skill
+   */
+  async _updateConcentrationDropdown(skillId, baseSkill) {
+    if (!baseSkill) return;
+
+    try {
+      const response = await fetch('/systems/shadowrun2e/data/skills.json');
+      const skillsData = await response.json();
+      const skillData = skillsData[baseSkill];
+
+      if (!skillData || !skillData.Concentrations) return;
+
+      // Find the concentration select element
+      const concentrationSelect = document.querySelector(`select[name="items.${skillId}.system.concentration"]`);
+      if (!concentrationSelect) return;
+
+      // Clear existing options except the first one
+      concentrationSelect.innerHTML = '<option value="">Select Concentration...</option>';
+
+      // Add concentration options
+      skillData.Concentrations.forEach(concentration => {
+        const option = document.createElement('option');
+        option.value = concentration.name;
+        option.textContent = concentration.name;
+        concentrationSelect.appendChild(option);
+      });
+
+    } catch (error) {
+      console.error('Failed to update concentration dropdown:', error);
     }
   }
 

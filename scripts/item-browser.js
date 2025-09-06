@@ -34,7 +34,10 @@ export class SR2ItemBrowser extends Application {
       bioware: "Bioware Browser", 
       spell: "Spell Browser",
       adeptpower: "Adept Power Browser",
-      totem: "Totem Browser"
+      totem: "Totem Browser",
+      weapon: "Weapon Browser",
+      armor: "Armor Browser",
+      gear: "Equipment Browser"
     };
     return typeNames[this.itemType] || "Item Browser";
   }
@@ -116,6 +119,24 @@ export class SR2ItemBrowser extends Application {
           response = await fetch('systems/shadowrun2e/data/totems.json');
           data = await response.json();
           this.items = this._processTotemData(data);
+          break;
+          
+        case 'weapon':
+          response = await fetch('systems/shadowrun2e/data/gear.json');
+          data = await response.json();
+          this.items = this._processWeaponData(data);
+          break;
+          
+        case 'armor':
+          response = await fetch('systems/shadowrun2e/data/gear.json');
+          data = await response.json();
+          this.items = this._processArmorData(data);
+          break;
+          
+        case 'gear':
+          response = await fetch('systems/shadowrun2e/data/gear.json');
+          data = await response.json();
+          this.items = this._processGearData(data);
           break;
       }
     } catch (error) {
@@ -419,5 +440,98 @@ export class SR2ItemBrowser extends Application {
     this.searchTerm = "";
     this.selectedCategory = "";
     this.render();
+  }
+
+  /**
+   * Process weapon data from gear.json
+   */
+  _processWeaponData(data) {
+    const items = [];
+    const weaponCategories = ['Edged weapon', 'Bow and crossbow', 'Firearms', 'Rockets and Missiles', 'Grenades', 'VehicleFire'];
+    
+    for (const categoryName of weaponCategories) {
+      if (data[categoryName] && data[categoryName].entries) {
+        for (const item of data[categoryName].entries) {
+          items.push({
+            name: item.Name,
+            category: categoryName,
+            concealability: item.Concealability || "",
+            damage: item.Damage || "",
+            reach: item.Reach || "",
+            mode: item.Mode || "",
+            ammo: item.Ammo || "",
+            recoil: item.Recoil || "",
+            weight: item.Weight || "",
+            availability: item.Availability || "",
+            cost: item.Cost || "",
+            streetIndex: item["Street Index"] || "",
+            bookPage: item.BookPage || "",
+            type: 'weapon'
+          });
+        }
+      }
+    }
+    
+    return items;
+  }
+
+  /**
+   * Process armor data from gear.json
+   */
+  _processArmorData(data) {
+    const items = [];
+    const armorCategories = ['Clothing and Armor'];
+    
+    for (const categoryName of armorCategories) {
+      if (data[categoryName] && data[categoryName].entries) {
+        for (const item of data[categoryName].entries) {
+          items.push({
+            name: item.Name,
+            category: categoryName,
+            ballistic: item.Ballistic || "",
+            impact: item.Impact || "",
+            concealability: item.Concealability || "",
+            weight: item.Weight || "",
+            availability: item.Availability || "",
+            cost: item.Cost || "",
+            streetIndex: item["Street Index"] || "",
+            bookPage: item.BookPage || "",
+            type: 'armor'
+          });
+        }
+      }
+    }
+    
+    return items;
+  }
+
+  /**
+   * Process general gear/equipment data from gear.json
+   */
+  _processGearData(data) {
+    const items = [];
+    const gearCategories = Object.keys(data).filter(cat => 
+      !['Edged weapon', 'Bow and crossbow', 'Firearms', 'Rockets and Missiles', 'Grenades', 'VehicleFire', 'Clothing and Armor'].includes(cat)
+    );
+    
+    for (const categoryName of gearCategories) {
+      if (data[categoryName] && data[categoryName].entries) {
+        for (const item of data[categoryName].entries) {
+          items.push({
+            name: item.Name,
+            category: categoryName,
+            rating: item.Rating || "",
+            weight: item.Weight || "",
+            availability: item.Availability || "",
+            cost: item.Cost || "",
+            streetIndex: item["Street Index"] || "",
+            bookPage: item.BookPage || "",
+            type: 'gear'
+          });
+        }
+      }
+    }
+    
+    return items;
   }
 }

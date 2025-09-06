@@ -59,7 +59,7 @@
   background: linear-gradient(135deg, var(--cyber-bg-secondary), var(--cyber-bg-tertiary));
   color: var(--cyber-accent-cyan);
   border: 1px solid var(--cyber-accent-cyan);
-  padding: 8px 16px;
+  padding: 8px 13px;
   border-radius: 0;
   cursor: pointer;
   font-family: inherit;
@@ -106,11 +106,12 @@
 /* ===== CYBERPUNK INPUTS ===== */
 .shadowrun2e input,
 .shadowrun2e select,
+.shadowrun2e option,
 .shadowrun2e textarea {
   background: var(--cyber-bg-secondary);
   color: var(--cyber-text-primary);
   border: 1px solid var(--cyber-border);
-  padding: 8px 12px;
+  padding: 0px 12px;
   border-radius: 0;
   font-family: inherit;
   transition: all 0.3s ease;
@@ -406,7 +407,7 @@
 .combatant-actions button {
   padding: 4px 8px;
   border: 1px solid #ccc;
-  background: white;
+  background: var(--cyber-bg-secondary);
   border-radius: 2px;
   cursor: pointer;
   font-size: 11px;
@@ -551,7 +552,7 @@
   align-items: center;
   margin-bottom: 10px;
   padding: 8px;
-  background: white;
+  background: var(--cyber-bg-secondary);
   border-radius: 4px;
 }
 
@@ -609,7 +610,7 @@
   border: 1px solid #ddd;
   border-radius: 4px;
   padding: 6px;
-  background: white;
+  background: var(--cyber-bg-secondary);
   min-width: 60px;
   text-align: center;
 }
@@ -669,7 +670,6 @@
   padding: 8px;
   border: 1px solid #ccc;
   border-radius: 4px;
-  background: #f8f9fa;
 }
 
 .pool label {
@@ -725,7 +725,6 @@
 
 .skills-header h3 {
   margin: 0;
-  color: #333;
 }
 
 .skill-controls a {
@@ -764,7 +763,7 @@
 
 .skill-item {
   border-bottom: 1px solid #eee;
-  background: white;
+  background: var(--cyber-bg-secondary);
 }
 
 .skill-item:last-child {
@@ -777,6 +776,7 @@
   gap: 10px;
   padding: 8px 12px;
   align-items: center;
+  background: var(--cyber-bg-secondary);
 }
 
 .skill-name-section {
@@ -845,7 +845,7 @@
 .skill-actions button {
   padding: 4px 8px;
   border: 1px solid #ccc;
-  background: white;
+  background: var(--cyber-bg-secondary);
   border-radius: 2px;
   cursor: pointer;
   font-size: 11px;
@@ -946,7 +946,7 @@
 }
 
 .item-card {
-  background: white;
+  background: var(--cyber-bg-secondary);
   border: 1px solid #ddd;
   border-radius: 6px;
   padding: 15px;
@@ -1048,7 +1048,6 @@
 
 .items-header h3 {
   margin: 0;
-  color: #333;
 }
 
 .item-controls {
@@ -1135,7 +1134,7 @@
   color: #6f42c1;
   padding: 4px 8px;
   border: 1px solid #ccc;
-  background: white;
+  background: var(--cyber-bg-secondary);
   border-radius: 2px;
   cursor: pointer;
   font-size: 11px;
@@ -1160,9 +1159,12 @@
 .magic-section {
   margin-bottom: 20px;
   padding: 15px;
-  background: white;
-  border: 1px solid #ddd;
-  border-radius: 4px;
+  background: var(--cyber-bg-secondary);
+  color: var(--cyber-accent-cyan);
+  border-bottom: 2px solid var(--cyber-accent-cyan);
+  text-transform: uppercase;
+  letter-spacing: 2px;
+  text-shadow: var(--cyber-glow-cyan);
 }
 
 .magic-controls {
@@ -1229,7 +1231,7 @@
   gap: 15px;
   margin-bottom: 20px;
   padding: 15px;
-  background: white;
+  background: var(--cyber-bg-secondary);
   border: 1px solid #ddd;
   border-radius: 4px;
 }
@@ -1307,7 +1309,7 @@
 .adept-section {
   margin-bottom: 20px;
   padding: 15px;
-  background: white;
+  background: var(--cyber-bg-secondary);
   border: 1px solid #ddd;
   border-radius: 4px;
 }
@@ -1485,7 +1487,6 @@
 
 .shadowrun2e .sheet-header {
   flex: 0 0 100px;
-  overflow: hidden;
   display: flex;
   flex-direction: row;
   flex-wrap: wrap;
@@ -1626,7 +1627,8 @@
   height: 30px;
   margin: 0 5px;
   border: 1px solid #ccc;
-  background: #f0f0f0;
+  background: var(--cyber-accent-cyan);
+  color: black;
   cursor: pointer;
 }
 
@@ -2277,7 +2279,7 @@ header.window-header.flexrow.draggable.resizable {
 }
 
 .shadowrun2e.vehicle .stat-group {
-  background: white;
+  background: var(--cyber-bg-secondary);
   border: 1px solid #bdc3c7;
   border-radius: 8px;
   padding: 20px;
@@ -2316,7 +2318,7 @@ header.window-header.flexrow.draggable.resizable {
 
 .shadowrun2e.vehicle .stat input:focus {
   border-color: #3498db;
-  background: white;
+  background: var(--cyber-bg-secondary);
 }
 
 .shadowrun2e.vehicle .stat span {
@@ -2341,7 +2343,7 @@ header.window-header.flexrow.draggable.resizable {
 }
 
 .shadowrun2e.vehicle .condition-section {
-  background: white;
+  background: var(--cyber-bg-secondary);
   border: 1px solid #bdc3c7;
   border-radius: 8px;
   padding: 20px;
@@ -2427,7 +2429,7 @@ header.window-header.flexrow.draggable.resizable {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
   gap: 15px;
-  background: white;
+  background: var(--cyber-bg-secondary);
   border: 1px solid #bdc3c7;
   border-radius: 8px;
   padding: 20px;
@@ -2462,7 +2464,7 @@ header.window-header.flexrow.draggable.resizable {
 .shadowrun2e.vehicle .weapons-section,
 .shadowrun2e.vehicle .modifications-section,
 .shadowrun2e.vehicle .gear-section {
-  background: white;
+  background: var(--cyber-bg-secondary);
   border: 1px solid #bdc3c7;
   border-radius: 8px;
   padding: 20px;
@@ -2572,7 +2574,7 @@ header.window-header.flexrow.draggable.resizable {
 }
 
 .shadowrun2e.vehicle .item-row input {
-  background: white;
+  background: var(--cyber-bg-secondary);
   border: 1px solid #bdc3c7;
   padding: 4px 8px;
   border-radius: 3px;
@@ -2634,7 +2636,7 @@ header.window-header.flexrow.draggable.resizable {
 
 .shadowrun2e.vehicle .notes-section,
 .shadowrun2e.vehicle .biography-section {
-  background: white;
+  background: var(--cyber-bg-secondary);
   border: 1px solid #bdc3c7;
   border-radius: 8px;
   padding: 20px;
@@ -2666,7 +2668,7 @@ header.window-header.flexrow.draggable.resizable {
 .shadowrun2e.vehicle .notes-section textarea:focus,
 .shadowrun2e.vehicle .biography-section textarea:focus {
   border-color: #3498db;
-  background: white;
+  background: var(--cyber-bg-secondary);
 }
 
 /* Vehicle Type Icons */
@@ -3267,7 +3269,7 @@ header.window-header.flexrow.draggable.resizable {
 
 /* Gear Tab Styles */
 .shadowrun2e .gear-summary {
-  background: white;
+  background: var(--cyber-bg-secondary);
   border: 1px solid #ddd;
   border-radius: 6px;
   padding: 20px;
@@ -3392,7 +3394,7 @@ header.window-header.flexrow.draggable.resizable {
 
 /* Range Calculator Styles */
 .shadowrun2e .range-calculator {
-  background: white;
+  background: var(--cyber-bg-secondary);
   border: 2px solid #007acc;
   border-radius: 8px;
   padding: 20px;
@@ -4206,7 +4208,7 @@ header.window-header.flexrow.draggable.resizable {
 }
 
 .shadowrun2e.character-import .import-info {
-  background: white;
+  background: var(--cyber-bg-secondary);
   border: 1px solid #ddd;
   border-radius: 6px;
   padding: 20px;
@@ -4508,7 +4510,7 @@ header.window-header.flexrow.draggable.resizable {
   color: var(--cyber-text-secondary);
   border: 1px solid var(--cyber-border);
   border-bottom: none;
-  padding: 8px 16px;
+  padding: 5px;
   margin-right: 2px;
   text-transform: uppercase;
   letter-spacing: 1px;
@@ -4875,9 +4877,9 @@ header.window-header.flexrow.draggable.resizable {
 .shadowrun2e .sheet-header {
   position: relative;
   z-index: 1;
-}/
-* ===== CYBERPUNK ESSENCE DISPLAY ===== */
-.shadowrun2e .essence-breakdown {
+}
+
+/ *=====CYBERPUNK ESSENCE DISPLAY=====*/ .shadowrun2e .essence-breakdown {
   margin-top: 8px;
   padding: 8px;
   background: linear-gradient(135deg, var(--cyber-bg-secondary), var(--cyber-bg-primary));
@@ -5150,7 +5152,9 @@ header.window-header.flexrow.draggable.resizable {
 .shadowrun2e .notification.success {
   border-left-color: var(--cyber-accent-green);
   box-shadow: var(--cyber-glow-green);
-}/* 
+}
+
+/* 
 ===== CYBERPUNK DELETE BUTTON FIXES ===== */
 .shadowrun2e .item-delete,
 .shadowrun2e button.item-delete {
@@ -5259,6 +5263,7 @@ header.window-header.flexrow.draggable.resizable {
 .shadowrun2e input[type="submit"] {
   pointer-events: auto;
   position: relative;
+  background: var(--cyber-bg-secondary);
   z-index: 10;
 }
 
