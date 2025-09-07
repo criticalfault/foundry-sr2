@@ -14,9 +14,11 @@ A comprehensive game system for playing Shadowrun 2nd Edition in Foundry Virtual
 ### Skills System
 
 - Three-tier skill structure: Base Skills → Concentrations → Specializations
+- **Separate ratings** for Base, Concentration, and Specialization levels
 - Dynamic skill selection from comprehensive skill database
-- Automatic dice pool calculations with attribute bonuses
-- Specialization bonuses (+2 dice when applicable)
+- **Roll-specific dice pools**: Choose to roll with Base, Concentration, or Specialization rating
+- Clear indication of which rating type is being used in rolls
+- Automatic enabling/disabling of rating fields based on selections
 
 ### Dice Pools
 

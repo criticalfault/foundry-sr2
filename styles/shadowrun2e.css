@@ -556,6 +556,10 @@
   border-radius: 4px;
 }
 
+.roll-summary .dice-pool {
+  color: #f8f9fa;
+}
+
 .dice-pool {
   font-weight: bold;
 }
@@ -642,6 +646,7 @@
   background: white;
   font-size: 12px;
   font-weight: bold;
+  color: black;
 }
 
 .die-face.exploded {
@@ -652,7 +657,7 @@
 .die-total {
   font-weight: bold;
   font-size: 12px;
-  color: #666;
+  color: #fff;
 }
 
 /* Character Sheet Pools Grid */
@@ -751,7 +756,7 @@
 
 .skills-table-header {
   display: grid;
-  grid-template-columns: 3fr 80px 120px 2fr 100px;
+  grid-template-columns: 3fr 60px 60px 60px 2fr 150px;
   gap: 10px;
   padding: 8px 12px;
   background: #333;
@@ -759,6 +764,11 @@
   font-weight: bold;
   font-size: 12px;
   align-items: center;
+  text-align: center;
+}
+
+.skills-table-header .skill-name {
+  text-align: left;
 }
 
 .skill-item {
@@ -772,7 +782,7 @@
 
 .skill-main {
   display: grid;
-  grid-template-columns: 3fr 80px 120px 2fr 100px;
+  grid-template-columns: 3fr 60px 60px 60px 2fr 150px;
   gap: 10px;
   padding: 8px 12px;
   align-items: center;
@@ -812,12 +822,21 @@
   margin-left: 10px;
 }
 
-.skill-rating input {
+.skill-base-rating input,
+.skill-conc-rating input,
+.skill-spec-rating input {
   width: 50px;
   text-align: center;
   padding: 4px;
   border: 1px solid #ccc;
   border-radius: 2px;
+}
+
+.skill-conc-rating input:disabled,
+.skill-spec-rating input:disabled {
+  background: #f5f5f5;
+  color: #999;
+  cursor: not-allowed;
 }
 
 .skill-attribute select {
@@ -838,17 +857,19 @@
 
 .skill-actions {
   display: flex;
-  gap: 4px;
+  gap: 2px;
   justify-content: center;
+  flex-wrap: wrap;
 }
 
 .skill-actions button {
-  padding: 4px 8px;
+  padding: 2px 6px;
   border: 1px solid #ccc;
   background: var(--cyber-bg-secondary);
   border-radius: 2px;
   cursor: pointer;
-  font-size: 11px;
+  font-size: 10px;
+  white-space: nowrap;
 }
 
 .skill-actions button:hover {
@@ -1075,7 +1096,7 @@
 
 .items-table-header {
   display: grid;
-  grid-template-columns: 3fr 80px 100px 80px 100px;
+  grid-template-columns: 2fr 2fr 80px 100px 80px 100px;
   gap: 10px;
   padding: 8px 12px;
   background: #333;
@@ -1087,7 +1108,7 @@
 
 .item-row {
   display: grid;
-  grid-template-columns: 3fr 80px 100px 80px 100px;
+  grid-template-columns: 2fr 2fr 80px 100px 80px 100px;
   gap: 10px;
   padding: 8px 12px;
   border-bottom: 1px solid #eee;
@@ -1199,7 +1220,6 @@
 
 .magic-stat label {
   font-weight: bold;
-  color: #333;
 }
 
 .magic-stat span {
@@ -1246,7 +1266,6 @@
   align-items: center;
   gap: 8px;
   font-weight: bold;
-  color: #333;
 }
 
 .power-points {
@@ -1263,7 +1282,6 @@
 
 .power-point-stat label {
   font-weight: bold;
-  color: #333;
   min-width: 120px;
 }
 
@@ -3319,7 +3337,6 @@ header.window-header.flexrow.draggable.resizable {
   border: 1px solid #dc3545;
   border-radius: 4px;
   padding: 10px;
-  background: #f8d7da;
   margin: 5px 0;
 }
 
@@ -3436,7 +3453,6 @@ header.window-header.flexrow.draggable.resizable {
 
 .shadowrun2e .range-weapon-select,
 .shadowrun2e .range-distance {
-  padding: 8px 12px;
   border: 2px solid #ddd;
   border-radius: 4px;
   font-size: 14px;
@@ -5455,4 +5471,37 @@ header.window-header.flexrow.draggable.resizable {
   display: inline-flex !important;
   visibility: visible !important;
   opacity: 1 !important;
+}
+
+/*
+ Weapon Skill Linking Styles */
+.item-skill {
+  display: flex;
+  align-items: center;
+  font-size: 12px;
+}
+
+.linked-skill {
+  color: var(--cyber-accent-cyan);
+  font-weight: bold;
+  text-shadow: var(--cyber-glow-cyan);
+}
+
+.no-skill {
+  color: var(--cyber-text-muted);
+  font-style: italic;
+}
+
+/* Weapon item sheet skill linking section */
+.weapon-skill-select {
+  width: 100%;
+  background: var(--cyber-bg-secondary);
+  color: var(--cyber-text-primary);
+  border: 1px solid var(--cyber-border);
+  padding: 4px 8px;
+}
+
+.weapon-skill-select:focus {
+  border-color: var(--cyber-accent-cyan);
+  box-shadow: var(--cyber-glow-cyan);
 }

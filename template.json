@@ -244,8 +244,9 @@
     },
     "skill": {
       "templates": ["base"],
-      "rating": 0,
-      "attribute": "body",
+      "baseRating": 0,
+      "concentrationRating": 0,
+      "specializationRating": 0,
       "baseSkill": "",
       "concentration": "",
       "specialization": "",
@@ -266,7 +267,11 @@
       },
       "recoil": 0,
       "rangeType": "",
-      "equipped": false
+      "equipped": false,
+      "linkedSkill": {
+        "skillId": "",
+        "rollType": "base"
+      }
     },
     "armor": {
       "templates": ["base"],

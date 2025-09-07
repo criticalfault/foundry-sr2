@@ -1,7 +1,7 @@
 /**
  * Extend the basic ActorSheet with Shadowrun 2E specific functionality
  */
-export class SR2ActorSheet extends ActorSheet {
+export class SR2ActorSheet extends foundry.applications.sheets.ActorSheet {
 
   /** @override */
   static get defaultOptions() {
@@ -272,6 +272,8 @@ export class SR2ActorSheet extends ActorSheet {
 
     // Skill management
     html.find('.base-skill-select').change(this._onBaseSkillChange.bind(this));
+    html.find('.concentration-select').change(this._onConcentrationChange.bind(this));
+    html.find('input[name*="specialization"]').on('input', this._onSpecializationChange.bind(this));
     html.find('.skill-roll').click(this._onSkillRoll.bind(this));
 
     // Attribute rolls
@@ -433,8 +435,65 @@ export class SR2ActorSheet extends ActorSheet {
       await item.update({
         'system.baseSkill': baseSkill,
         'system.concentration': '',
+        'system.concentrationRating': 0,
         'name': baseSkill || 'New Skill'
       });
+
+      // Re-render the sheet to update the UI
+      this.render(false);
+    }
+  }
+
+  /**
+   * Handle concentration selection change
+   */
+  async _onConcentrationChange(event) {
+    event.preventDefault();
+    const element = event.currentTarget;
+    const skillId = element.closest('.skill-item').dataset.itemId;
+    const concentration = element.value;
+    const item = this.actor.items.get(skillId);
+
+    if (item) {
+      // Update concentration and reset concentration rating if cleared
+      const updateData = {
+        'system.concentration': concentration
+      };
+      
+      // If concentration is cleared, reset the rating
+      if (!concentration) {
+        updateData['system.concentrationRating'] = 0;
+      }
+
+      await item.update(updateData);
+
+      // Re-render the sheet to update the UI
+      this.render(false);
+    }
+  }
+
+  /**
+   * Handle specialization text change
+   */
+  async _onSpecializationChange(event) {
+    event.preventDefault();
+    const element = event.currentTarget;
+    const skillId = element.closest('.skill-item').dataset.itemId;
+    const specialization = element.value;
+    const item = this.actor.items.get(skillId);
+
+    if (item) {
+      // Update specialization and reset specialization rating if cleared
+      const updateData = {
+        'system.specialization': specialization
+      };
+      
+      // If specialization is cleared, reset the rating
+      if (!specialization) {
+        updateData['system.specializationRating'] = 0;
+      }
+
+      await item.update(updateData);
 
       // Re-render the sheet to update the UI
       this.render(false);
@@ -449,11 +508,42 @@ export class SR2ActorSheet extends ActorSheet {
   async _onSkillRoll(event) {
     event.preventDefault();
     const skillId = event.currentTarget.dataset.skillId;
+    const rollType = event.currentTarget.dataset.rollType || 'base';
     const skill = this.actor.items.get(skillId);
 
     if (!skill) return;
 
-    const skillRating = Number(skill.system.rating) || 0;
+    let skillRating = 0;
+    let title = skill.name || skill.system.baseSkill || 'Unknown Skill';
+    let rollDescription = '';
+
+    // Determine which rating to use based on roll type
+    switch (rollType) {
+      case 'base':
+        skillRating = Number(skill.system.baseRating) || 0;
+        rollDescription = 'Base Skill';
+        break;
+      case 'concentration':
+        skillRating = Number(skill.system.concentrationRating) || 0;
+        if (skill.system.concentration) {
+          title += ` (${skill.system.concentration})`;
+          rollDescription = 'Concentration';
+        } else {
+          ui.notifications.warn("No concentration selected for this skill.");
+          return;
+        }
+        break;
+      case 'specialization':
+        skillRating = Number(skill.system.specializationRating) || 0;
+        if (skill.system.specialization) {
+          title += ` [${skill.system.specialization}]`;
+          rollDescription = 'Specialization';
+        } else {
+          ui.notifications.warn("No specialization entered for this skill.");
+          return;
+        }
+        break;
+    }
 
     // Calculate dice pool - skills roll only their rating in SR2E
     let dicePool = skillRating;
@@ -463,21 +553,11 @@ export class SR2ActorSheet extends ActorSheet {
       dicePool = 1;
     }
 
-    // Add specialization bonus if applicable
-    let title = skill.name;
-    if (skill.system.concentration) {
-      title += ` (${skill.system.concentration})`;
-    }
-    if (skill.system.specialization) {
-      title += ` [${skill.system.specialization}]`;
-      // Specialization gives +2 dice when applicable
-      dicePool += 2;
-    }
-
-
+    // Add roll type to title
+    const finalTitle = `${title} (${rollDescription})`;
 
     // Show TN selection dialog and roll
-    await this._showTargetNumberDialog(dicePool, title, 'skill');
+    await this._showTargetNumberDialog(dicePool, finalTitle, 'skill');
   }
 
   /**
@@ -541,12 +621,12 @@ export class SR2ActorSheet extends ActorSheet {
     
     poolTypes.forEach(poolType => {
       const pool = poolData[poolType.key];
-      if (pool && pool.current > 0) {
+      if (pool) {
         pools.push({ 
           key: poolType.key,
           name: poolType.name, 
-          current: pool.current, 
-          max: pool[poolType.maxKey] 
+          current: pool.current || 0, 
+          max: pool[poolType.maxKey] || 0
         });
       }
     });
@@ -579,6 +659,26 @@ export class SR2ActorSheet extends ActorSheet {
             <option value="8" ${defaultTN === 8 ? 'selected' : ''}>8 - Nearly Impossible</option>
             <option value="9" ${defaultTN === 9 ? 'selected' : ''}>9 - Impossible</option>
             <option value="10" ${defaultTN === 10 ? 'selected' : ''}>10 - Miraculous</option>
+            <option value="11" ${defaultTN === 11 ? 'selected' : ''}>11</option>
+            <option value="12" ${defaultTN === 12 ? 'selected' : ''}>12</option>
+            <option value="13" ${defaultTN === 13 ? 'selected' : ''}>13</option>
+            <option value="14" ${defaultTN === 14 ? 'selected' : ''}>14</option>
+            <option value="15" ${defaultTN === 15 ? 'selected' : ''}>15</option>
+            <option value="16" ${defaultTN === 16 ? 'selected' : ''}>16</option>
+            <option value="17" ${defaultTN === 17 ? 'selected' : ''}>17</option>
+            <option value="18" ${defaultTN === 18 ? 'selected' : ''}>18</option>
+            <option value="19" ${defaultTN === 19 ? 'selected' : ''}>19</option>
+            <option value="20" ${defaultTN === 20 ? 'selected' : ''}>20</option>
+            <option value="21" ${defaultTN === 21 ? 'selected' : ''}>21</option>
+            <option value="22" ${defaultTN === 22 ? 'selected' : ''}>22</option>
+            <option value="23" ${defaultTN === 23 ? 'selected' : ''}>23</option>
+            <option value="24" ${defaultTN === 24 ? 'selected' : ''}>24</option>
+            <option value="25" ${defaultTN === 25 ? 'selected' : ''}>25</option>
+            <option value="26" ${defaultTN === 26 ? 'selected' : ''}>26</option>
+            <option value="27" ${defaultTN === 27 ? 'selected' : ''}>27</option>
+            <option value="28" ${defaultTN === 28 ? 'selected' : ''}>28</option>
+            <option value="29" ${defaultTN === 29 ? 'selected' : ''}>29</option>
+            <option value="30" ${defaultTN === 30 ? 'selected' : ''}>30</option>
           </select>
         </div>
 
@@ -615,10 +715,16 @@ export class SR2ActorSheet extends ActorSheet {
           const isChecked = $(this).is(':checked');
           const poolKey = $(this).val();
           const diceInput = html.find(`input[name="pool-${poolKey}-dice"]`);
+          const pool = availablePools.find(p => p.key === poolKey);
           
           if (isChecked) {
             diceInput.prop('disabled', false);
-            diceInput.val(1); // Default to 1 die when enabled
+            // Only default to 1 if the pool has dice available
+            if (pool && pool.current > 0) {
+              diceInput.val(1);
+            } else {
+              diceInput.val(0);
+            }
           } else {
             diceInput.prop('disabled', true);
             diceInput.val(0);
@@ -644,9 +750,11 @@ export class SR2ActorSheet extends ActorSheet {
               
               if (checkbox.is(':checked')) {
                 const diceUsed = parseInt(diceInput.val()) || 0;
-                if (diceUsed > 0) {
-                  totalPoolDice += diceUsed;
-                  poolsUsed.push({ pool: pool, dice: diceUsed });
+                // Validate that we don't use more dice than available
+                const actualDiceUsed = Math.min(diceUsed, pool.current);
+                if (actualDiceUsed > 0) {
+                  totalPoolDice += actualDiceUsed;
+                  poolsUsed.push({ pool: pool, dice: actualDiceUsed });
                 }
               }
             });
@@ -755,7 +863,12 @@ export class SR2ActorSheet extends ActorSheet {
 
     if (sorcerySkills.length === 0) return 0;
 
-    return Math.max(...sorcerySkills.map(skill => skill.system.rating || 0));
+    return Math.max(...sorcerySkills.map(skill => {
+      const baseRating = skill.system.baseRating || 0;
+      const concRating = skill.system.concentrationRating || 0;
+      const specRating = skill.system.specializationRating || 0;
+      return Math.max(baseRating, concRating, specRating);
+    }));
   }
 
   /**
@@ -768,7 +881,7 @@ export class SR2ActorSheet extends ActorSheet {
 
     if (!weapon) return;
 
-    // Get relevant attributes and skills
+    // Get relevant attributes
     const strength = this.actor.system.attributes.strength.value || 1;
     const quickness = this.actor.system.attributes.quickness.value || 1;
 
@@ -776,29 +889,85 @@ export class SR2ActorSheet extends ActorSheet {
     const isRanged = weapon.system.weaponType === 'ranged';
     const attribute = isRanged ? quickness : strength;
 
-    // Get appropriate combat skill
-    const combatSkills = this.actor.items.filter(i =>
-      i.type === 'skill' &&
-      (i.system.baseSkill === 'Armed Combat' ||
-        i.system.baseSkill === 'Firearms' ||
-        i.system.baseSkill === 'Projectile Weapons')
-    );
-
     let skillRating = 0;
-    if (combatSkills.length > 0) {
-      // Use the highest applicable combat skill
-      skillRating = Math.max(...combatSkills.map(skill => skill.system.rating || 0));
+    let skillName = 'Defaulting';
+    let rollDescription = '';
+
+    // Check if weapon has a linked skill
+    if (weapon.system.linkedSkill?.skillId) {
+      const linkedSkill = this.actor.items.get(weapon.system.linkedSkill.skillId);
+      
+      if (linkedSkill) {
+        const rollType = weapon.system.linkedSkill.rollType || 'base';
+        
+        // Get skill rating based on roll type
+        switch (rollType) {
+          case 'base':
+            skillRating = Number(linkedSkill.system.baseRating) || 0;
+            skillName = linkedSkill.name || linkedSkill.system.baseSkill || 'Unknown Skill';
+            rollDescription = 'Base Skill';
+            break;
+          case 'concentration':
+            skillRating = Number(linkedSkill.system.concentrationRating) || 0;
+            if (linkedSkill.system.concentration) {
+              skillName = `${linkedSkill.name || linkedSkill.system.baseSkill} (${linkedSkill.system.concentration})`;
+              rollDescription = 'Concentration';
+            } else {
+              ui.notifications.warn(`${weapon.name} is linked to a skill with no concentration selected.`);
+              skillRating = 0;
+              skillName = 'Defaulting';
+              rollDescription = 'No Concentration';
+            }
+            break;
+          case 'specialization':
+            skillRating = Number(linkedSkill.system.specializationRating) || 0;
+            if (linkedSkill.system.specialization) {
+              skillName = `${linkedSkill.name || linkedSkill.system.baseSkill} [${linkedSkill.system.specialization}]`;
+              rollDescription = 'Specialization';
+            } else {
+              ui.notifications.warn(`${weapon.name} is linked to a skill with no specialization entered.`);
+              skillRating = 0;
+              skillName = 'Defaulting';
+              rollDescription = 'No Specialization';
+            }
+            break;
+        }
+      } else {
+        ui.notifications.warn(`${weapon.name} is linked to a skill that no longer exists.`);
+      }
+    } else {
+      // Fall back to automatic skill detection for backwards compatibility
+      const combatSkills = this.actor.items.filter(i =>
+        i.type === 'skill' &&
+        (i.system.baseSkill === 'Armed Combat' ||
+          i.system.baseSkill === 'Firearms' ||
+          i.system.baseSkill === 'Projectile Weapons')
+      );
+
+      if (combatSkills.length > 0) {
+        // Use the highest applicable combat skill
+        const bestSkill = combatSkills.reduce((best, current) => {
+          const currentRating = Number(current.system.baseRating) || 0;
+          const bestRating = Number(best.system.baseRating) || 0;
+          return currentRating > bestRating ? current : best;
+        });
+        
+        skillRating = Number(bestSkill.system.baseRating) || 0;
+        skillName = bestSkill.name || bestSkill.system.baseSkill;
+        rollDescription = 'Auto-detected';
+      }
     }
 
-    // Calculate dice pool
+    // Calculate dice pool (attribute + skill in SR2E)
     const dicePool = attribute + skillRating;
 
     // Create attack title
     const attackType = isRanged ? 'Ranged Attack' : 'Melee Attack';
     const title = `${attackType} with ${weapon.name}`;
+    const subtitle = skillRating > 0 ? `${skillName} (${rollDescription})` : 'Defaulting to Attribute Only';
 
     // Show TN selection dialog and roll for attack
-    await this._showTargetNumberDialog(dicePool, title, 'attack');
+    await this._showTargetNumberDialog(dicePool, `${title} - ${subtitle}`, 'attack');
 
     // Display weapon damage in chat
     const damageCode = weapon.system.damage || "1L";
@@ -808,6 +977,8 @@ export class SR2ActorSheet extends ActorSheet {
       content: `
         <div class="weapon-attack">
           <h3>${weapon.name} Attack</h3>
+          <p><strong>Skill Used:</strong> ${skillName} ${rollDescription ? `(${rollDescription})` : ''}</p>
+          <p><strong>Dice Pool:</strong> ${attribute} (${isRanged ? 'Quickness' : 'Strength'}) + ${skillRating} (Skill) = ${dicePool}</p>
           <p><strong>Damage Code:</strong> ${damageCode}</p>
           <p><strong>Concealability:</strong> ${weapon.system.concealability || 0}</p>
           ${weapon.system.reach ? `<p><strong>Reach:</strong> ${weapon.system.reach}</p>` : ''}
@@ -973,7 +1144,7 @@ export class SR2ActorSheet extends ActorSheet {
     const { SR2ItemBrowser } = await import("/systems/shadowrun2e/scripts/item-browser.js");
 
     // Create a custom item browser with totem selection handling
-    const browser = new SR2ItemBrowser(this.actor, 'totem', 'shadowrun2e.totems');
+    const browser = new SR2ItemBrowser(this.actor, 'totem', {});
 
     // Override the default item creation to handle totem selection
     const originalAddItem = browser.addItem;

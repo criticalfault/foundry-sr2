@@ -19,8 +19,37 @@ export class SR2Actor extends Actor {
     const systemData = actorData.system;
     const flags = actorData.flags.shadowrun2e || {};
 
+    // Migrate old skill data if needed
+    this._migrateSkillData();
+
     // Make separate methods for each Actor type to keep things organized
     this._prepareCharacterData(actorData);
+  }
+
+  /**
+   * Migrate old skill data from single rating to three ratings
+   */
+  _migrateSkillData() {
+    const skills = this.items.filter(i => i.type === 'skill');
+    
+    for (const skill of skills) {
+      // Check if this skill has the old rating field but not the new ones
+      if (skill.system.rating !== undefined && 
+          skill.system.baseRating === undefined) {
+        
+        const oldRating = skill.system.rating || 0;
+        
+        // Update the skill with new rating structure
+        skill.update({
+          'system.baseRating': oldRating,
+          'system.concentrationRating': 0,
+          'system.specializationRating': 0,
+          'system.-=rating': null // Remove the old rating field
+        });
+        
+        console.log(`SR2E | Migrated skill ${skill.name} from old rating system`);
+      }
+    }
   }
 
   /**
@@ -105,7 +134,13 @@ export class SR2Actor extends Actor {
     if (skills.length === 0) return 0;
 
     // Return the highest rating if multiple concentrations exist
-    return Math.max(...skills.map(skill => skill.system.rating || 0));
+    // Check base rating, concentration rating, and specialization rating
+    return Math.max(...skills.map(skill => {
+      const baseRating = skill.system.baseRating || 0;
+      const concRating = skill.system.concentrationRating || 0;
+      const specRating = skill.system.specializationRating || 0;
+      return Math.max(baseRating, concRating, specRating);
+    }));
   }
 
   /**
@@ -120,7 +155,12 @@ export class SR2Actor extends Actor {
     if (computerSkills.length === 0) return 0;
 
     // Return the highest rating among all Computer skill concentrations
-    return Math.max(...computerSkills.map(skill => skill.system.rating || 0));
+    return Math.max(...computerSkills.map(skill => {
+      const baseRating = skill.system.baseRating || 0;
+      const concRating = skill.system.concentrationRating || 0;
+      const specRating = skill.system.specializationRating || 0;
+      return Math.max(baseRating, concRating, specRating);
+    }));
   }
 
   /**
@@ -135,7 +175,12 @@ export class SR2Actor extends Actor {
     if (sorcerySkills.length === 0) return 0;
 
     // Return the highest rating among all Sorcery skill concentrations
-    return Math.max(...sorcerySkills.map(skill => skill.system.rating || 0));
+    return Math.max(...sorcerySkills.map(skill => {
+      const baseRating = skill.system.baseRating || 0;
+      const concRating = skill.system.concentrationRating || 0;
+      const specRating = skill.system.specializationRating || 0;
+      return Math.max(baseRating, concRating, specRating);
+    }));
   }
 
   /**
@@ -304,7 +349,7 @@ export class SR2Actor extends Actor {
     const chatData = {
       user: game.user.id,
       speaker: ChatMessage.getSpeaker({ actor: this }),
-      content: await renderTemplate("systems/shadowrun2e/templates/chat/dice-roll.html", {
+      content: await foundry.applications.handlebars.renderTemplate("systems/shadowrun2e/templates/chat/dice-roll.html", {
         title: title,
         successes: totalSuccesses,
         ones: totalOnes,

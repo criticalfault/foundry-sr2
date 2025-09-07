@@ -1,7 +1,7 @@
 /**
  * Extend the basic ActorSheet with Cyberdeck specific functionality
  */
-export class SR2CyberdeckSheet extends ActorSheet {
+export class SR2CyberdeckSheet extends foundry.applications.sheets.ActorSheet {
 
   /** @override */
   static get defaultOptions() {
@@ -241,7 +241,7 @@ export class SR2CyberdeckSheet extends ActorSheet {
       compendiumName = 'shadowrun2e.programs';
     }
     
-    const browser = new SR2ItemBrowser(this.actor, 'program', compendiumName);
+    const browser = new SR2ItemBrowser(this.actor, 'program', {});
     browser.render(true);
   }
 

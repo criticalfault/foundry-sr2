@@ -1,7 +1,7 @@
 /**
  * Extend the basic ActorSheet with Vehicle specific functionality
  */
-export class SR2VehicleSheet extends ActorSheet {
+export class SR2VehicleSheet extends foundry.applications.sheets.ActorSheet {
 
   /** @override */
   static get defaultOptions() {

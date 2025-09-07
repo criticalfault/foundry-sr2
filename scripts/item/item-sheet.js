@@ -1,7 +1,7 @@
 /**
  * Extend the basic ItemSheet with Shadowrun 2E specific functionality
  */
-export class SR2ItemSheet extends ItemSheet {
+export class SR2ItemSheet extends foundry.applications.sheets.ItemSheet {
 
   /** @override */
   static get defaultOptions() {
@@ -20,7 +20,7 @@ export class SR2ItemSheet extends ItemSheet {
   }
 
   /** @override */
-  getData() {
+  async getData() {
     const context = super.getData();
     const itemData = this.item.toObject(false);
     
@@ -28,6 +28,11 @@ export class SR2ItemSheet extends ItemSheet {
     let actor = this.object?.parent ?? null;
     if (actor) {
       context.rollData = actor.getRollData();
+      
+      // For weapons, get available skills for linking
+      if (itemData.type === 'weapon') {
+        context.availableSkills = actor.items.filter(i => i.type === 'skill');
+      }
     }
 
     context.system = itemData.system;

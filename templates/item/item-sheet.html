@@ -60,6 +60,14 @@
 
       {{#if (eq item.type "weapon")}}
       <div class="form-group">
+        <label>Weapon Type</label>
+        <select name="system.weaponType" data-dtype="String">
+          <option value="melee" {{#if (eq system.weaponType "melee")}}selected{{/if}}>Melee</option>
+          <option value="ranged" {{#if (eq system.weaponType "ranged")}}selected{{/if}}>Ranged</option>
+        </select>
+      </div>
+      
+      <div class="form-group">
         <label>Damage Code</label>
         <input type="text" name="system.damage" value="{{system.damage}}" placeholder="e.g. 6M"/>
       </div>
@@ -67,6 +75,76 @@
       <div class="form-group">
         <label>Concealability</label>
         <input type="number" name="system.concealability" value="{{system.concealability}}" data-dtype="Number"/>
+      </div>
+      
+      {{#if (eq system.weaponType "melee")}}
+      <div class="form-group">
+        <label>Reach</label>
+        <input type="number" name="system.reach" value="{{system.reach}}" data-dtype="Number"/>
+      </div>
+      {{/if}}
+      
+      {{#if (eq system.weaponType "ranged")}}
+      <div class="form-group">
+        <label>Mode</label>
+        <input type="text" name="system.mode" value="{{system.mode}}" placeholder="e.g. SS, SA, BF, FA"/>
+      </div>
+      
+      <div class="form-group">
+        <label>Ammo Capacity</label>
+        <input type="number" name="system.ammo.max" value="{{system.ammo.max}}" data-dtype="Number"/>
+      </div>
+      
+      <div class="form-group">
+        <label>Current Ammo</label>
+        <input type="number" name="system.ammo.current" value="{{system.ammo.current}}" data-dtype="Number"/>
+      </div>
+      
+      <div class="form-group">
+        <label>Recoil</label>
+        <input type="number" name="system.recoil" value="{{system.recoil}}" data-dtype="Number"/>
+      </div>
+      
+      <div class="form-group">
+        <label>Range Type</label>
+        <select name="system.rangeType" data-dtype="String">
+          <option value="" {{#unless system.rangeType}}selected{{/unless}}>Select Range Type</option>
+          <option value="pistol" {{#if (eq system.rangeType "pistol")}}selected{{/if}}>Pistol</option>
+          <option value="smg" {{#if (eq system.rangeType "smg")}}selected{{/if}}>SMG</option>
+          <option value="rifle" {{#if (eq system.rangeType "rifle")}}selected{{/if}}>Rifle</option>
+          <option value="shotgun" {{#if (eq system.rangeType "shotgun")}}selected{{/if}}>Shotgun</option>
+          <option value="bow" {{#if (eq system.rangeType "bow")}}selected{{/if}}>Bow</option>
+          <option value="crossbow" {{#if (eq system.rangeType "crossbow")}}selected{{/if}}>Crossbow</option>
+        </select>
+      </div>
+      {{/if}}
+      
+      <div class="form-group">
+        <label>Equipped</label>
+        <input type="checkbox" name="system.equipped" {{#if system.equipped}}checked{{/if}}/>
+      </div>
+      
+      <hr>
+      <h3>Skill Linking</h3>
+      <div class="form-group">
+        <label>Linked Skill</label>
+        <select name="system.linkedSkill.skillId" data-dtype="String" class="weapon-skill-select">
+          <option value="">No Skill Linked</option>
+          {{#each availableSkills as |skill|}}
+            <option value="{{skill._id}}" {{#if (eq skill._id system.linkedSkill.skillId)}}selected{{/if}}>
+              {{skill.name}}{{#if skill.system.baseSkill}} ({{skill.system.baseSkill}}){{/if}}
+            </option>
+          {{/each}}
+        </select>
+      </div>
+      
+      <div class="form-group">
+        <label>Roll Type</label>
+        <select name="system.linkedSkill.rollType" data-dtype="String">
+          <option value="base" {{#if (eq system.linkedSkill.rollType "base")}}selected{{/if}}>Base Skill</option>
+          <option value="concentration" {{#if (eq system.linkedSkill.rollType "concentration")}}selected{{/if}}>Concentration</option>
+          <option value="specialization" {{#if (eq system.linkedSkill.rollType "specialization")}}selected{{/if}}>Specialization</option>
+        </select>
       </div>
       {{/if}}
 

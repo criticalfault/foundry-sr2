@@ -218,8 +218,9 @@
       <div class="skills-list">
         <div class="skills-table-header">
           <div class="skill-name">Skill / Concentration</div>
-          <div class="skill-rating">Rating</div>
-          <div class="skill-attribute">Attribute</div>
+          <div class="skill-base-rating">Base</div>
+          <div class="skill-conc-rating">Conc</div>
+          <div class="skill-spec-rating">Spec</div>
           <div class="skill-specialization">Specialization</div>
           <div class="skill-actions">Actions</div>
         </div>
@@ -253,20 +254,16 @@
               </div>
             </div>
             
-            <div class="skill-rating">
-              <input type="number" name="items.{{skill._id}}.system.rating" value="{{skill.system.rating}}" data-dtype="Number" min="0" max="12"/>
+            <div class="skill-base-rating">
+              <input type="number" name="items.{{skill._id}}.system.baseRating" value="{{skill.system.baseRating}}" data-dtype="Number" min="0" max="12" title="Base Skill Rating"/>
             </div>
             
-            <div class="skill-attribute">
-              <select name="items.{{skill._id}}.system.attribute" data-dtype="String">
-                <option value="body" {{#if (eq skill.system.attribute "body")}}selected{{/if}}>Body</option>
-                <option value="quickness" {{#if (eq skill.system.attribute "quickness")}}selected{{/if}}>Quickness</option>
-                <option value="strength" {{#if (eq skill.system.attribute "strength")}}selected{{/if}}>Strength</option>
-                <option value="charisma" {{#if (eq skill.system.attribute "charisma")}}selected{{/if}}>Charisma</option>
-                <option value="intelligence" {{#if (eq skill.system.attribute "intelligence")}}selected{{/if}}>Intelligence</option>
-                <option value="willpower" {{#if (eq skill.system.attribute "willpower")}}selected{{/if}}>Willpower</option>
-                <option value="magic" {{#if (eq skill.system.attribute "magic")}}selected{{/if}}>Magic</option>
-              </select>
+            <div class="skill-conc-rating">
+              <input type="number" name="items.{{skill._id}}.system.concentrationRating" value="{{skill.system.concentrationRating}}" data-dtype="Number" min="0" max="12" title="Concentration Rating" {{#unless skill.system.concentration}}disabled{{/unless}}/>
+            </div>
+            
+            <div class="skill-spec-rating">
+              <input type="number" name="items.{{skill._id}}.system.specializationRating" value="{{skill.system.specializationRating}}" data-dtype="Number" min="0" max="12" title="Specialization Rating" {{#unless skill.system.specialization}}disabled{{/unless}}/>
             </div>
             
             <div class="skill-specialization">
@@ -274,9 +271,19 @@
             </div>
             
             <div class="skill-actions">
-              <button class="skill-roll" data-skill-id="{{skill._id}}" title="Roll Skill">
-                <i class="fas fa-dice-d6"></i>
+              <button class="skill-roll" data-skill-id="{{skill._id}}" data-roll-type="base" title="Roll Base Skill">
+                <i class="fas fa-dice-d6"></i> Base
               </button>
+              {{#if skill.system.concentration}}
+              <button class="skill-roll" data-skill-id="{{skill._id}}" data-roll-type="concentration" title="Roll Concentration">
+                <i class="fas fa-dice-d6"></i> Conc
+              </button>
+              {{/if}}
+              {{#if skill.system.specialization}}
+              <button class="skill-roll" data-skill-id="{{skill._id}}" data-roll-type="specialization" title="Roll Specialization">
+                <i class="fas fa-dice-d6"></i> Spec
+              </button>
+              {{/if}}
               <button class="item-delete" data-item-id="{{skill._id}}" title="Delete Skill">
                 <i class="fas fa-trash"></i>
               </button>
@@ -316,6 +323,7 @@
       <div class="items-list">
         <div class="items-table-header">
           <div class="item-name">Weapon</div>
+          <div class="item-skill">Linked Skill</div>
           <div class="item-damage">Damage</div>
           <div class="item-conceal">Conceal</div>
           <div class="item-ammo">Ammo</div>
@@ -328,6 +336,25 @@
           <div class="item-name">
             <img src="{{item.img}}" title="{{item.name}}" width="24" height="24"/>
             <span>{{item.name}}</span>
+          </div>
+          <div class="item-skill">
+            {{#if item.system.linkedSkill.skillId}}
+              {{#each ../skills as |skill|}}
+                {{#if (eq skill._id ../item.system.linkedSkill.skillId)}}
+                  <span class="linked-skill" title="{{../item.system.linkedSkill.rollType}}">
+                    {{skill.name}}
+                    {{#if (eq ../item.system.linkedSkill.rollType "concentration")}}
+                      {{#if skill.system.concentration}}({{skill.system.concentration}}){{/if}}
+                    {{/if}}
+                    {{#if (eq ../item.system.linkedSkill.rollType "specialization")}}
+                      {{#if skill.system.specialization}}[{{skill.system.specialization}}]{{/if}}
+                    {{/if}}
+                  </span>
+                {{/if}}
+              {{/each}}
+            {{else}}
+              <span class="no-skill" title="No skill linked - will use auto-detection">Auto</span>
+            {{/if}}
           </div>
           <div class="item-damage">
             <input type="text" name="items.{{item._id}}.system.damage" value="{{item.system.damage}}" placeholder="e.g. 6M"/>
