@@ -181,9 +181,14 @@ export class SR2ActorSheet extends ActorSheet {
         } else {
           skill.availableConcentrations = [];
         }
+        
+        // Debug logging for skill data
+        console.log(`SR2E | Skill ${skill.name}: baseSkill=${skill.system.baseSkill}, concentration=${skill.system.concentration}, specialization=${skill.system.specialization}`);
+        console.log(`SR2E | Ratings: base=${skill.system.baseRating}, conc=${skill.system.concentrationRating}, spec=${skill.system.specializationRating}`);
       });
       
       console.log('SR2E | Skills data loaded successfully:', Object.keys(skillsData).length, 'skills');
+      console.log('SR2E | Actor skills:', context.skills.length);
     } catch (error) {
       console.error('SR2E | Failed to load skills data:', error);
       context.availableSkills = {};
@@ -273,7 +278,7 @@ export class SR2ActorSheet extends ActorSheet {
     // Skill management
     html.find('.base-skill-select').change(this._onBaseSkillChange.bind(this));
     html.find('.concentration-select').change(this._onConcentrationChange.bind(this));
-    html.find('input[name*="specialization"]').on('input', this._onSpecializationChange.bind(this));
+    html.find('input[name*="specialization"]').on('blur', this._onSpecializationChange.bind(this));
     html.find('.skill-roll').click(this._onSkillRoll.bind(this));
 
     // Attribute rolls
@@ -430,17 +435,25 @@ export class SR2ActorSheet extends ActorSheet {
     const baseSkill = element.value;
     const item = this.actor.items.get(skillId);
 
+    console.log("SR2E | Base skill change:", skillId, baseSkill);
+
     if (item) {
       // Clear concentration when base skill changes
       await item.update({
         'system.baseSkill': baseSkill,
         'system.concentration': '',
         'system.concentrationRating': 0,
+        'system.specialization': '',
+        'system.specializationRating': 0,
         'name': baseSkill || 'New Skill'
       });
 
+      console.log("SR2E | Updated skill:", item.name, "with base skill:", baseSkill);
+
       // Re-render the sheet to update the UI
       this.render(false);
+    } else {
+      console.error("SR2E | Could not find skill item for base skill change:", skillId);
     }
   }
 
@@ -450,9 +463,11 @@ export class SR2ActorSheet extends ActorSheet {
   async _onConcentrationChange(event) {
     event.preventDefault();
     const element = event.currentTarget;
-    const skillId = element.closest('.skill-item').dataset.itemId;
+    const skillId = element.dataset.skillId || element.closest('.skill-item').dataset.itemId;
     const concentration = element.value;
     const item = this.actor.items.get(skillId);
+
+    console.log("SR2E | Concentration change:", skillId, concentration);
 
     if (item) {
       // Update concentration and reset concentration rating if cleared
@@ -469,6 +484,8 @@ export class SR2ActorSheet extends ActorSheet {
 
       // Re-render the sheet to update the UI
       this.render(false);
+    } else {
+      console.error("SR2E | Could not find skill item for concentration change:", skillId);
     }
   }
 
@@ -478,9 +495,11 @@ export class SR2ActorSheet extends ActorSheet {
   async _onSpecializationChange(event) {
     event.preventDefault();
     const element = event.currentTarget;
-    const skillId = element.closest('.skill-item').dataset.itemId;
+    const skillId = element.dataset.skillId || element.closest('.skill-item').dataset.itemId;
     const specialization = element.value;
     const item = this.actor.items.get(skillId);
+
+    console.log("SR2E | Specialization change:", skillId, specialization);
 
     if (item) {
       // Update specialization and reset specialization rating if cleared
@@ -495,8 +514,10 @@ export class SR2ActorSheet extends ActorSheet {
 
       await item.update(updateData);
 
-      // Re-render the sheet to update the UI
+      // Re-render the sheet to update the UI after specialization change
       this.render(false);
+    } else {
+      console.error("SR2E | Could not find skill item for specialization change:", skillId);
     }
   }
 
@@ -511,22 +532,29 @@ export class SR2ActorSheet extends ActorSheet {
     const rollType = event.currentTarget.dataset.rollType || 'base';
     const skill = this.actor.items.get(skillId);
 
-    if (!skill) return;
+    if (!skill) {
+      console.error("SR2E | Skill not found for roll:", skillId);
+      ui.notifications.error("Skill not found for roll");
+      return;
+    }
 
     let skillRating = 0;
     let title = skill.name || skill.system.baseSkill || 'Unknown Skill';
     let rollDescription = '';
 
+    console.log("SR2E | Rolling skill:", skill.name, "Type:", rollType, "System data:", skill.system);
+
     // Determine which rating to use based on roll type
     switch (rollType) {
       case 'base':
-        skillRating = Number(skill.system.baseRating) || 0;
+        skillRating = parseInt(skill.system.baseRating) || 0;
         rollDescription = 'Base Skill';
+        title = skill.system.baseSkill || skill.name || 'Unknown Skill';
         break;
       case 'concentration':
-        skillRating = Number(skill.system.concentrationRating) || 0;
+        skillRating = parseInt(skill.system.concentrationRating) || 0;
         if (skill.system.concentration) {
-          title += ` (${skill.system.concentration})`;
+          title = `${skill.system.baseSkill || skill.name} (${skill.system.concentration})`;
           rollDescription = 'Concentration';
         } else {
           ui.notifications.warn("No concentration selected for this skill.");
@@ -534,9 +562,9 @@ export class SR2ActorSheet extends ActorSheet {
         }
         break;
       case 'specialization':
-        skillRating = Number(skill.system.specializationRating) || 0;
+        skillRating = parseInt(skill.system.specializationRating) || 0;
         if (skill.system.specialization) {
-          title += ` [${skill.system.specialization}]`;
+          title = `${skill.system.baseSkill || skill.name} [${skill.system.specialization}]`;
           rollDescription = 'Specialization';
         } else {
           ui.notifications.warn("No specialization entered for this skill.");
@@ -545,16 +573,21 @@ export class SR2ActorSheet extends ActorSheet {
         break;
     }
 
+    console.log("SR2E | Skill rating for roll:", skillRating, "Roll type:", rollType);
+
     // Calculate dice pool - skills roll only their rating in SR2E
     let dicePool = skillRating;
 
     // Ensure minimum dice pool of 1 (defaulting skill)
     if (dicePool < 1) {
       dicePool = 1;
+      console.log("SR2E | Using defaulting dice pool of 1");
     }
 
     // Add roll type to title
     const finalTitle = `${title} (${rollDescription})`;
+
+    console.log("SR2E | Final dice pool:", dicePool, "Title:", finalTitle);
 
     // Show TN selection dialog and roll
     await this._showTargetNumberDialog(dicePool, finalTitle, 'skill');

@@ -5505,3 +5505,140 @@ header.window-header.flexrow.draggable.resizable {
   border-color: var(--cyber-accent-cyan);
   box-shadow: var(--cyber-glow-cyan);
 }
+/
+* ===== SKILLS SECTION ===== */
+.shadowrun2e .skills-list {
+  margin-top: 10px;
+}
+
+.shadowrun2e .skills-table-header {
+  display: grid;
+  grid-template-columns: 2fr 80px 80px 80px 1fr 200px;
+  gap: 10px;
+  padding: 8px;
+  background: var(--cyber-bg-secondary);
+  border: 1px solid var(--cyber-border);
+  font-weight: bold;
+  color: var(--cyber-accent-cyan);
+  text-transform: uppercase;
+  font-size: 12px;
+}
+
+.shadowrun2e .skill-item {
+  border: 1px solid var(--cyber-border);
+  margin-bottom: 5px;
+  background: var(--cyber-bg-primary);
+}
+
+.shadowrun2e .skill-main {
+  display: grid;
+  grid-template-columns: 2fr 80px 80px 80px 1fr 200px;
+  gap: 10px;
+  padding: 8px;
+  align-items: center;
+}
+
+.shadowrun2e .skill-name-section {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.shadowrun2e .skill-name-details {
+  flex: 1;
+}
+
+.shadowrun2e .skill-name-details select {
+  width: 100%;
+  margin-bottom: 4px;
+  background: var(--cyber-bg-secondary);
+  color: var(--cyber-text-primary);
+  border: 1px solid var(--cyber-border);
+  padding: 4px;
+}
+
+.shadowrun2e .skill-name-details select:focus {
+  border-color: var(--cyber-accent-cyan);
+  box-shadow: var(--cyber-glow-cyan);
+}
+
+.shadowrun2e .skill-base-rating input,
+.shadowrun2e .skill-conc-rating input,
+.shadowrun2e .skill-spec-rating input {
+  width: 100%;
+  text-align: center;
+  background: var(--cyber-bg-secondary);
+  color: var(--cyber-text-primary);
+  border: 1px solid var(--cyber-border);
+  padding: 4px;
+}
+
+.shadowrun2e .skill-base-rating input:focus,
+.shadowrun2e .skill-conc-rating input:focus,
+.shadowrun2e .skill-spec-rating input:focus {
+  border-color: var(--cyber-accent-cyan);
+  box-shadow: var(--cyber-glow-cyan);
+}
+
+.shadowrun2e .skill-specialization input {
+  width: 100%;
+  background: var(--cyber-bg-secondary);
+  color: var(--cyber-text-primary);
+  border: 1px solid var(--cyber-border);
+  padding: 4px;
+}
+
+.shadowrun2e .skill-specialization input:focus {
+  border-color: var(--cyber-accent-cyan);
+  box-shadow: var(--cyber-glow-cyan);
+}
+
+.shadowrun2e .skill-actions {
+  display: flex;
+  gap: 4px;
+  justify-content: flex-end;
+}
+
+.shadowrun2e .skill-actions button {
+  padding: 4px 8px;
+  font-size: 11px;
+  min-width: auto;
+}
+
+.shadowrun2e .skill-roll {
+  background: linear-gradient(135deg, var(--cyber-bg-secondary), var(--cyber-bg-tertiary));
+  color: var(--cyber-accent-green);
+  border-color: var(--cyber-accent-green);
+}
+
+.shadowrun2e .skill-roll:hover {
+  color: var(--cyber-accent-cyan);
+  border-color: var(--cyber-accent-cyan);
+  box-shadow: var(--cyber-glow-cyan);
+}
+
+.shadowrun2e .no-skills {
+  text-align: center;
+  padding: 20px;
+  color: var(--cyber-text-muted);
+  font-style: italic;
+}
+
+.shadowrun2e .skills-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 10px;
+}
+
+.shadowrun2e .skills-header h3 {
+  color: var(--cyber-accent-cyan);
+  text-transform: uppercase;
+  letter-spacing: 2px;
+  margin: 0;
+}
+
+.shadowrun2e .skill-controls {
+  display: flex;
+  gap: 8px;
+}

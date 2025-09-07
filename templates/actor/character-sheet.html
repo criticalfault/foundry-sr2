@@ -243,7 +243,7 @@
                 </div>
                 {{#if skill.system.baseSkill}}
                   <div class="concentration-section">
-                    <select name="items.{{skill._id}}.system.concentration" data-dtype="String" class="concentration-select">
+                    <select name="items.{{skill._id}}.system.concentration" data-dtype="String" class="concentration-select" data-skill-id="{{skill._id}}">
                       <option value="">Select Concentration...</option>
                       {{#each skill.availableConcentrations as |concentration|}}
                         <option value="{{concentration.name}}" {{#if (eq concentration.name ../skill.system.concentration)}}selected{{/if}}>{{concentration.name}}</option>
@@ -267,7 +267,7 @@
             </div>
             
             <div class="skill-specialization">
-              <input type="text" name="items.{{skill._id}}.system.specialization" value="{{skill.system.specialization}}" placeholder="Enter specialization..."/>
+              <input type="text" name="items.{{skill._id}}.system.specialization" value="{{skill.system.specialization}}" placeholder="Enter specialization..." data-skill-id="{{skill._id}}"/>
             </div>
             
             <div class="skill-actions">
