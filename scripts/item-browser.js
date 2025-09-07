@@ -427,6 +427,53 @@ export class SR2ItemBrowser extends Application {
           quantity: 1,
           weight: 0
         };
+        
+      case 'armor':
+        return {
+          ...baseData,
+          rating: parseInt(itemData.ballistic) || parseInt(itemData.impact) || 0,
+          concealability: parseInt(itemData.concealability) || 0,
+          ballistic: parseInt(itemData.ballistic) || 0,
+          impact: parseInt(itemData.impact) || 0,
+          equipped: false,
+          quantity: 1,
+          weight: parseFloat(itemData.weight) || 0,
+          availability: itemData.availability || "",
+          streetIndex: parseFloat(itemData.streetIndex) || 1.0
+        };
+        
+      case 'weapon':
+        return {
+          ...baseData,
+          weaponType: this._determineWeaponType(itemData.category),
+          concealability: parseInt(itemData.concealability) || 0,
+          damage: itemData.damage || "1L",
+          reach: parseInt(itemData.reach) || 0,
+          mode: itemData.mode || "SS",
+          ammo: {
+            current: 0,
+            max: parseInt(itemData.ammo) || 0,
+            type: ""
+          },
+          recoil: parseInt(itemData.recoil) || 0,
+          rangeType: this._determineRangeType(itemData.name, itemData.category),
+          equipped: false,
+          quantity: 1,
+          weight: parseFloat(itemData.weight) || 0,
+          availability: itemData.availability || "",
+          streetIndex: parseFloat(itemData.streetIndex) || 1.0
+        };
+        
+      case 'gear':
+        return {
+          ...baseData,
+          rating: parseInt(itemData.rating) || 0,
+          equipped: false,
+          quantity: 1,
+          weight: parseFloat(itemData.weight) || 0,
+          availability: itemData.availability || "",
+          streetIndex: parseFloat(itemData.streetIndex) || 1.0
+        };
     }
     
     return baseData;
@@ -440,6 +487,79 @@ export class SR2ItemBrowser extends Application {
     this.searchTerm = "";
     this.selectedCategory = "";
     this.render();
+  }
+
+  /**
+   * Determine weapon type based on category
+   */
+  _determineWeaponType(categoryName) {
+    const rangedCategories = ['Firearms', 'Bow and crossbow', 'Rockets and Missiles'];
+    return rangedCategories.includes(categoryName) ? 'ranged' : 'melee';
+  }
+
+  /**
+   * Determine range type based on weapon name and category
+   */
+  _determineRangeType(weaponName, categoryName) {
+    const name = weaponName.toLowerCase();
+
+    // Pistol categories
+    if (name.includes('hold-out') && name.includes('light')) return '(LHOP)';
+    if (name.includes('hold-out')) return '(HOPist)';
+    if (name.includes('light pistol')) return '(LPist)';
+    if (name.includes('machine pistol')) return '(MaPist)';
+    if (name.includes('heavy pistol')) return '(HPist)';
+    if (name.includes('very heavy pistol')) return '(VHP)';
+    if (name.includes('medium pistol') || name.includes('pistol')) return '(MPist)';
+
+    // Long guns
+    if (name.includes('assault rifle')) return '(AsRf)';
+    if (name.includes('sniper rifle')) return '(SptR)';
+    if (name.includes('heavy sniper')) return '(HSR)';
+    if (name.includes('sniper')) return '(Snip)';
+    if (name.includes('light carbine')) return 'LCarb';
+    if (name.includes('carbine')) return '(Carb)';
+    if (name.includes('shotgun')) return '(ShtG)';
+    if (name.includes('submachine') || name.includes('smg')) return '(SMG)';
+
+    // Machine guns
+    if (name.includes('heavy machine gun') || name.includes('hmg')) return '(HMG)';
+    if (name.includes('medium machine gun') || name.includes('mmg')) return '(MMG)';
+    if (name.includes('light machine gun') || name.includes('lmg')) return '(LMG)';
+    if (name.includes('minigun')) return '(MinG)';
+
+    // Heavy weapons
+    if (name.includes('assault cannon')) return '(ACan)';
+    if (name.includes('grenade launcher')) return '(GrLn)';
+    if (name.includes('missile launcher')) return '(MisLn)';
+    if (name.includes('mortar')) return '(Mrtr)';
+    if (name.includes('flamethrower')) return '(FlThr)';
+
+    // Bows and crossbows
+    if (name.includes('heavy crossbow')) return '(HCB)';
+    if (name.includes('medium crossbow')) return '(MCB)';
+    if (name.includes('light crossbow')) return '(LCB)';
+    if (name.includes('crossbow')) return '(MCB)';
+    if (name.includes('bow')) return '(Bow)';
+
+    // Thrown weapons
+    if (name.includes('shuriken')) return '(SH)';
+    if (name.includes('throwing knife') || name.includes('thrown knife')) return '(TK)';
+    if (name.includes('net')) return '(Net)';
+
+    // Special weapons
+    if (name.includes('taser')) return '(Tasr)';
+    if (name.includes('spear gun')) return '(SpGn)';
+    if (name.includes('blowgun')) return '(BG)';
+    if (name.includes('slingshot')) return '(SS)';
+    if (name.includes('sling')) return '(SL)';
+
+    // Default based on category
+    if (categoryName === 'Firearms') return '(MPist)'; // Default to medium pistol
+    if (categoryName === 'Bow and crossbow') return '(Bow)';
+    if (categoryName === 'Rockets and Missiles') return '(MisLn)';
+
+    return '(MPist)'; // Default fallback
   }
 
   /**

@@ -173,6 +173,16 @@ export class SR2ActorSheet extends ActorSheet {
       const response = await fetch('/systems/shadowrun2e/data/skills.json');
       const skillsData = await response.json();
       context.availableSkills = skillsData;
+      
+      // Add concentration data for each skill
+      context.skills.forEach(skill => {
+        if (skill.system.baseSkill && skillsData[skill.system.baseSkill]) {
+          skill.availableConcentrations = skillsData[skill.system.baseSkill].Concentrations || [];
+        } else {
+          skill.availableConcentrations = [];
+        }
+      });
+      
       console.log('SR2E | Skills data loaded successfully:', Object.keys(skillsData).length, 'skills');
     } catch (error) {
       console.error('SR2E | Failed to load skills data:', error);
@@ -258,10 +268,14 @@ export class SR2ActorSheet extends ActorSheet {
 
     // Pool management
     html.find('.pool-adjust').click(this._onPoolAdjust.bind(this));
+    html.find('.reset-all-pools').click(this._onResetAllPools.bind(this));
 
     // Skill management
     html.find('.base-skill-select').change(this._onBaseSkillChange.bind(this));
     html.find('.skill-roll').click(this._onSkillRoll.bind(this));
+
+    // Attribute rolls
+    html.find('.attribute-roll').click(this._onAttributeRoll.bind(this));
 
     // Item browser
     html.find('.browse-items').click(this._onBrowseItems.bind(this));
@@ -350,6 +364,61 @@ export class SR2ActorSheet extends ActorSheet {
   }
 
   /**
+   * Reset all pools to maximum (GM only)
+   */
+  async _onResetAllPools(event) {
+    event.preventDefault();
+    
+    // Confirm with GM before resetting
+    const confirmed = await Dialog.confirm({
+      title: "Reset All Pools",
+      content: `<p>Are you sure you want to reset all dice pools to maximum for <strong>${this.actor.name}</strong>?</p>
+                <p>This will restore all pools (Combat, Spell, Hacking, Control, Task, Astral) to their maximum values.</p>`,
+      yes: () => true,
+      no: () => false,
+      defaultYes: false
+    });
+
+    if (!confirmed) return;
+
+    // Build update data for all pools
+    const updateData = {};
+    const poolData = this.actor.system.pools;
+    
+    // Reset all pools except karma (karma is managed differently)
+    const poolTypes = ['combat', 'spell', 'hacking', 'control', 'task', 'astral'];
+    
+    poolTypes.forEach(poolType => {
+      if (poolData[poolType]) {
+        updateData[`system.pools.${poolType}.current`] = poolData[poolType].max;
+      }
+    });
+
+    // Update the actor
+    await this.actor.update(updateData);
+
+    // Show confirmation message
+    ui.notifications.info(`All dice pools reset to maximum for ${this.actor.name}`);
+    
+    // Optional: Create chat message for transparency
+    ChatMessage.create({
+      user: game.user.id,
+      speaker: ChatMessage.getSpeaker({ actor: this.actor }),
+      content: `<div class="pool-reset-message">
+        <h3>🔄 Pools Reset</h3>
+        <p><strong>${this.actor.name}'s</strong> dice pools have been reset to maximum by the GM.</p>
+        <ul>
+          ${poolTypes.map(type => {
+            const pool = poolData[type];
+            return pool && pool.max > 0 ? `<li>${type.charAt(0).toUpperCase() + type.slice(1)} Pool: ${pool.max}/${pool.max}</li>` : '';
+          }).filter(item => item).join('')}
+        </ul>
+      </div>`,
+      whisper: [game.user.id] // Only visible to GM
+    });
+  }
+
+  /**
    * Handle base skill selection change
    */
   async _onBaseSkillChange(event) {
@@ -367,44 +436,12 @@ export class SR2ActorSheet extends ActorSheet {
         'name': baseSkill || 'New Skill'
       });
 
-      // Update concentration dropdown
-      await this._updateConcentrationDropdown(skillId, baseSkill);
+      // Re-render the sheet to update the UI
       this.render(false);
     }
   }
 
-  /**
-   * Update concentration dropdown based on selected base skill
-   */
-  async _updateConcentrationDropdown(skillId, baseSkill) {
-    if (!baseSkill) return;
 
-    try {
-      const response = await fetch('/systems/shadowrun2e/data/skills.json');
-      const skillsData = await response.json();
-      const skillData = skillsData[baseSkill];
-
-      if (!skillData || !skillData.Concentrations) return;
-
-      // Find the concentration select element
-      const concentrationSelect = document.querySelector(`select[name="items.${skillId}.system.concentration"]`);
-      if (!concentrationSelect) return;
-
-      // Clear existing options except the first one
-      concentrationSelect.innerHTML = '<option value="">Select Concentration...</option>';
-
-      // Add concentration options
-      skillData.Concentrations.forEach(concentration => {
-        const option = document.createElement('option');
-        option.value = concentration.name;
-        option.textContent = concentration.name;
-        concentrationSelect.appendChild(option);
-      });
-
-    } catch (error) {
-      console.error('Failed to update concentration dropdown:', error);
-    }
-  }
 
   /**
    * Handle skill roll
@@ -416,12 +453,15 @@ export class SR2ActorSheet extends ActorSheet {
 
     if (!skill) return;
 
-    const skillRating = skill.system.rating || 0;
-    const attributeName = skill.system.attribute || 'body';
-    const attributeValue = this.actor.system.attributes[attributeName]?.value || 1;
+    const skillRating = Number(skill.system.rating) || 0;
 
-    // Calculate dice pool
-    let dicePool = skillRating + attributeValue;
+    // Calculate dice pool - skills roll only their rating in SR2E
+    let dicePool = skillRating;
+
+    // Ensure minimum dice pool of 1 (defaulting skill)
+    if (dicePool < 1) {
+      dicePool = 1;
+    }
 
     // Add specialization bonus if applicable
     let title = skill.name;
@@ -434,8 +474,231 @@ export class SR2ActorSheet extends ActorSheet {
       dicePool += 2;
     }
 
-    // Roll the dice
-    await this.actor.rollDice(dicePool, 4, title);
+
+
+    // Show TN selection dialog and roll
+    await this._showTargetNumberDialog(dicePool, title, 'skill');
+  }
+
+  /**
+   * Handle attribute roll
+   */
+  async _onAttributeRoll(event) {
+    event.preventDefault();
+    const attributeName = event.currentTarget.dataset.attribute;
+    const attributeValue = Number(this.actor.system.attributes[attributeName]?.value) || 1;
+
+    // Use modified attribute value if available (includes cyberware bonuses)
+    const modifiers = this.actor._calculateAugmentationModifiers();
+    let modifierValue = 0;
+    
+    // Map attribute names to modifier keys
+    const modifierMap = {
+      'body': 'BOD',
+      'quickness': 'QCK', 
+      'strength': 'STR',
+      'charisma': 'CHA',
+      'intelligence': 'INT',
+      'willpower': 'WIL',
+      'reaction': 'RCT'
+    };
+    
+    if (modifierMap[attributeName]) {
+      modifierValue = modifiers[modifierMap[attributeName]] || 0;
+    }
+
+    // Attributes roll their rating as dice pool (including modifiers)
+    let dicePool = attributeValue + modifierValue;
+
+    // Ensure minimum dice pool of 1
+    if (dicePool < 1) {
+      dicePool = 1;
+    }
+
+    const title = `${attributeName.charAt(0).toUpperCase() + attributeName.slice(1)} Test`;
+
+    // Show TN selection dialog and roll
+    await this._showTargetNumberDialog(dicePool, title, 'attribute');
+  }
+
+  /**
+   * Get available pools for dice rolling
+   */
+  _getAvailablePools() {
+    const pools = [];
+    const poolData = this.actor.system.pools;
+    
+    // Add all pools that have current dice available
+    const poolTypes = [
+      { key: 'karma', name: 'Karma Pool', maxKey: 'total' },
+      { key: 'combat', name: 'Combat Pool', maxKey: 'max' },
+      { key: 'spell', name: 'Spell Pool', maxKey: 'max' },
+      { key: 'hacking', name: 'Hacking Pool', maxKey: 'max' },
+      { key: 'control', name: 'Control Pool', maxKey: 'max' },
+      { key: 'task', name: 'Task Pool', maxKey: 'max' },
+      { key: 'astral', name: 'Astral Combat Pool', maxKey: 'max' }
+    ];
+    
+    poolTypes.forEach(poolType => {
+      const pool = poolData[poolType.key];
+      if (pool && pool.current > 0) {
+        pools.push({ 
+          key: poolType.key,
+          name: poolType.name, 
+          current: pool.current, 
+          max: pool[poolType.maxKey] 
+        });
+      }
+    });
+    
+    return pools;
+  }
+
+  /**
+   * Show Target Number selection dialog
+   */
+  async _showTargetNumberDialog(dicePool, title, rollType, defaultTN = 4) {
+    const availablePools = this._getAvailablePools();
+    
+    const content = `
+      <div class="target-number-dialog">
+        <div class="roll-info">
+          <h3>${title}</h3>
+          <p><strong>Base Dice Pool:</strong> ${dicePool}</p>
+        </div>
+        
+        <div class="target-number-section">
+          <label for="target-number"><strong>Target Number:</strong></label>
+          <select id="target-number" name="targetNumber">
+            <option value="2" ${defaultTN === 2 ? 'selected' : ''}>2 - Trivial</option>
+            <option value="3" ${defaultTN === 3 ? 'selected' : ''}>3 - Easy</option>
+            <option value="4" ${defaultTN === 4 ? 'selected' : ''}>4 - Average</option>
+            <option value="5" ${defaultTN === 5 ? 'selected' : ''}>5 - Fair</option>
+            <option value="6" ${defaultTN === 6 ? 'selected' : ''}>6 - Hard</option>
+            <option value="7" ${defaultTN === 7 ? 'selected' : ''}>7 - Extreme</option>
+            <option value="8" ${defaultTN === 8 ? 'selected' : ''}>8 - Nearly Impossible</option>
+            <option value="9" ${defaultTN === 9 ? 'selected' : ''}>9 - Impossible</option>
+            <option value="10" ${defaultTN === 10 ? 'selected' : ''}>10 - Miraculous</option>
+          </select>
+        </div>
+
+        ${availablePools.length > 0 ? `
+        <div class="pool-dice-section">
+          <label><strong>Pool Dice (Optional):</strong></label>
+          ${availablePools.map(pool => `
+            <div class="pool-option">
+              <label>
+                <input type="checkbox" name="pool-${pool.key}" value="${pool.key}" class="pool-checkbox">
+                ${pool.name} (${pool.current}/${pool.max})
+              </label>
+              <input type="number" name="pool-${pool.key}-dice" 
+                     min="0" max="${pool.current}" value="0" disabled class="pool-dice-input">
+            </div>
+          `).join('')}
+        </div>
+        ` : ''}
+
+        <div class="modifiers-section">
+          <label for="dice-modifier"><strong>Dice Pool Modifier:</strong></label>
+          <input type="number" id="dice-modifier" name="diceModifier" value="0" min="-20" max="20">
+          <small>Positive for bonuses, negative for penalties</small>
+        </div>
+      </div>
+    `;
+
+    const dialog = new Dialog({
+      title: `${title} - Target Number Selection`,
+      content: content,
+      render: (html) => {
+        // Handle pool checkbox interactions
+        html.find('.pool-checkbox').change(function() {
+          const isChecked = $(this).is(':checked');
+          const poolKey = $(this).val();
+          const diceInput = html.find(`input[name="pool-${poolKey}-dice"]`);
+          
+          if (isChecked) {
+            diceInput.prop('disabled', false);
+            diceInput.val(1); // Default to 1 die when enabled
+          } else {
+            diceInput.prop('disabled', true);
+            diceInput.val(0);
+          }
+        });
+      },
+      buttons: {
+        roll: {
+          icon: '<i class="fas fa-dice-d6"></i>',
+          label: "Roll",
+          callback: async (html) => {
+            const targetNumber = parseInt(html.find('#target-number').val());
+            const diceModifier = parseInt(html.find('#dice-modifier').val()) || 0;
+            let finalDicePool = dicePool + diceModifier;
+            
+            // Handle pool dice
+            const poolsUsed = [];
+            let totalPoolDice = 0;
+            
+            availablePools.forEach(pool => {
+              const checkbox = html.find(`input[name="pool-${pool.key}"]`);
+              const diceInput = html.find(`input[name="pool-${pool.key}-dice"]`);
+              
+              if (checkbox.is(':checked')) {
+                const diceUsed = parseInt(diceInput.val()) || 0;
+                if (diceUsed > 0) {
+                  totalPoolDice += diceUsed;
+                  poolsUsed.push({ pool: pool, dice: diceUsed });
+                }
+              }
+            });
+            
+            // Add pool dice to final dice pool
+            finalDicePool += totalPoolDice;
+            
+            // Ensure minimum dice pool of 1
+            if (finalDicePool < 1) {
+              finalDicePool = 1;
+            }
+            
+            // Update actor's pool values
+            if (poolsUsed.length > 0) {
+              const updateData = {};
+              poolsUsed.forEach(({ pool, dice }) => {
+                const newCurrent = Math.max(0, pool.current - dice);
+                updateData[`system.pools.${pool.key}.current`] = newCurrent;
+              });
+              await this.actor.update(updateData);
+            }
+            
+            // Create enhanced title with pool info
+            let finalTitle = `${title} (TN ${targetNumber})`;
+            if (poolsUsed.length > 0) {
+              const poolInfo = poolsUsed.map(({ pool, dice }) => `${dice} ${pool.name}`).join(', ');
+              finalTitle += ` [+${totalPoolDice} from ${poolInfo}]`;
+            }
+            
+            // Roll the dice
+            this.actor.rollDice(finalDicePool, targetNumber, finalTitle);
+          }
+        },
+        cancel: {
+          icon: '<i class="fas fa-times"></i>',
+          label: "Cancel"
+        }
+      },
+      default: "roll",
+      render: (html) => {
+        // Enable/disable pool dice inputs when checkboxes are toggled
+        html.find('input[type="checkbox"]').change(function() {
+          const diceInput = html.find(`input[name="${this.name}-dice"]`);
+          diceInput.prop('disabled', !this.checked);
+          if (!this.checked) {
+            diceInput.val(0);
+          }
+        });
+      }
+    });
+
+    dialog.render(true);
   }
 
   /**
@@ -468,21 +731,18 @@ export class SR2ActorSheet extends ActorSheet {
     // Calculate dice pool for spellcasting
     const dicePool = magicRating + sorcerySkill;
 
-    // Calculate target number (usually 4, but can be modified)
-    const targetNumber = 4;
-
     const title = `Casting ${spell.name} (Force ${force})`;
 
-    // Roll for spellcasting
-    const result = await this.actor.rollDice(dicePool, targetNumber, title);
+    // Show TN selection dialog and roll for spellcasting
+    await this._showTargetNumberDialog(dicePool, title, 'spell', 4);
 
     // Calculate drain
     const drainValue = this._calculateDrain(spell.system.drain, force);
     const drainPool = this.actor.system.attributes.willpower.value + magicRating;
 
-    // Roll drain resistance
+    // Show TN selection dialog and roll drain resistance
     const drainTitle = `Drain Resistance for ${spell.name}`;
-    await this.actor.rollDice(drainPool, drainValue, drainTitle);
+    await this._showTargetNumberDialog(drainPool, drainTitle, 'drain', drainValue);
   }
 
   /**
@@ -537,8 +797,8 @@ export class SR2ActorSheet extends ActorSheet {
     const attackType = isRanged ? 'Ranged Attack' : 'Melee Attack';
     const title = `${attackType} with ${weapon.name}`;
 
-    // Roll for attack
-    const result = await this.actor.rollDice(dicePool, 4, title);
+    // Show TN selection dialog and roll for attack
+    await this._showTargetNumberDialog(dicePool, title, 'attack');
 
     // Display weapon damage in chat
     const damageCode = weapon.system.damage || "1L";

@@ -259,6 +259,11 @@ export class SR2Actor extends Actor {
    * Roll dice for Shadowrun 2E with exploding 6s
    */
   async rollDice(dicePool, targetNumber = 4, title = "Dice Roll") {
+    // Ensure dicePool is a number and at least 1
+    dicePool = Number(dicePool) || 1;
+    targetNumber = Number(targetNumber) || 4;
+    
+    
     const diceResults = [];
     let totalSuccesses = 0;
     let totalOnes = 0;

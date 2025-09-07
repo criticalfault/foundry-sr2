@@ -272,6 +272,8 @@
       "templates": ["base"],
       "rating": 0,
       "concealability": 0,
+      "ballistic": 0,
+      "impact": 0,
       "equipped": false
     },
     "gear": {

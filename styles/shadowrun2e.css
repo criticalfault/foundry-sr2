@@ -3932,6 +3932,10 @@ header.window-header.flexrow.draggable.resizable {
   text-align: center;
   position: relative;
   transition: all 0.3s ease;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 5px;
 }
 
 .shadowrun2e .attribute:before {
@@ -3970,6 +3974,185 @@ header.window-header.flexrow.draggable.resizable {
 .shadowrun2e .attribute input:focus {
   border-color: var(--cyber-accent-cyan);
   box-shadow: var(--cyber-glow-cyan);
+}
+
+.shadowrun2e .attribute-roll {
+  background: var(--cyber-bg-secondary);
+  border: 1px solid var(--cyber-border-bright);
+  color: var(--cyber-accent-cyan);
+  padding: 2px 6px;
+  margin-left: 5px;
+  border-radius: 3px;
+  cursor: pointer;
+  font-size: 10px;
+  transition: all 0.2s ease;
+}
+
+.shadowrun2e .attribute-roll:hover {
+  background: var(--cyber-accent-cyan);
+  color: var(--cyber-bg-primary);
+  box-shadow: var(--cyber-glow-cyan);
+}
+
+/* Target Number Dialog Styling */
+.target-number-dialog {
+  padding: 10px;
+}
+
+.target-number-dialog .roll-info {
+  background: var(--cyber-bg-secondary);
+  border: 1px solid var(--cyber-border-bright);
+  border-radius: 4px;
+  padding: 10px;
+  margin-bottom: 15px;
+  text-align: center;
+}
+
+.target-number-dialog .roll-info h3 {
+  color: var(--cyber-accent-cyan);
+  margin: 0 0 5px 0;
+}
+
+.target-number-dialog .target-number-section,
+.target-number-dialog .pool-dice-section,
+.target-number-dialog .modifiers-section {
+  margin-bottom: 15px;
+  padding: 10px;
+  background: var(--cyber-bg-primary);
+  border: 1px solid var(--cyber-border-dim);
+  border-radius: 4px;
+}
+
+.target-number-dialog label {
+  color: var(--cyber-text-primary);
+  font-weight: bold;
+  display: block;
+  margin-bottom: 5px;
+}
+
+.target-number-dialog select,
+.target-number-dialog input[type="number"] {
+  background: var(--cyber-bg-secondary);
+  border: 1px solid var(--cyber-border-bright);
+  color: var(--cyber-text-primary);
+  padding: 5px;
+  border-radius: 3px;
+  width: 100%;
+}
+
+.target-number-dialog select:focus,
+.target-number-dialog input[type="number"]:focus {
+  border-color: var(--cyber-accent-cyan);
+  box-shadow: var(--cyber-glow-cyan);
+}
+
+.target-number-dialog .pool-option {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 8px;
+  padding: 5px;
+  background: var(--cyber-bg-secondary);
+  border-radius: 3px;
+}
+
+.target-number-dialog .pool-option label {
+  flex: 1;
+  margin: 0;
+  font-weight: normal;
+}
+
+.target-number-dialog .pool-option input[type="number"] {
+  width: 60px;
+  flex: none;
+}
+
+.target-number-dialog .pool-option input[type="number"]:disabled {
+  opacity: 0.5;
+  background: var(--cyber-bg-primary);
+}
+
+.target-number-dialog .pool-checkbox {
+  margin-right: 8px;
+  accent-color: var(--cyber-accent-cyan);
+}
+
+.target-number-dialog .pool-option:hover {
+  background: var(--cyber-bg-tertiary);
+}
+
+/* GM Pool Controls */
+.gm-pool-controls {
+  margin-top: 15px;
+  padding: 10px;
+  background: rgba(255, 0, 0, 0.1);
+  border: 1px solid rgba(255, 0, 0, 0.3);
+  border-radius: 4px;
+  text-align: center;
+}
+
+.reset-all-pools {
+  background: linear-gradient(135deg, #ff4444, #cc0000);
+  color: white;
+  border: 1px solid #ff6666;
+  padding: 8px 16px;
+  border-radius: 4px;
+  font-weight: bold;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  font-size: 12px;
+}
+
+.reset-all-pools:hover {
+  background: linear-gradient(135deg, #ff6666, #ff0000);
+  box-shadow: 0 0 8px rgba(255, 68, 68, 0.4);
+  transform: translateY(-1px);
+}
+
+.reset-all-pools:active {
+  transform: translateY(0);
+  box-shadow: 0 0 4px rgba(255, 68, 68, 0.6);
+}
+
+.reset-all-pools i {
+  margin-right: 6px;
+}
+
+/* Pool Reset Chat Message */
+.pool-reset-message {
+  background: linear-gradient(135deg, rgba(0, 255, 255, 0.1), rgba(0, 200, 200, 0.05));
+  border: 1px solid rgba(0, 255, 255, 0.3);
+  border-radius: 6px;
+  padding: 12px;
+  margin: 5px 0;
+}
+
+.pool-reset-message h3 {
+  color: var(--cyber-accent-cyan);
+  margin: 0 0 8px 0;
+  font-size: 14px;
+}
+
+.pool-reset-message p {
+  margin: 6px 0;
+  color: var(--cyber-text-primary);
+}
+
+.pool-reset-message ul {
+  margin: 8px 0 0 20px;
+  color: var(--cyber-text-secondary);
+}
+
+.pool-reset-message li {
+  margin: 2px 0;
+  font-size: 12px;
+}
+
+.target-number-dialog small {
+  color: var(--cyber-text-secondary);
+  font-style: italic;
+  display: block;
+  margin-top: 5px;
 }
 
 .shadowrun2e .modifier-display {

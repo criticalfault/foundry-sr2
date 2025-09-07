@@ -42,6 +42,9 @@
           <div class="attribute">
             <label>Body</label>
             <input type="number" name="system.attributes.body.value" value="{{system.attributes.body.value}}" data-dtype="Number"/>
+            <button class="attribute-roll" data-attribute="body" title="Roll Body">
+              <i class="fas fa-dice-d6"></i>
+            </button>
             {{#if augmentationModifiers.BOD}}
               <span class="modifier-display">+{{augmentationModifiers.BOD}} = {{modifiedAttributes.body}}</span>
             {{/if}}
@@ -49,6 +52,9 @@
           <div class="attribute">
             <label>Quickness</label>
             <input type="number" name="system.attributes.quickness.value" value="{{system.attributes.quickness.value}}" data-dtype="Number"/>
+            <button class="attribute-roll" data-attribute="quickness" title="Roll Quickness">
+              <i class="fas fa-dice-d6"></i>
+            </button>
             {{#if augmentationModifiers.QCK}}
               <span class="modifier-display">+{{augmentationModifiers.QCK}} = {{modifiedAttributes.quickness}}</span>
             {{/if}}
@@ -56,6 +62,9 @@
           <div class="attribute">
             <label>Strength</label>
             <input type="number" name="system.attributes.strength.value" value="{{system.attributes.strength.value}}" data-dtype="Number"/>
+            <button class="attribute-roll" data-attribute="strength" title="Roll Strength">
+              <i class="fas fa-dice-d6"></i>
+            </button>
             {{#if augmentationModifiers.STR}}
               <span class="modifier-display">+{{augmentationModifiers.STR}} = {{modifiedAttributes.strength}}</span>
             {{/if}}
@@ -67,6 +76,9 @@
           <div class="attribute">
             <label>Charisma</label>
             <input type="number" name="system.attributes.charisma.value" value="{{system.attributes.charisma.value}}" data-dtype="Number"/>
+            <button class="attribute-roll" data-attribute="charisma" title="Roll Charisma">
+              <i class="fas fa-dice-d6"></i>
+            </button>
             {{#if augmentationModifiers.CHA}}
               <span class="modifier-display">+{{augmentationModifiers.CHA}} = {{modifiedAttributes.charisma}}</span>
             {{/if}}
@@ -74,6 +86,9 @@
           <div class="attribute">
             <label>Intelligence</label>
             <input type="number" name="system.attributes.intelligence.value" value="{{system.attributes.intelligence.value}}" data-dtype="Number"/>
+            <button class="attribute-roll" data-attribute="intelligence" title="Roll Intelligence">
+              <i class="fas fa-dice-d6"></i>
+            </button>
             {{#if augmentationModifiers.INT}}
               <span class="modifier-display">+{{augmentationModifiers.INT}} = {{modifiedAttributes.intelligence}}</span>
             {{/if}}
@@ -81,6 +96,9 @@
           <div class="attribute">
             <label>Willpower</label>
             <input type="number" name="system.attributes.willpower.value" value="{{system.attributes.willpower.value}}" data-dtype="Number"/>
+            <button class="attribute-roll" data-attribute="willpower" title="Roll Willpower">
+              <i class="fas fa-dice-d6"></i>
+            </button>
             {{#if augmentationModifiers.WIL}}
               <span class="modifier-display">+{{augmentationModifiers.WIL}} = {{modifiedAttributes.willpower}}</span>
             {{/if}}
@@ -102,10 +120,16 @@
           <div class="attribute">
             <label>Magic</label>
             <input type="number" name="system.attributes.magic.value" value="{{system.attributes.magic.value}}" data-dtype="Number"/>
+            <button class="attribute-roll" data-attribute="magic" title="Roll Magic">
+              <i class="fas fa-dice-d6"></i>
+            </button>
           </div>
           <div class="attribute">
             <label>Reaction</label>
             <input type="number" name="system.attributes.reaction.value" value="{{system.attributes.reaction.value}}" data-dtype="Number" readonly/>
+            <button class="attribute-roll" data-attribute="reaction" title="Roll Reaction">
+              <i class="fas fa-dice-d6"></i>
+            </button>
           </div>
         </div>
       </div>
@@ -169,6 +193,14 @@
             <span>/ {{system.pools.karma.total}}</span>
           </div>
         </div>
+        
+        {{#if @root.isGM}}
+        <div class="gm-pool-controls">
+          <button class="reset-all-pools" title="Reset all pools to maximum (GM only)">
+            <i class="fas fa-sync-alt"></i> Reset All Pools
+          </button>
+        </div>
+        {{/if}}
       </div>
     </div>
 
@@ -203,8 +235,8 @@
                 <div class="base-skill">
                   <select name="items.{{skill._id}}.system.baseSkill" data-dtype="String" class="base-skill-select" data-skill-id="{{skill._id}}">
                     <option value="">Select Base Skill...</option>
-                    {{#each @root.availableSkills}}
-                      <option value="{{@key}}" {{#if (eq @key ../skill.system.baseSkill)}}selected{{/if}}>{{this.name}}</option>
+                    {{#each @root.availableSkills as |skillData skillKey|}}
+                      <option value="{{skillKey}}" {{#if (eq skillKey ../skill.system.baseSkill)}}selected{{/if}}>{{skillData.name}}</option>
                     {{/each}}
                   </select>
                 </div>
@@ -212,10 +244,9 @@
                   <div class="concentration-section">
                     <select name="items.{{skill._id}}.system.concentration" data-dtype="String" class="concentration-select">
                       <option value="">Select Concentration...</option>
-                      <!-- Concentrations will be populated by JavaScript -->
-                      {{#if skill.system.concentration}}
-                        <option value="{{skill.system.concentration}}" selected>{{skill.system.concentration}}</option>
-                      {{/if}}
+                      {{#each skill.availableConcentrations as |concentration|}}
+                        <option value="{{concentration.name}}" {{#if (eq concentration.name ../skill.system.concentration)}}selected{{/if}}>{{concentration.name}}</option>
+                      {{/each}}
                     </select>
                   </div>
                 {{/if}}
