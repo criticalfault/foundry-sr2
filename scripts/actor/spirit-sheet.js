@@ -1,7 +1,7 @@
 /**
  * Extend the basic ActorSheet with Spirit specific functionality
  */
-export class SR2SpiritSheet extends foundry.applications.sheets.ActorSheet {
+export class SR2SpiritSheet extends ActorSheet {
 
     /** @override */
     static get defaultOptions() {

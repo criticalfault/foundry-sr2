@@ -1,7 +1,7 @@
 /**
  * Extend the basic ActorSheet with Cyberdeck specific functionality
  */
-export class SR2CyberdeckSheet extends foundry.applications.sheets.ActorSheet {
+export class SR2CyberdeckSheet extends ActorSheet {
 
   /** @override */
   static get defaultOptions() {

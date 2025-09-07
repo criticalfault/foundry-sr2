@@ -1,7 +1,7 @@
 /**
  * Extend the basic ActorSheet with Shadowrun 2E specific functionality
  */
-export class SR2ActorSheet extends foundry.applications.sheets.ActorSheet {
+export class SR2ActorSheet extends ActorSheet {
 
   /** @override */
   static get defaultOptions() {
