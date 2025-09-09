@@ -300,9 +300,120 @@
       </div>
     </div>
 
-    {{!-- Other tabs would go here --}}
+    {{!-- Combat Tab --}}
     <div class="tab combat" data-group="primary" data-tab="combat">
-      <p>Combat tab content coming soon...</p>
+      <div class="combat-panel">
+        
+        {{!-- Health Condition Monitors Section --}}
+        <div class="health-monitors-section">
+          <h3>Condition Monitors
+            <i class="fas fa-info-circle help-icon" 
+               title="Track Physical and Stun damage. Click boxes to set damage level, or use keyboard navigation (Tab to focus, arrows to move, Enter/Space to select, 0 to clear, 1-9 for direct selection)."
+               aria-label="Help: How to use condition monitors"></i>
+          </h3>
+          
+          {{!-- Physical Damage Monitor --}}
+          <div class="damage-monitor physical-monitor" role="group" aria-labelledby="physical-damage-label">
+            <div class="monitor-header">
+              <label class="monitor-label" id="physical-damage-label">Physical Damage</label>
+              <span class="damage-counter" aria-live="polite">{{system.health.physical.value}}/{{system.health.physical.max}}</span>
+            </div>
+            <div class="damage-boxes" data-damage-type="physical" role="radiogroup" aria-labelledby="physical-damage-label">
+              {{#times system.health.physical.max}}
+                <div class="damage-box" 
+                     data-box-number="{{add @index 1}}" 
+                     data-filled="{{#if (lte (add @index 1) ../system.health.physical.value)}}true{{else}}false{{/if}}"
+                     role="radio"
+                     aria-checked="{{#if (lte (add @index 1) ../system.health.physical.value)}}true{{else}}false{{/if}}"
+                     aria-label="Physical damage level {{add @index 1}}"
+                     tabindex="{{#if (eq @index 0)}}0{{else}}-1{{/if}}"
+                     title="Click to set physical damage to {{add @index 1}} or press Enter/Space">
+                  <span class="box-number" aria-hidden="true">{{add @index 1}}</span>
+                </div>
+              {{/times}}
+            </div>
+          </div>
+
+          {{!-- Stun Damage Monitor --}}
+          <div class="damage-monitor stun-monitor" role="group" aria-labelledby="stun-damage-label">
+            <div class="monitor-header">
+              <label class="monitor-label" id="stun-damage-label">Stun Damage</label>
+              <span class="damage-counter" aria-live="polite">{{system.health.stun.value}}/{{system.health.stun.max}}</span>
+            </div>
+            <div class="damage-boxes" data-damage-type="stun" role="radiogroup" aria-labelledby="stun-damage-label">
+              {{#times system.health.stun.max}}
+                <div class="damage-box" 
+                     data-box-number="{{add @index 1}}" 
+                     data-filled="{{#if (lte (add @index 1) ../system.health.stun.value)}}true{{else}}false{{/if}}"
+                     role="radio"
+                     aria-checked="{{#if (lte (add @index 1) ../system.health.stun.value)}}true{{else}}false{{/if}}"
+                     aria-label="Stun damage level {{add @index 1}}"
+                     tabindex="{{#if (eq @index 0)}}0{{else}}-1{{/if}}"
+                     title="Click to set stun damage to {{add @index 1}} or press Enter/Space">
+                  <span class="box-number" aria-hidden="true">{{add @index 1}}</span>
+                </div>
+              {{/times}}
+            </div>
+          </div>
+        </div>
+
+        {{!-- Initiative Section --}}
+        <div class="initiative-section">
+          <h3>Initiative
+            <i class="fas fa-info-circle help-icon" 
+               title="Roll initiative using your character's Initiative dice + Reaction bonus. The result determines your action order in combat and calculates multiple action phases (every 10 points)."
+               aria-label="Help: How initiative works in Shadowrun 2E"></i>
+          </h3>
+          
+          {{!-- Initiative Roll Controls --}}
+          <div class="initiative-controls" role="group" aria-labelledby="initiative-section-label">
+            <div class="initiative-stats">
+              <div class="stat-display">
+                <label for="initiative-dice-display">Initiative Dice:</label>
+                <span class="stat-value" id="initiative-dice-display" aria-label="{{system.initiative.dice}} six-sided dice">{{system.initiative.dice}}d6</span>
+              </div>
+              <div class="stat-display">
+                <label for="reaction-bonus-display">Reaction Bonus:</label>
+                <span class="stat-value" id="reaction-bonus-display" aria-label="Plus {{system.attributes.reaction.value}} reaction bonus">+{{system.attributes.reaction.value}}</span>
+              </div>
+            </div>
+            
+            <div class="initiative-actions">
+              <button class="initiative-roll-btn" 
+                      type="button"
+                      aria-describedby="initiative-dice-display reaction-bonus-display"
+                      title="Roll {{system.initiative.dice}}d6 + {{system.attributes.reaction.value}} for initiative">
+                <i class="fas fa-dice-d6" aria-hidden="true"></i>
+                Roll Initiative
+              </button>
+            </div>
+          </div>
+
+          {{!-- Initiative Result Display --}}
+          <div class="initiative-result" style="display: none;" role="status" aria-live="polite" aria-label="Initiative roll result">
+            <div class="result-header">
+              <label id="initiative-result-label">Initiative Result:</label>
+            </div>
+            <div class="result-breakdown" aria-labelledby="initiative-result-label">
+              <span class="dice-result" aria-label="Dice roll result"></span>
+              <span class="bonus-result" aria-label="Reaction bonus"></span>
+              <span class="total-result" aria-label="Total initiative score"></span>
+            </div>
+            <div class="result-formula">
+              <span class="formula-text" aria-label="Initiative calculation formula"></span>
+            </div>
+          </div>
+        </div>
+
+        {{!-- Initiative Tracker Section --}}
+        <div class="initiative-tracker-section">
+          <h3>Combat Tracker</h3>
+          <div class="tracker-placeholder">
+            <p>Initiative tracker integration will appear here</p>
+          </div>
+        </div>
+
+      </div>
     </div>
 
     <div class="tab gear" data-group="primary" data-tab="gear">

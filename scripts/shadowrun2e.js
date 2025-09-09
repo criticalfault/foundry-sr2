@@ -271,6 +271,11 @@ function registerHandlebarsHelpers() {
         }
         return accum;
     });
+
+    // Helper for addition
+    Handlebars.registerHelper('add', function (a, b) {
+        return a + b;
+    });
 }
 
 /* -------------------------------------------- */

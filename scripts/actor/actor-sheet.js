@@ -1,7 +1,25 @@
+// Import the initiative tracker
+import { SR2InitiativeTracker } from '../initiative-tracker.js';
+
 /**
  * Extend the basic ActorSheet with Shadowrun 2E specific functionality
  */
 export class SR2ActorSheet extends ActorSheet {
+
+  constructor(...args) {
+    super(...args);
+    
+    // Performance optimization: Cache DOM elements and debounce updates
+    this._domCache = new Map();
+    this._updateQueue = new Map();
+    this._updateTimeout = null;
+    this._lastRenderTime = 0;
+    this._renderThrottle = 100; // Minimum time between renders in ms
+    
+    // Bind methods for performance
+    this._debouncedUpdate = this._debounce(this._processUpdateQueue.bind(this), 50);
+    this._throttledRender = this._throttle(this.render.bind(this), this._renderThrottle);
+  }
 
   /** @override */
   static get defaultOptions() {
@@ -38,6 +56,8 @@ export class SR2ActorSheet extends ActorSheet {
 
     return context;
   }
+
+
 
   /**
    * Organize and classify Items for Character sheets.
@@ -198,6 +218,9 @@ export class SR2ActorSheet extends ActorSheet {
   /** @override */
   activateListeners(html) {
     super.activateListeners(html);
+    
+    // Set up actor update listener for external changes
+    Hooks.on('updateActor', this._onActorUpdate.bind(this));
 
     // Rollable abilities
     html.find('.rollable').click(this._onRoll.bind(this));
@@ -278,7 +301,7 @@ export class SR2ActorSheet extends ActorSheet {
     // Skill management
     html.find('.base-skill-select').change(this._onBaseSkillChange.bind(this));
     html.find('.concentration-select').change(this._onConcentrationChange.bind(this));
-    html.find('input[name*="specialization"]').on('blur', this._onSpecializationChange.bind(this));
+    html.find('input[name*="specialization"]').on('change', this._onSpecializationChange.bind(this));
     html.find('.skill-roll').click(this._onSkillRoll.bind(this));
 
     // Attribute rolls
@@ -304,6 +327,18 @@ export class SR2ActorSheet extends ActorSheet {
     // Cyberware installation management
     html.find('.cyberware-installed').change(this._onCyberwareInstall.bind(this));
     html.find('.bioware-installed').change(this._onBiowareInstall.bind(this));
+
+    // Damage box click handlers
+    html.find('.damage-box').click(this._onDamageBoxClick.bind(this));
+    
+    // Damage box keyboard navigation
+    html.find('.damage-box').keydown(this._onDamageBoxKeydown.bind(this));
+    
+    // Damage boxes focus management
+    html.find('.damage-boxes').on('focusin', this._onDamageBoxesFocusIn.bind(this));
+
+    // Initiative roll button
+    html.find('.initiative-roll-btn').click(this._onInitiativeRoll.bind(this));
   }
 
   /**
@@ -438,20 +473,25 @@ export class SR2ActorSheet extends ActorSheet {
     console.log("SR2E | Base skill change:", skillId, baseSkill);
 
     if (item) {
-      // Clear concentration when base skill changes
-      await item.update({
-        'system.baseSkill': baseSkill,
-        'system.concentration': '',
-        'system.concentrationRating': 0,
-        'system.specialization': '',
-        'system.specializationRating': 0,
-        'name': baseSkill || 'New Skill'
-      });
+      // Only clear concentration and specialization if the base skill actually changed
+      const currentBaseSkill = item.system.baseSkill;
+      
+      if (currentBaseSkill !== baseSkill) {
+        // Clear concentration and specialization when base skill changes
+        await item.update({
+          'system.baseSkill': baseSkill,
+          'system.concentration': '',
+          'system.concentrationRating': 0,
+          'system.specialization': '',
+          'system.specializationRating': 0,
+          'name': baseSkill || 'New Skill'
+        });
 
-      console.log("SR2E | Updated skill:", item.name, "with base skill:", baseSkill);
+        console.log("SR2E | Updated skill:", item.name, "with base skill:", baseSkill);
 
-      // Re-render the sheet to update the UI
-      this.render(false);
+        // Re-render the sheet to update the UI
+        this.render(false);
+      }
     } else {
       console.error("SR2E | Could not find skill item for base skill change:", skillId);
     }
@@ -469,7 +509,7 @@ export class SR2ActorSheet extends ActorSheet {
 
     console.log("SR2E | Concentration change:", skillId, concentration);
 
-    if (item) {
+    if (item && item.system.concentration !== concentration) {
       // Update concentration and reset concentration rating if cleared
       const updateData = {
         'system.concentration': concentration
@@ -482,9 +522,11 @@ export class SR2ActorSheet extends ActorSheet {
 
       await item.update(updateData);
 
-      // Re-render the sheet to update the UI
-      this.render(false);
-    } else {
+      // Only re-render if we need to update the available concentrations
+      if (concentration) {
+        this.render(false);
+      }
+    } else if (!item) {
       console.error("SR2E | Could not find skill item for concentration change:", skillId);
     }
   }
@@ -501,7 +543,7 @@ export class SR2ActorSheet extends ActorSheet {
 
     console.log("SR2E | Specialization change:", skillId, specialization);
 
-    if (item) {
+    if (item && item.system.specialization !== specialization) {
       // Update specialization and reset specialization rating if cleared
       const updateData = {
         'system.specialization': specialization
@@ -514,9 +556,8 @@ export class SR2ActorSheet extends ActorSheet {
 
       await item.update(updateData);
 
-      // Re-render the sheet to update the UI after specialization change
-      this.render(false);
-    } else {
+      // Don't auto-render for specialization changes - let the user finish typing
+    } else if (!item) {
       console.error("SR2E | Could not find skill item for specialization change:", skillId);
     }
   }
@@ -1011,9 +1052,8 @@ export class SR2ActorSheet extends ActorSheet {
         <div class="weapon-attack">
           <h3>${weapon.name} Attack</h3>
           <p><strong>Skill Used:</strong> ${skillName} ${rollDescription ? `(${rollDescription})` : ''}</p>
-          <p><strong>Dice Pool:</strong> ${attribute} (${isRanged ? 'Quickness' : 'Strength'}) + ${skillRating} (Skill) = ${dicePool}</p>
+          <p><strong>Dice Pool:</strong> ${skillRating} (Skill) = ${dicePool}</p>
           <p><strong>Damage Code:</strong> ${damageCode}</p>
-          <p><strong>Concealability:</strong> ${weapon.system.concealability || 0}</p>
           ${weapon.system.reach ? `<p><strong>Reach:</strong> ${weapon.system.reach}</p>` : ''}
           ${weapon.system.mode ? `<p><strong>Mode:</strong> ${weapon.system.mode}</p>` : ''}
         </div>
@@ -1381,5 +1421,1244 @@ export class SR2ActorSheet extends ActorSheet {
     }
 
     return drainValue;
+  }
+
+  /**
+   * Handle damage box clicks
+   */
+  async _onDamageBoxClick(event) {
+    event.preventDefault();
+    const element = event.currentTarget;
+    
+    try {
+      // Validate input parameters
+      const boxNumber = parseInt(element.dataset.boxNumber);
+      const damageBoxesContainer = element.closest('.damage-boxes');
+      
+      if (!damageBoxesContainer) {
+        throw new Error("Damage box container not found");
+      }
+      
+      const damageType = damageBoxesContainer.dataset.damageType;
+      
+      // Validate box number
+      if (isNaN(boxNumber) || boxNumber < 1 || boxNumber > 10) {
+        throw new Error(`Invalid box number: ${boxNumber}. Must be between 1 and 10.`);
+      }
+      
+      // Validate damage type
+      if (!damageType || !['physical', 'stun'].includes(damageType)) {
+        throw new Error(`Invalid damage type: ${damageType}. Must be 'physical' or 'stun'.`);
+      }
+
+      // Validate actor data exists and has proper structure
+      if (!this.actor) {
+        throw new Error("Actor not found");
+      }
+      
+      if (!this.actor.system) {
+        throw new Error("Actor system data not found");
+      }
+      
+      if (!this.actor.system.health) {
+        throw new Error("Actor health data not found");
+      }
+      
+      if (!this.actor.system.health[damageType]) {
+        throw new Error(`Actor ${damageType} health data not found`);
+      }
+
+      const currentDamage = this.actor.system.health[damageType].value;
+      
+      // Validate current damage value
+      if (typeof currentDamage !== 'number' || isNaN(currentDamage)) {
+        console.warn(`SR2E | Invalid current ${damageType} damage value: ${currentDamage}, defaulting to 0`);
+        // Set a default value and continue
+        await this.actor.update({
+          [`system.health.${damageType}.value`]: 0
+        });
+        return;
+      }
+      
+      let newDamage;
+
+      // If clicking on the current damage level, reset to 0
+      if (boxNumber === currentDamage) {
+        newDamage = 0;
+      } else {
+        // Otherwise set damage to the clicked box number
+        newDamage = boxNumber;
+      }
+
+      // Validate and clamp damage within bounds (0-10)
+      if (typeof newDamage !== 'number' || isNaN(newDamage)) {
+        throw new Error(`Invalid damage value calculated: ${newDamage}`);
+      }
+      
+      newDamage = Math.clamped(newDamage, 0, 10);
+
+      // Validate that the new damage value is different from current
+      if (newDamage === currentDamage) {
+        console.log(`SR2E | ${damageType} damage already at ${newDamage}, no update needed`);
+        return;
+      }
+
+      // Update the actor's damage value using debounced update system
+      try {
+        // Use queued update for better concurrent handling
+        this._queueUpdate({
+          [`system.health.${damageType}.value`]: newDamage
+        });
+        
+        console.log(`SR2E | Queued ${damageType} damage update from ${currentDamage} to ${newDamage}`);
+        
+        // Provide immediate UI feedback
+        this._updateDamageBoxDisplay(damageType, newDamage);
+        
+        // Provide user feedback for significant damage changes
+        if (newDamage >= 8 && currentDamage < 8) {
+          ui.notifications.warn(`${this.actor.name} has taken severe ${damageType} damage (${newDamage}/10)!`);
+        } else if (newDamage === 10 && currentDamage < 10) {
+          ui.notifications.error(`${this.actor.name} has reached maximum ${damageType} damage!`);
+        } else if (newDamage === 0 && currentDamage > 0) {
+          ui.notifications.info(`${this.actor.name}'s ${damageType} damage has been cleared.`);
+        }
+        
+      } catch (updateError) {
+        console.error(`SR2E | Failed to queue ${damageType} damage update:`, updateError);
+        ui.notifications.error(`Failed to update ${damageType} damage. The character sheet may be locked or you may not have permission.`);
+        throw updateError;
+      }
+      
+    } catch (error) {
+      console.error("SR2E | Error handling damage box click:", error);
+      ui.notifications.error(`Error updating damage: ${error.message}`);
+      
+      // Try to refresh the sheet to show current state
+      try {
+        this.render(false);
+      } catch (renderError) {
+        console.error("SR2E | Failed to refresh sheet after damage error:", renderError);
+      }
+    }
+  }
+
+  /**
+   * Handle initiative roll button clicks
+   */
+  async _onInitiativeRoll(event) {
+    event.preventDefault();
+    
+    try {
+      // Validate actor exists and has required data
+      if (!this.actor) {
+        throw new Error("Actor not found");
+      }
+      
+      if (!this.actor.system) {
+        throw new Error("Actor system data not found");
+      }
+      
+      // Validate initiative data structure exists
+      if (!this.actor.system.initiative) {
+        console.warn("SR2E | Initiative data missing, creating default structure");
+        await this.actor.update({
+          'system.initiative': {
+            dice: 1,
+            current: 0
+          }
+        });
+      }
+      
+      // Validate attributes data structure exists
+      if (!this.actor.system.attributes) {
+        throw new Error("Actor attributes data not found");
+      }
+      
+      if (!this.actor.system.attributes.reaction) {
+        console.warn("SR2E | Reaction attribute missing, creating default structure");
+        await this.actor.update({
+          'system.attributes.reaction': {
+            value: 1
+          }
+        });
+      }
+      
+      // Get initiative dice with validation and sensible defaults
+      let initiativeDice = this.actor.system.initiative.dice;
+      
+      if (typeof initiativeDice !== 'number' || isNaN(initiativeDice) || initiativeDice < 1) {
+        console.warn(`SR2E | Invalid initiative dice value: ${initiativeDice}, defaulting to 1`);
+        initiativeDice = 1;
+        // Update the actor with the corrected value
+        await this.actor.update({
+          'system.initiative.dice': 1
+        });
+      }
+      
+      // Cap initiative dice at reasonable maximum (10 dice)
+      if (initiativeDice > 10) {
+        console.warn(`SR2E | Initiative dice value too high: ${initiativeDice}, capping at 10`);
+        initiativeDice = 10;
+        await this.actor.update({
+          'system.initiative.dice': 10
+        });
+      }
+      
+      // Get reaction bonus with validation and sensible defaults
+      let reactionBonus = this.actor.system.attributes.reaction.value;
+      
+      if (typeof reactionBonus !== 'number' || isNaN(reactionBonus) || reactionBonus < 1) {
+        console.warn(`SR2E | Invalid reaction value: ${reactionBonus}, defaulting to 1`);
+        reactionBonus = 1;
+        // Update the actor with the corrected value
+        await this.actor.update({
+          'system.attributes.reaction.value': 1
+        });
+      }
+      
+      // Cap reaction at reasonable maximum (30 for heavily augmented characters)
+      if (reactionBonus > 30) {
+        console.warn(`SR2E | Reaction value too high: ${reactionBonus}, capping at 30`);
+        reactionBonus = 30;
+        await this.actor.update({
+          'system.attributes.reaction.value': 30
+        });
+      }
+      
+      // Create the roll formula (e.g., "3d6 + 12")
+      const rollFormula = `${initiativeDice}d6 + ${reactionBonus}`;
+      
+      console.log(`SR2E | Rolling initiative for ${this.actor.name}: ${rollFormula}`);
+      
+      // Create and evaluate the roll using Foundry's Roll class
+      // Note: Using standard d6 without exploding dice for initiative
+      let roll;
+      try {
+        roll = new Roll(rollFormula);
+        await roll.evaluate();
+      } catch (rollError) {
+        console.error("SR2E | Error creating or evaluating roll:", rollError);
+        throw new Error(`Failed to create initiative roll with formula ${rollFormula}: ${rollError.message}`);
+      }
+      
+      // Validate roll results
+      if (!roll || typeof roll.total !== 'number' || isNaN(roll.total)) {
+        throw new Error(`Invalid roll result: ${roll?.total}`);
+      }
+      
+      // Extract dice results with error handling
+      let diceResults = [];
+      let diceTotal = 0;
+      
+      try {
+        if (roll.terms && roll.terms[0] && roll.terms[0].results) {
+          diceResults = roll.terms[0].results.map(r => r.result);
+          diceTotal = diceResults.reduce((sum, die) => sum + die, 0);
+        } else {
+          // Fallback: calculate dice total from final total minus reaction bonus
+          diceTotal = roll.total - reactionBonus;
+          diceResults = [`${diceTotal} (total)`];
+        }
+      } catch (extractError) {
+        console.warn("SR2E | Could not extract individual dice results:", extractError);
+        diceTotal = roll.total - reactionBonus;
+        diceResults = [`${diceTotal} (total)`];
+      }
+      
+      const finalTotal = roll.total;
+      
+      // Validate final total is reasonable
+      if (finalTotal < 1 || finalTotal > 100) {
+        console.warn(`SR2E | Unusual initiative total: ${finalTotal}`);
+      }
+      
+      // Update the actor's current initiative with error handling
+      try {
+        await this.actor.update({
+          'system.initiative.current': finalTotal
+        });
+      } catch (updateError) {
+        console.error("SR2E | Failed to update actor initiative:", updateError);
+        ui.notifications.error("Failed to save initiative result. You may not have permission to modify this character.");
+        // Continue with display and chat message even if update fails
+      }
+      
+      // Display the result in the UI with error handling
+      try {
+        this._displayInitiativeResult(diceResults, diceTotal, reactionBonus, finalTotal, rollFormula);
+      } catch (displayError) {
+        console.error("SR2E | Failed to display initiative result:", displayError);
+        ui.notifications.warn("Initiative rolled successfully but display failed. Check chat for results.");
+      }
+      
+      // Send roll to chat with error handling
+      try {
+        await roll.toMessage({
+          speaker: ChatMessage.getSpeaker({ actor: this.actor }),
+          flavor: `${this.actor.name} rolls Initiative`
+        });
+      } catch (chatError) {
+        console.error("SR2E | Failed to send initiative roll to chat:", chatError);
+        ui.notifications.warn("Initiative rolled successfully but failed to post to chat.");
+      }
+      
+      // Automatically add character to initiative tracker with error handling
+      try {
+        await this._addToInitiativeTracker(finalTotal);
+      } catch (trackerError) {
+        console.error("SR2E | Failed to add to initiative tracker:", trackerError);
+        ui.notifications.warn(`Initiative rolled (${finalTotal}) but failed to add to tracker. You can add manually.`);
+      }
+      
+      console.log(`SR2E | ${this.actor.name} rolled initiative: ${rollFormula} = ${finalTotal}`);
+      ui.notifications.info(`${this.actor.name} rolled initiative: ${finalTotal}`);
+      
+    } catch (error) {
+      console.error("SR2E | Error rolling initiative:", error);
+      
+      // Provide specific error messages based on error type
+      let errorMessage = "Failed to roll initiative.";
+      
+      if (error.message.includes("not found")) {
+        errorMessage = "Character data is missing or corrupted. Try refreshing the sheet.";
+      } else if (error.message.includes("permission")) {
+        errorMessage = "You don't have permission to modify this character.";
+      } else if (error.message.includes("roll")) {
+        errorMessage = "Failed to calculate dice roll. Check character's initiative and reaction values.";
+      } else {
+        errorMessage = `Initiative roll failed: ${error.message}`;
+      }
+      
+      ui.notifications.error(errorMessage);
+      
+      // Try to refresh the sheet to show current state
+      try {
+        this.render(false);
+      } catch (renderError) {
+        console.error("SR2E | Failed to refresh sheet after initiative error:", renderError);
+      }
+    }
+  }
+
+  /**
+   * Handle keyboard navigation for damage boxes
+   */
+  _onDamageBoxKeydown(event) {
+    const element = event.currentTarget;
+    const damageBoxes = element.closest('.damage-boxes');
+    const allBoxes = Array.from(damageBoxes.querySelectorAll('.damage-box'));
+    const currentIndex = allBoxes.indexOf(element);
+    
+    let targetIndex = currentIndex;
+    let handled = false;
+    
+    switch (event.key) {
+      case 'Enter':
+      case ' ':
+        // Activate the damage box (same as clicking)
+        event.preventDefault();
+        this._onDamageBoxClick(event);
+        handled = true;
+        break;
+        
+      case 'ArrowLeft':
+      case 'ArrowUp':
+        event.preventDefault();
+        targetIndex = Math.max(0, currentIndex - 1);
+        handled = true;
+        break;
+        
+      case 'ArrowRight':
+      case 'ArrowDown':
+        event.preventDefault();
+        targetIndex = Math.min(allBoxes.length - 1, currentIndex + 1);
+        handled = true;
+        break;
+        
+      case 'Home':
+        event.preventDefault();
+        targetIndex = 0;
+        handled = true;
+        break;
+        
+      case 'End':
+        event.preventDefault();
+        targetIndex = allBoxes.length - 1;
+        handled = true;
+        break;
+        
+      case '0':
+      case 'Delete':
+      case 'Backspace':
+        // Clear all damage
+        event.preventDefault();
+        const damageType = damageBoxes.dataset.damageType;
+        this._clearDamage(damageType);
+        handled = true;
+        break;
+        
+      default:
+        // Handle number keys 1-9 for direct damage setting
+        if (event.key >= '1' && event.key <= '9') {
+          event.preventDefault();
+          const boxNumber = parseInt(event.key);
+          if (boxNumber <= allBoxes.length) {
+            // Create a synthetic click event for the target box
+            const targetBox = allBoxes[boxNumber - 1];
+            const syntheticEvent = {
+              preventDefault: () => {},
+              currentTarget: targetBox
+            };
+            this._onDamageBoxClick(syntheticEvent);
+            // Focus the target box
+            targetBox.focus();
+          }
+          handled = true;
+        }
+        break;
+    }
+    
+    // Move focus to target box if navigation occurred
+    if (handled && targetIndex !== currentIndex && allBoxes[targetIndex]) {
+      this._updateDamageBoxTabIndex(damageBoxes, targetIndex);
+      allBoxes[targetIndex].focus();
+    }
+  }
+
+  /**
+   * Handle focus management for damage box groups
+   */
+  _onDamageBoxesFocusIn(event) {
+    const damageBoxes = event.currentTarget;
+    const focusedBox = event.target;
+    
+    if (focusedBox.classList.contains('damage-box')) {
+      const allBoxes = Array.from(damageBoxes.querySelectorAll('.damage-box'));
+      const focusedIndex = allBoxes.indexOf(focusedBox);
+      this._updateDamageBoxTabIndex(damageBoxes, focusedIndex);
+    }
+  }
+
+  /**
+   * Update tabindex for damage boxes to maintain proper keyboard navigation
+   */
+  _updateDamageBoxTabIndex(damageBoxes, focusedIndex) {
+    const allBoxes = damageBoxes.querySelectorAll('.damage-box');
+    allBoxes.forEach((box, index) => {
+      box.tabIndex = index === focusedIndex ? 0 : -1;
+    });
+  }
+
+  /**
+   * Clear all damage for a specific damage type
+   */
+  async _clearDamage(damageType) {
+    try {
+      if (!['physical', 'stun'].includes(damageType)) {
+        throw new Error(`Invalid damage type: ${damageType}`);
+      }
+      
+      const currentDamage = this.actor.system.health[damageType].value;
+      
+      if (currentDamage === 0) {
+        ui.notifications.info(`${damageType} damage is already at 0.`);
+        return;
+      }
+      
+      // Update the actor's damage value
+      this._queueUpdate({
+        [`system.health.${damageType}.value`]: 0
+      });
+      
+      // Provide immediate UI feedback
+      this._updateDamageBoxDisplay(damageType, 0);
+      
+      ui.notifications.info(`${this.actor.name}'s ${damageType} damage has been cleared.`);
+      
+    } catch (error) {
+      console.error(`SR2E | Error clearing ${damageType} damage:`, error);
+      ui.notifications.error(`Failed to clear ${damageType} damage: ${error.message}`);
+    }
+  }
+
+  /**
+   * Performance optimization: Debounce function
+   */
+  _debounce(func, wait) {
+    let timeout;
+    return function executedFunction(...args) {
+      const later = () => {
+        clearTimeout(timeout);
+        func(...args);
+      };
+      clearTimeout(timeout);
+      timeout = setTimeout(later, wait);
+    };
+  }
+
+  /**
+   * Performance optimization: Throttle function
+   */
+  _throttle(func, limit) {
+    let inThrottle;
+    return function(...args) {
+      if (!inThrottle) {
+        func.apply(this, args);
+        inThrottle = true;
+        setTimeout(() => inThrottle = false, limit);
+      }
+    };
+  }
+
+  /**
+   * Performance optimization: Cache DOM elements
+   */
+  _getCachedElement(selector) {
+    if (!this._domCache.has(selector)) {
+      const element = this.element.find(selector);
+      if (element.length > 0) {
+        this._domCache.set(selector, element);
+      }
+    }
+    return this._domCache.get(selector);
+  }
+
+  /**
+   * Performance optimization: Clear DOM cache when sheet is rendered
+   */
+  _clearDomCache() {
+    this._domCache.clear();
+  }
+
+  /**
+   * Performance optimization: Queue updates to prevent excessive database writes
+   */
+  _queueUpdate(updateData) {
+    // Merge with existing queued updates
+    for (const [key, value] of Object.entries(updateData)) {
+      this._updateQueue.set(key, value);
+    }
+    
+    // Debounce the actual update
+    this._debouncedUpdate();
+  }
+
+  /**
+   * Performance optimization: Process queued updates
+   */
+  async _processUpdateQueue() {
+    if (this._updateQueue.size === 0) return;
+    
+    // Convert Map to object
+    const updateData = {};
+    for (const [key, value] of this._updateQueue.entries()) {
+      updateData[key] = value;
+    }
+    
+    // Clear the queue
+    this._updateQueue.clear();
+    
+    try {
+      await this.actor.update(updateData);
+    } catch (error) {
+      console.error("SR2E | Failed to process update queue:", error);
+      ui.notifications.error("Failed to save changes. You may not have permission to modify this character.");
+    }
+  }
+
+  /**
+   * Performance optimization: Optimized damage box display update
+   */
+  _updateDamageBoxDisplay(damageType, newDamage) {
+    try {
+      // Use cached selector for better performance
+      const damageBoxes = this._getCachedElement(`.damage-boxes[data-damage-type="${damageType}"] .damage-box`);
+      
+      if (!damageBoxes || damageBoxes.length === 0) {
+        console.warn(`SR2E | No damage boxes found for type: ${damageType}`);
+        return;
+      }
+      
+      // Batch DOM updates for better performance
+      const updates = [];
+      
+      damageBoxes.each((index, box) => {
+        const boxNumber = parseInt(box.dataset.boxNumber);
+        const shouldBeFilled = boxNumber <= newDamage;
+        const currentlyFilled = box.dataset.filled === 'true';
+        
+        if (shouldBeFilled !== currentlyFilled) {
+          updates.push({
+            element: box,
+            filled: shouldBeFilled,
+            boxNumber: boxNumber
+          });
+        }
+      });
+      
+      // Apply all updates at once
+      updates.forEach(update => {
+        update.element.dataset.filled = update.filled.toString();
+        update.element.setAttribute('aria-checked', update.filled.toString());
+      });
+      
+      // Update damage counter with cached element
+      const damageCounter = this._getCachedElement(`.${damageType}-monitor .damage-counter`);
+      if (damageCounter && damageCounter.length > 0) {
+        const maxDamage = this.actor.system.health[damageType].max || 10;
+        damageCounter.text(`${newDamage}/${maxDamage}`);
+      }
+      
+    } catch (error) {
+      console.error(`SR2E | Error updating ${damageType} damage display:`, error);
+    }
+  }
+
+  /**
+   * Performance optimization: Override render to include throttling and cache clearing
+   */
+  async render(force = false, options = {}) {
+    // Clear DOM cache on render
+    this._clearDomCache();
+    
+    // Throttle renders for performance
+    const now = Date.now();
+    if (!force && (now - this._lastRenderTime) < this._renderThrottle) {
+      return this._throttledRender(force, options);
+    }
+    
+    this._lastRenderTime = now;
+    return super.render(force, options);
+  }
+
+  /**
+   * Performance optimization: Cleanup on close
+   */
+  async close(options = {}) {
+    // Process any pending updates before closing
+    if (this._updateQueue.size > 0) {
+      await this._processUpdateQueue();
+    }
+    
+    // Clear caches
+    this._clearDomCache();
+    
+    // Clear timeouts
+    if (this._updateTimeout) {
+      clearTimeout(this._updateTimeout);
+    }
+    
+    return super.close(options);
+  }
+
+  /**
+   * Display initiative roll results in the UI
+   */
+  _displayInitiativeResult(diceResults, diceTotal, reactionBonus, finalTotal, rollFormula) {
+    try {
+      // Validate UI elements exist
+      if (!this.element || this.element.length === 0) {
+        console.warn("SR2E | Character sheet element not found, cannot display initiative result");
+        return;
+      }
+      
+      const resultDiv = this.element.find('.initiative-result');
+      if (resultDiv.length === 0) {
+        console.warn("SR2E | Initiative result display area not found in UI");
+        return;
+      }
+      
+      const diceResultSpan = resultDiv.find('.dice-result');
+      const bonusResultSpan = resultDiv.find('.bonus-result');
+      const totalResultSpan = resultDiv.find('.total-result');
+      const formulaSpan = resultDiv.find('.formula-text');
+      
+      // Format dice results display with error handling
+      let diceDisplay = '';
+      try {
+        if (Array.isArray(diceResults) && diceResults.length > 0) {
+          diceDisplay = `[${diceResults.join(', ')}] = ${diceTotal}`;
+        } else {
+          diceDisplay = `Dice Total: ${diceTotal}`;
+        }
+      } catch (displayError) {
+        console.warn("SR2E | Error formatting dice display:", displayError);
+        diceDisplay = `Dice Total: ${diceTotal}`;
+      }
+      
+      // Update UI elements with error handling for each
+      try {
+        if (diceResultSpan.length > 0) {
+          diceResultSpan.text(diceDisplay);
+        }
+      } catch (error) {
+        console.warn("SR2E | Failed to update dice result display:", error);
+      }
+      
+      try {
+        if (bonusResultSpan.length > 0) {
+          bonusResultSpan.text(`+ ${reactionBonus}`);
+        }
+      } catch (error) {
+        console.warn("SR2E | Failed to update bonus result display:", error);
+      }
+      
+      try {
+        if (totalResultSpan.length > 0) {
+          totalResultSpan.text(`= ${finalTotal}`);
+        }
+      } catch (error) {
+        console.warn("SR2E | Failed to update total result display:", error);
+      }
+      
+      try {
+        if (formulaSpan.length > 0) {
+          formulaSpan.text(`Formula: ${rollFormula}`);
+        }
+      } catch (error) {
+        console.warn("SR2E | Failed to update formula display:", error);
+      }
+      
+      // Show the result div with animation and error handling
+      try {
+        resultDiv.slideDown(300);
+      } catch (animationError) {
+        console.warn("SR2E | Failed to animate result display:", animationError);
+        // Fallback to just showing the element
+        try {
+          resultDiv.show();
+        } catch (showError) {
+          console.warn("SR2E | Failed to show result display:", showError);
+        }
+      }
+      
+      // Trigger UI synchronization
+      this._synchronizeUIState();
+      
+    } catch (error) {
+      console.error("SR2E | Error displaying initiative result:", error);
+      // Don't throw error, just log it since this is a display function
+    }
+  }
+    
+    // Format bonus display
+    bonusResultSpan.text(`+ ${reactionBonus}`);
+    
+    // Format total display
+    totalResultSpan.text(`= ${finalTotal}`);
+    
+    // Format formula display
+    formulaSpan.text(`Formula: ${rollFormula}`);
+    
+    // Show the result div with animation
+    resultDiv.slideDown(300);
+  }
+
+  /**
+   * Calculate action phases from initiative score
+   * SR2 phase system: characters act on multiple phases based on initiative
+   * Each phase occurs every 10 points of initiative
+   * Example: Initiative 27 = acts on phases 27, 17, 7
+   */
+  _calculateActionPhases(initiativeScore) {
+    try {
+      // Validate input
+      if (typeof initiativeScore !== 'number' || isNaN(initiativeScore)) {
+        throw new Error(`Invalid initiative score: ${initiativeScore}. Must be a number.`);
+      }
+      
+      if (initiativeScore < 1) {
+        console.warn(`SR2E | Initiative score too low: ${initiativeScore}, using minimum of 1`);
+        initiativeScore = 1;
+      }
+      
+      if (initiativeScore > 100) {
+        console.warn(`SR2E | Initiative score very high: ${initiativeScore}, this may indicate an error`);
+      }
+      
+      const phases = [];
+      let currentPhase = Math.floor(initiativeScore); // Ensure integer
+      let iterationCount = 0;
+      const maxIterations = 20; // Safety limit to prevent infinite loops
+
+      while (currentPhase > 0 && iterationCount < maxIterations) {
+        phases.push(currentPhase);
+        currentPhase -= 10;
+        iterationCount++;
+      }
+      
+      if (iterationCount >= maxIterations) {
+        console.warn(`SR2E | Phase calculation hit iteration limit for initiative ${initiativeScore}`);
+      }
+      
+      // Validate result
+      if (phases.length === 0) {
+        console.warn(`SR2E | No phases calculated for initiative ${initiativeScore}, adding single phase`);
+        phases.push(Math.max(1, Math.floor(initiativeScore)));
+      }
+      
+      console.log(`SR2E | Calculated ${phases.length} action phases for initiative ${initiativeScore}: [${phases.join(', ')}]`);
+      return phases;
+      
+    } catch (error) {
+      console.error("SR2E | Error calculating action phases:", error);
+      // Return fallback single phase
+      const fallbackPhase = Math.max(1, Math.floor(initiativeScore) || 1);
+      console.warn(`SR2E | Using fallback single phase: ${fallbackPhase}`);
+      return [fallbackPhase];
+    }
+  }
+
+  /**
+   * Add character to initiative tracker after rolling initiative
+   */
+  async _addToInitiativeTracker(initiativeResult) {
+    try {
+      // Validate initiative result
+      if (typeof initiativeResult !== 'number' || isNaN(initiativeResult) || initiativeResult < 1) {
+        throw new Error(`Invalid initiative result: ${initiativeResult}`);
+      }
+      
+      // Validate actor data
+      if (!this.actor || !this.actor.id) {
+        throw new Error("Actor data is missing or invalid");
+      }
+      
+      // Check if canvas and tokens are available
+      if (!canvas || !canvas.tokens) {
+        throw new Error("Canvas or tokens not available. Make sure you're on a scene with tokens.");
+      }
+      
+      // Get or create the global initiative tracker instance
+      let initiativeTracker = game.shadowrun2e?.initiativeTracker;
+      
+      if (!initiativeTracker) {
+        try {
+          // Create new tracker instance if it doesn't exist
+          initiativeTracker = new SR2InitiativeTracker();
+          
+          // Store reference globally for access from other parts of the system
+          if (!game.shadowrun2e) {
+            game.shadowrun2e = {};
+          }
+          game.shadowrun2e.initiativeTracker = initiativeTracker;
+        } catch (trackerError) {
+          throw new Error(`Failed to create initiative tracker: ${trackerError.message}`);
+        }
+      }
+
+      // Get the token for this actor (prefer controlled token, fallback to any token)
+      let token = null;
+      
+      try {
+        const controlledTokens = canvas.tokens.controlled.filter(t => t.actor?.id === this.actor.id);
+        
+        if (controlledTokens.length > 0) {
+          token = controlledTokens[0];
+        } else {
+          // Find any token representing this actor on the current scene
+          token = canvas.tokens.placeables.find(t => t.actor?.id === this.actor.id);
+        }
+      } catch (tokenError) {
+        console.error("SR2E | Error finding token:", tokenError);
+      }
+
+      if (!token) {
+        console.warn(`SR2E | No token found for actor ${this.actor.name}, cannot add to initiative tracker`);
+        ui.notifications.warn(`No token found for ${this.actor.name}. Place a token on the scene to add to initiative tracker.`);
+        return;
+      }
+      
+      // Validate token data
+      if (!token.id) {
+        throw new Error("Token ID is missing");
+      }
+
+      // Validate initiative tracker has combatants array
+      if (!Array.isArray(initiativeTracker.combatants)) {
+        console.warn("SR2E | Initiative tracker combatants array missing, creating new array");
+        initiativeTracker.combatants = [];
+      }
+
+      // Check if character is already in the tracker
+      const existingCombatant = initiativeTracker.combatants.find(c => c.actorId === this.actor.id);
+      
+      // Calculate action phases for this initiative result with error handling
+      let actionPhases;
+      try {
+        actionPhases = this._calculateActionPhases(initiativeResult);
+        
+        // Validate action phases result
+        if (!Array.isArray(actionPhases) || actionPhases.length === 0) {
+          throw new Error(`Invalid action phases calculated: ${actionPhases}`);
+        }
+      } catch (phaseError) {
+        console.error("SR2E | Error calculating action phases:", phaseError);
+        // Fallback to simple single phase
+        actionPhases = [initiativeResult];
+      }
+
+      // Get safe values for initiative dice and reaction
+      const initiativeDice = (this.actor.system?.initiative?.dice && 
+                            typeof this.actor.system.initiative.dice === 'number' && 
+                            !isNaN(this.actor.system.initiative.dice)) 
+                            ? this.actor.system.initiative.dice : 1;
+                            
+      const reaction = (this.actor.system?.attributes?.reaction?.value && 
+                       typeof this.actor.system.attributes.reaction.value === 'number' && 
+                       !isNaN(this.actor.system.attributes.reaction.value)) 
+                       ? this.actor.system.attributes.reaction.value : 1;
+
+      if (existingCombatant) {
+        // Update existing combatant's initiative and phases
+        try {
+          existingCombatant.initiative = initiativeResult;
+          existingCombatant.actionPhases = actionPhases;
+          existingCombatant.hasRolled = true;
+          existingCombatant.initiativeDice = initiativeDice;
+          existingCombatant.reaction = reaction;
+          
+          console.log(`SR2E | Updated ${this.actor.name}'s initiative in tracker: ${initiativeResult}, phases: [${actionPhases.join(', ')}]`);
+        } catch (updateError) {
+          throw new Error(`Failed to update existing combatant: ${updateError.message}`);
+        }
+      } else {
+        // Add new combatant to tracker
+        try {
+          const combatant = {
+            id: foundry.utils.randomID(),
+            tokenId: token.id,
+            actorId: this.actor.id,
+            name: this.actor.name || "Unknown Character",
+            img: this.actor.img || "icons/svg/mystery-man.svg",
+            initiative: initiativeResult,
+            actionPhases: actionPhases,
+            initiativeDice: initiativeDice,
+            reaction: reaction,
+            hasRolled: true
+          };
+
+          initiativeTracker.combatants.push(combatant);
+          console.log(`SR2E | Added ${this.actor.name} to initiative tracker with initiative ${initiativeResult}, phases: [${actionPhases.join(', ')}]`);
+        } catch (addError) {
+          throw new Error(`Failed to add new combatant: ${addError.message}`);
+        }
+      }
+
+      // Render the tracker if it's currently open
+      try {
+        if (initiativeTracker.rendered) {
+          initiativeTracker.render();
+        }
+      } catch (renderError) {
+        console.warn("SR2E | Failed to render initiative tracker:", renderError);
+        // Don't throw error for render failure, it's not critical
+      }
+
+      // Show notification
+      const message = existingCombatant 
+        ? `${this.actor.name} updated in initiative tracker with initiative ${initiativeResult}`
+        : `${this.actor.name} added to initiative tracker with initiative ${initiativeResult}`;
+      ui.notifications.info(message);
+
+    } catch (error) {
+      console.error("SR2E | Error adding character to initiative tracker:", error);
+      
+      // Provide specific error messages
+      let errorMessage = "Failed to add character to initiative tracker.";
+      
+      if (error.message.includes("Canvas")) {
+        errorMessage = "No active scene found. Open a scene with tokens to use the initiative tracker.";
+      } else if (error.message.includes("token")) {
+        errorMessage = `No token found for ${this.actor.name}. Place a token on the scene first.`;
+      } else if (error.message.includes("tracker")) {
+        errorMessage = "Initiative tracker system error. Try reloading the page.";
+      } else {
+        errorMessage = `Initiative tracker error: ${error.message}`;
+      }
+      
+      ui.notifications.error(errorMessage);
+      throw error; // Re-throw to be handled by calling function
+    }
+  }
+
+  /**
+   * Synchronize UI state across different parts of the character sheet
+   * Ensures combat panel updates are reflected elsewhere
+   */
+  _synchronizeUIState() {
+    try {
+      // Update damage displays in other tabs if they exist
+      this._updateDamageDisplays();
+      
+      // Update initiative displays in other parts of the sheet
+      this._updateInitiativeDisplays();
+      
+      // Trigger any dependent calculations
+      this._updateDependentValues();
+      
+      // Emit custom event for other systems to listen to
+      this._emitCombatStateChange();
+      
+    } catch (error) {
+      console.error("SR2E | Error synchronizing UI state:", error);
+      // Don't throw error, just log it since this is a synchronization function
+    }
+  }
+
+  /**
+   * Update damage displays throughout the character sheet
+   */
+  _updateDamageDisplays() {
+    try {
+      if (!this.actor?.system?.health) return;
+      
+      const physicalDamage = this.actor.system.health.physical?.value || 0;
+      const stunDamage = this.actor.system.health.stun?.value || 0;
+      
+      // Update any damage indicators outside the combat panel
+      const damageIndicators = this.element.find('.damage-indicator, .health-status');
+      damageIndicators.each((index, element) => {
+        try {
+          const $element = $(element);
+          const damageType = $element.data('damage-type');
+          
+          if (damageType === 'physical') {
+            $element.text(physicalDamage);
+            $element.attr('data-damage-level', physicalDamage);
+          } else if (damageType === 'stun') {
+            $element.text(stunDamage);
+            $element.attr('data-damage-level', stunDamage);
+          }
+        } catch (elementError) {
+          console.warn("SR2E | Error updating damage indicator:", elementError);
+        }
+      });
+      
+      // Update damage-based CSS classes for visual feedback
+      this.element.removeClass('light-damage moderate-damage heavy-damage critical-damage');
+      
+      const totalDamage = physicalDamage + stunDamage;
+      if (totalDamage >= 16) {
+        this.element.addClass('critical-damage');
+      } else if (totalDamage >= 12) {
+        this.element.addClass('heavy-damage');
+      } else if (totalDamage >= 6) {
+        this.element.addClass('moderate-damage');
+      } else if (totalDamage > 0) {
+        this.element.addClass('light-damage');
+      }
+      
+    } catch (error) {
+      console.error("SR2E | Error updating damage displays:", error);
+    }
+  }
+
+  /**
+   * Update initiative displays throughout the character sheet
+   */
+  _updateInitiativeDisplays() {
+    try {
+      if (!this.actor?.system?.initiative) return;
+      
+      const currentInitiative = this.actor.system.initiative.current || 0;
+      
+      // Update any initiative indicators outside the combat panel
+      const initiativeIndicators = this.element.find('.initiative-indicator, .initiative-display');
+      initiativeIndicators.each((index, element) => {
+        try {
+          const $element = $(element);
+          $element.text(currentInitiative);
+          $element.attr('data-initiative', currentInitiative);
+        } catch (elementError) {
+          console.warn("SR2E | Error updating initiative indicator:", elementError);
+        }
+      });
+      
+    } catch (error) {
+      console.error("SR2E | Error updating initiative displays:", error);
+    }
+  }
+
+  /**
+   * Update values that depend on combat state (damage penalties, etc.)
+   */
+  _updateDependentValues() {
+    try {
+      if (!this.actor?.system?.health) return;
+      
+      const physicalDamage = this.actor.system.health.physical?.value || 0;
+      const stunDamage = this.actor.system.health.stun?.value || 0;
+      
+      // Calculate damage penalties according to SR2 rules
+      // Physical damage: -1 die per 3 boxes of damage
+      // Stun damage: -1 die per 3 boxes of damage
+      const physicalPenalty = Math.floor(physicalDamage / 3);
+      const stunPenalty = Math.floor(stunDamage / 3);
+      const totalPenalty = physicalPenalty + stunPenalty;
+      
+      // Update penalty displays
+      const penaltyIndicators = this.element.find('.damage-penalty, .wound-penalty');
+      penaltyIndicators.each((index, element) => {
+        try {
+          const $element = $(element);
+          $element.text(totalPenalty > 0 ? `-${totalPenalty}` : '0');
+          $element.attr('data-penalty', totalPenalty);
+          
+          // Add visual styling based on penalty severity
+          $element.removeClass('minor-penalty major-penalty severe-penalty');
+          if (totalPenalty >= 6) {
+            $element.addClass('severe-penalty');
+          } else if (totalPenalty >= 3) {
+            $element.addClass('major-penalty');
+          } else if (totalPenalty > 0) {
+            $element.addClass('minor-penalty');
+          }
+        } catch (elementError) {
+          console.warn("SR2E | Error updating penalty indicator:", elementError);
+        }
+      });
+      
+    } catch (error) {
+      console.error("SR2E | Error updating dependent values:", error);
+    }
+  }
+
+  /**
+   * Emit custom event for combat state changes
+   */
+  _emitCombatStateChange() {
+    try {
+      const combatState = {
+        actorId: this.actor.id,
+        physicalDamage: this.actor.system.health?.physical?.value || 0,
+        stunDamage: this.actor.system.health?.stun?.value || 0,
+        initiative: this.actor.system.initiative?.current || 0,
+        timestamp: Date.now()
+      };
+      
+      // Emit event for other systems to listen to
+      Hooks.callAll('sr2e.combatStateChanged', combatState);
+      
+      // Also emit on the actor for actor-specific listeners
+      if (this.actor.sheet) {
+        $(this.actor.sheet.element).trigger('combatStateChanged', combatState);
+      }
+      
+    } catch (error) {
+      console.error("SR2E | Error emitting combat state change:", error);
+    }
+  }
+
+  /**
+   * Handle concurrent updates gracefully with debouncing
+   */
+  _debouncedUpdate = foundry.utils.debounce(async (updateData) => {
+    try {
+      // Check if actor is still valid and editable
+      if (!this.actor || !this.actor.isOwner) {
+        console.warn("SR2E | Cannot update actor: not owner or actor invalid");
+        return;
+      }
+      
+      // Merge any pending updates
+      if (this._pendingUpdates) {
+        updateData = foundry.utils.mergeObject(this._pendingUpdates, updateData);
+        this._pendingUpdates = null;
+      }
+      
+      // Perform the update with error handling
+      await this.actor.update(updateData);
+      
+      // Synchronize UI after successful update
+      this._synchronizeUIState();
+      
+    } catch (error) {
+      console.error("SR2E | Error in debounced update:", error);
+      ui.notifications.error("Failed to save changes. You may not have permission or the data may be invalid.");
+    }
+  }, 300);
+
+
+
+  /**
+   * Override the render method to handle loading states
+   */
+  async render(force = false, options = {}) {
+    try {
+      // Add loading state
+      if (this.element && this.element.length > 0) {
+        this.element.addClass('loading');
+      }
+      
+      // Call parent render method
+      const result = await super.render(force, options);
+      
+      // Remove loading state and synchronize UI
+      if (this.element && this.element.length > 0) {
+        this.element.removeClass('loading');
+        
+        // Synchronize UI state after render
+        setTimeout(() => {
+          this._synchronizeUIState();
+        }, 100);
+      }
+      
+      return result;
+      
+    } catch (error) {
+      console.error("SR2E | Error rendering character sheet:", error);
+      
+      // Remove loading state even on error
+      if (this.element && this.element.length > 0) {
+        this.element.removeClass('loading');
+      }
+      
+      // Show user-friendly error
+      ui.notifications.error("Failed to render character sheet. Try refreshing the page.");
+      throw error;
+    }
+  }
+
+  /**
+   * Handle actor data updates from external sources
+   */
+  _onActorUpdate(actor, updateData, options, userId) {
+    try {
+      // Only process updates for this actor
+      if (actor.id !== this.actor.id) return;
+      
+      // Check if combat-related data was updated
+      const combatDataUpdated = (
+        updateData.system?.health ||
+        updateData.system?.initiative ||
+        updateData.system?.attributes?.reaction
+      );
+      
+      if (combatDataUpdated) {
+        console.log("SR2E | Combat data updated externally, synchronizing UI");
+        
+        // Synchronize UI with a small delay to ensure data is fully updated
+        setTimeout(() => {
+          this._synchronizeUIState();
+        }, 50);
+      }
+      
+    } catch (error) {
+      console.error("SR2E | Error handling actor update:", error);
+    }
+  }
+
+
+
+  /**
+   * Clean up listeners when sheet is closed
+   */
+  close(options = {}) {
+    // Remove actor update listener
+    Hooks.off('updateActor', this._onActorUpdate);
+    
+    return super.close(options);
   }
 }
