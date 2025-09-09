@@ -8,14 +8,14 @@ export class SR2ActorSheet extends ActorSheet {
 
   constructor(...args) {
     super(...args);
-    
+
     // Performance optimization: Cache DOM elements and debounce updates
     this._domCache = new Map();
     this._updateQueue = new Map();
     this._updateTimeout = null;
     this._lastRenderTime = 0;
     this._renderThrottle = 100; // Minimum time between renders in ms
-    
+
     // Bind methods for performance
     this._debouncedUpdate = this._debounce(this._processUpdateQueue.bind(this), 50);
     this._throttledRender = this._throttle(this.render.bind(this), this._renderThrottle);
@@ -46,6 +46,38 @@ export class SR2ActorSheet extends ActorSheet {
 
     context.system = actorData.system;
     context.flags = actorData.flags;
+
+    // Ensure health data structure exists with defaults
+    if (!context.system.health) {
+      context.system.health = {
+        physical: { value: 0, max: 10 },
+        stun: { value: 0, max: 10 }
+      };
+    } else {
+      // Ensure physical health exists
+      if (!context.system.health.physical) {
+        context.system.health.physical = { value: 0, max: 10 };
+      } else {
+        // Ensure values are numbers, handle NaN, null, undefined
+        const physValue = context.system.health.physical.value;
+        const physMax = context.system.health.physical.max;
+
+        context.system.health.physical.value = (typeof physValue === 'number' && !isNaN(physValue)) ? physValue : 0;
+        context.system.health.physical.max = (typeof physMax === 'number' && !isNaN(physMax)) ? physMax : 10;
+      }
+
+      // Ensure stun health exists
+      if (!context.system.health.stun) {
+        context.system.health.stun = { value: 0, max: 10 };
+      } else {
+        // Ensure values are numbers, handle NaN, null, undefined
+        const stunValue = context.system.health.stun.value;
+        const stunMax = context.system.health.stun.max;
+
+        context.system.health.stun.value = (typeof stunValue === 'number' && !isNaN(stunValue)) ? stunValue : 0;
+        context.system.health.stun.max = (typeof stunMax === 'number' && !isNaN(stunMax)) ? stunMax : 10;
+      }
+    }
 
     // Prepare character data and items
     if (actorData.type == 'character') {
@@ -193,7 +225,7 @@ export class SR2ActorSheet extends ActorSheet {
       const response = await fetch('/systems/shadowrun2e/data/skills.json');
       const skillsData = await response.json();
       context.availableSkills = skillsData;
-      
+
       // Add concentration data for each skill
       context.skills.forEach(skill => {
         if (skill.system.baseSkill && skillsData[skill.system.baseSkill]) {
@@ -201,12 +233,12 @@ export class SR2ActorSheet extends ActorSheet {
         } else {
           skill.availableConcentrations = [];
         }
-        
+
         // Debug logging for skill data
         console.log(`SR2E | Skill ${skill.name}: baseSkill=${skill.system.baseSkill}, concentration=${skill.system.concentration}, specialization=${skill.system.specialization}`);
         console.log(`SR2E | Ratings: base=${skill.system.baseRating}, conc=${skill.system.concentrationRating}, spec=${skill.system.specializationRating}`);
       });
-      
+
       console.log('SR2E | Skills data loaded successfully:', Object.keys(skillsData).length, 'skills');
       console.log('SR2E | Actor skills:', context.skills.length);
     } catch (error) {
@@ -218,7 +250,10 @@ export class SR2ActorSheet extends ActorSheet {
   /** @override */
   activateListeners(html) {
     super.activateListeners(html);
-    
+
+    // Initialize health data if needed
+    this._initializeHealthData();
+
     // Set up actor update listener for external changes
     Hooks.on('updateActor', this._onActorUpdate.bind(this));
 
@@ -328,12 +363,12 @@ export class SR2ActorSheet extends ActorSheet {
     html.find('.cyberware-installed').change(this._onCyberwareInstall.bind(this));
     html.find('.bioware-installed').change(this._onBiowareInstall.bind(this));
 
-    // Damage box click handlers
-    html.find('.damage-box').click(this._onDamageBoxClick.bind(this));
-    
+    // Damage box click handlers - use event delegation to handle clicks on child elements
+    html.find('.damage-boxes').on('click', '.damage-box, .damage-box *', this._onDamageBoxClick.bind(this));
+
     // Damage box keyboard navigation
     html.find('.damage-box').keydown(this._onDamageBoxKeydown.bind(this));
-    
+
     // Damage boxes focus management
     html.find('.damage-boxes').on('focusin', this._onDamageBoxesFocusIn.bind(this));
 
@@ -410,7 +445,7 @@ export class SR2ActorSheet extends ActorSheet {
    */
   async _onResetAllPools(event) {
     event.preventDefault();
-    
+
     // Confirm with GM before resetting
     const confirmed = await Dialog.confirm({
       title: "Reset All Pools",
@@ -426,10 +461,10 @@ export class SR2ActorSheet extends ActorSheet {
     // Build update data for all pools
     const updateData = {};
     const poolData = this.actor.system.pools;
-    
+
     // Reset all pools except karma (karma is managed differently)
     const poolTypes = ['combat', 'spell', 'hacking', 'control', 'task', 'astral'];
-    
+
     poolTypes.forEach(poolType => {
       if (poolData[poolType]) {
         updateData[`system.pools.${poolType}.current`] = poolData[poolType].max;
@@ -441,7 +476,7 @@ export class SR2ActorSheet extends ActorSheet {
 
     // Show confirmation message
     ui.notifications.info(`All dice pools reset to maximum for ${this.actor.name}`);
-    
+
     // Optional: Create chat message for transparency
     ChatMessage.create({
       user: game.user.id,
@@ -451,9 +486,9 @@ export class SR2ActorSheet extends ActorSheet {
         <p><strong>${this.actor.name}'s</strong> dice pools have been reset to maximum by the GM.</p>
         <ul>
           ${poolTypes.map(type => {
-            const pool = poolData[type];
-            return pool && pool.max > 0 ? `<li>${type.charAt(0).toUpperCase() + type.slice(1)} Pool: ${pool.max}/${pool.max}</li>` : '';
-          }).filter(item => item).join('')}
+        const pool = poolData[type];
+        return pool && pool.max > 0 ? `<li>${type.charAt(0).toUpperCase() + type.slice(1)} Pool: ${pool.max}/${pool.max}</li>` : '';
+      }).filter(item => item).join('')}
         </ul>
       </div>`,
       whisper: [game.user.id] // Only visible to GM
@@ -475,7 +510,7 @@ export class SR2ActorSheet extends ActorSheet {
     if (item) {
       // Only clear concentration and specialization if the base skill actually changed
       const currentBaseSkill = item.system.baseSkill;
-      
+
       if (currentBaseSkill !== baseSkill) {
         // Clear concentration and specialization when base skill changes
         await item.update({
@@ -514,7 +549,7 @@ export class SR2ActorSheet extends ActorSheet {
       const updateData = {
         'system.concentration': concentration
       };
-      
+
       // If concentration is cleared, reset the rating
       if (!concentration) {
         updateData['system.concentrationRating'] = 0;
@@ -548,7 +583,7 @@ export class SR2ActorSheet extends ActorSheet {
       const updateData = {
         'system.specialization': specialization
       };
-      
+
       // If specialization is cleared, reset the rating
       if (!specialization) {
         updateData['system.specializationRating'] = 0;
@@ -645,18 +680,18 @@ export class SR2ActorSheet extends ActorSheet {
     // Use modified attribute value if available (includes cyberware bonuses)
     const modifiers = this.actor._calculateAugmentationModifiers();
     let modifierValue = 0;
-    
+
     // Map attribute names to modifier keys
     const modifierMap = {
       'body': 'BOD',
-      'quickness': 'QCK', 
+      'quickness': 'QCK',
       'strength': 'STR',
       'charisma': 'CHA',
       'intelligence': 'INT',
       'willpower': 'WIL',
       'reaction': 'RCT'
     };
-    
+
     if (modifierMap[attributeName]) {
       modifierValue = modifiers[modifierMap[attributeName]] || 0;
     }
@@ -681,7 +716,7 @@ export class SR2ActorSheet extends ActorSheet {
   _getAvailablePools() {
     const pools = [];
     const poolData = this.actor.system.pools;
-    
+
     // Add all pools that have current dice available
     const poolTypes = [
       { key: 'karma', name: 'Karma Pool', maxKey: 'total' },
@@ -692,19 +727,19 @@ export class SR2ActorSheet extends ActorSheet {
       { key: 'task', name: 'Task Pool', maxKey: 'max' },
       { key: 'astral', name: 'Astral Combat Pool', maxKey: 'max' }
     ];
-    
+
     poolTypes.forEach(poolType => {
       const pool = poolData[poolType.key];
       if (pool) {
-        pools.push({ 
+        pools.push({
           key: poolType.key,
-          name: poolType.name, 
-          current: pool.current || 0, 
+          name: poolType.name,
+          current: pool.current || 0,
           max: pool[poolType.maxKey] || 0
         });
       }
     });
-    
+
     return pools;
   }
 
@@ -713,7 +748,7 @@ export class SR2ActorSheet extends ActorSheet {
    */
   async _showTargetNumberDialog(dicePool, title, rollType, defaultTN = 4) {
     const availablePools = this._getAvailablePools();
-    
+
     const content = `
       <div class="target-number-dialog">
         <div class="roll-info">
@@ -785,12 +820,12 @@ export class SR2ActorSheet extends ActorSheet {
       content: content,
       render: (html) => {
         // Handle pool checkbox interactions
-        html.find('.pool-checkbox').change(function() {
+        html.find('.pool-checkbox').change(function () {
           const isChecked = $(this).is(':checked');
           const poolKey = $(this).val();
           const diceInput = html.find(`input[name="pool-${poolKey}-dice"]`);
           const pool = availablePools.find(p => p.key === poolKey);
-          
+
           if (isChecked) {
             diceInput.prop('disabled', false);
             // Only default to 1 if the pool has dice available
@@ -813,15 +848,15 @@ export class SR2ActorSheet extends ActorSheet {
             const targetNumber = parseInt(html.find('#target-number').val());
             const diceModifier = parseInt(html.find('#dice-modifier').val()) || 0;
             let finalDicePool = dicePool + diceModifier;
-            
+
             // Handle pool dice
             const poolsUsed = [];
             let totalPoolDice = 0;
-            
+
             availablePools.forEach(pool => {
               const checkbox = html.find(`input[name="pool-${pool.key}"]`);
               const diceInput = html.find(`input[name="pool-${pool.key}-dice"]`);
-              
+
               if (checkbox.is(':checked')) {
                 const diceUsed = parseInt(diceInput.val()) || 0;
                 // Validate that we don't use more dice than available
@@ -832,15 +867,15 @@ export class SR2ActorSheet extends ActorSheet {
                 }
               }
             });
-            
+
             // Add pool dice to final dice pool
             finalDicePool += totalPoolDice;
-            
+
             // Ensure minimum dice pool of 1
             if (finalDicePool < 1) {
               finalDicePool = 1;
             }
-            
+
             // Update actor's pool values
             if (poolsUsed.length > 0) {
               const updateData = {};
@@ -850,14 +885,14 @@ export class SR2ActorSheet extends ActorSheet {
               });
               await this.actor.update(updateData);
             }
-            
+
             // Create enhanced title with pool info
             let finalTitle = `${title} (TN ${targetNumber})`;
             if (poolsUsed.length > 0) {
               const poolInfo = poolsUsed.map(({ pool, dice }) => `${dice} ${pool.name}`).join(', ');
               finalTitle += ` [+${totalPoolDice} from ${poolInfo}]`;
             }
-            
+
             // Roll the dice
             this.actor.rollDice(finalDicePool, targetNumber, finalTitle);
           }
@@ -870,7 +905,7 @@ export class SR2ActorSheet extends ActorSheet {
       default: "roll",
       render: (html) => {
         // Enable/disable pool dice inputs when checkboxes are toggled
-        html.find('input[type="checkbox"]').change(function() {
+        html.find('input[type="checkbox"]').change(function () {
           const diceInput = html.find(`input[name="${this.name}-dice"]`);
           diceInput.prop('disabled', !this.checked);
           if (!this.checked) {
@@ -970,10 +1005,10 @@ export class SR2ActorSheet extends ActorSheet {
     // Check if weapon has a linked skill
     if (weapon.system.linkedSkill?.skillId) {
       const linkedSkill = this.actor.items.get(weapon.system.linkedSkill.skillId);
-      
+
       if (linkedSkill) {
         const rollType = weapon.system.linkedSkill.rollType || 'base';
-        
+
         // Get skill rating based on roll type
         switch (rollType) {
           case 'base':
@@ -1025,7 +1060,7 @@ export class SR2ActorSheet extends ActorSheet {
           const bestRating = Number(best.system.baseRating) || 0;
           return currentRating > bestRating ? current : best;
         });
-        
+
         skillRating = Number(bestSkill.system.baseRating) || 0;
         skillName = bestSkill.name || bestSkill.system.baseSkill;
         rollDescription = 'Auto-detected';
@@ -1428,24 +1463,63 @@ export class SR2ActorSheet extends ActorSheet {
    */
   async _onDamageBoxClick(event) {
     event.preventDefault();
-    const element = event.currentTarget;
     
+    // Find the actual damage box element (in case user clicked on a child element)
+    let element = event.currentTarget;
+    if (!element.classList.contains('damage-box')) {
+      element = element.closest('.damage-box');
+    }
+    
+    if (!element) {
+      console.error('SR2E | Could not find damage box element');
+      return;
+    }
+
     try {
-      // Validate input parameters
-      const boxNumber = parseInt(element.dataset.boxNumber);
-      const damageBoxesContainer = element.closest('.damage-boxes');
+      // Try to get box number from multiple sources
+      let boxNumberStr = element.dataset.boxNumber || element.getAttribute('data-box-number');
       
+      // If we still don't have a box number, try to find it from the element's position
+      if (!boxNumberStr) {
+        const damageBoxes = element.parentElement.querySelectorAll('.damage-box');
+        const index = Array.from(damageBoxes).indexOf(element);
+        if (index >= 0) {
+          boxNumberStr = (index + 1).toString();
+          console.log('SR2E | Box number derived from position:', boxNumberStr);
+        }
+      }
+      
+      // Last resort: try to get it from the text content of the box-number span
+      if (!boxNumberStr) {
+        const boxNumberSpan = element.querySelector('.box-number');
+        if (boxNumberSpan && boxNumberSpan.textContent) {
+          boxNumberStr = boxNumberSpan.textContent.trim();
+          console.log('SR2E | Box number derived from text content:', boxNumberStr);
+        }
+      }
+      
+      // Validate input parameters
+      const boxNumber = parseInt(boxNumberStr);
+      const damageBoxesContainer = element.closest('.damage-boxes');
+
       if (!damageBoxesContainer) {
         throw new Error("Damage box container not found");
       }
-      
+
       const damageType = damageBoxesContainer.dataset.damageType;
-      
+
       // Validate box number
       if (isNaN(boxNumber) || boxNumber < 1 || boxNumber > 10) {
+        console.error('SR2E | Box number validation failed:', {
+          boxNumberStr,
+          boxNumber,
+          isNaN: isNaN(boxNumber),
+          element: element,
+          dataset: element.dataset
+        });
         throw new Error(`Invalid box number: ${boxNumber}. Must be between 1 and 10.`);
       }
-      
+
       // Validate damage type
       if (!damageType || !['physical', 'stun'].includes(damageType)) {
         throw new Error(`Invalid damage type: ${damageType}. Must be 'physical' or 'stun'.`);
@@ -1455,21 +1529,21 @@ export class SR2ActorSheet extends ActorSheet {
       if (!this.actor) {
         throw new Error("Actor not found");
       }
-      
+
       if (!this.actor.system) {
         throw new Error("Actor system data not found");
       }
-      
+
       if (!this.actor.system.health) {
         throw new Error("Actor health data not found");
       }
-      
+
       if (!this.actor.system.health[damageType]) {
         throw new Error(`Actor ${damageType} health data not found`);
       }
 
       const currentDamage = this.actor.system.health[damageType].value;
-      
+
       // Validate current damage value
       if (typeof currentDamage !== 'number' || isNaN(currentDamage)) {
         console.warn(`SR2E | Invalid current ${damageType} damage value: ${currentDamage}, defaulting to 0`);
@@ -1479,7 +1553,7 @@ export class SR2ActorSheet extends ActorSheet {
         });
         return;
       }
-      
+
       let newDamage;
 
       // If clicking on the current damage level, reset to 0
@@ -1494,7 +1568,7 @@ export class SR2ActorSheet extends ActorSheet {
       if (typeof newDamage !== 'number' || isNaN(newDamage)) {
         throw new Error(`Invalid damage value calculated: ${newDamage}`);
       }
-      
+
       newDamage = Math.clamped(newDamage, 0, 10);
 
       // Validate that the new damage value is different from current
@@ -1509,12 +1583,12 @@ export class SR2ActorSheet extends ActorSheet {
         this._queueUpdate({
           [`system.health.${damageType}.value`]: newDamage
         });
-        
+
         console.log(`SR2E | Queued ${damageType} damage update from ${currentDamage} to ${newDamage}`);
-        
+
         // Provide immediate UI feedback
         this._updateDamageBoxDisplay(damageType, newDamage);
-        
+
         // Provide user feedback for significant damage changes
         if (newDamage >= 8 && currentDamage < 8) {
           ui.notifications.warn(`${this.actor.name} has taken severe ${damageType} damage (${newDamage}/10)!`);
@@ -1523,17 +1597,17 @@ export class SR2ActorSheet extends ActorSheet {
         } else if (newDamage === 0 && currentDamage > 0) {
           ui.notifications.info(`${this.actor.name}'s ${damageType} damage has been cleared.`);
         }
-        
+
       } catch (updateError) {
         console.error(`SR2E | Failed to queue ${damageType} damage update:`, updateError);
         ui.notifications.error(`Failed to update ${damageType} damage. The character sheet may be locked or you may not have permission.`);
         throw updateError;
       }
-      
+
     } catch (error) {
       console.error("SR2E | Error handling damage box click:", error);
       ui.notifications.error(`Error updating damage: ${error.message}`);
-      
+
       // Try to refresh the sheet to show current state
       try {
         this.render(false);
@@ -1544,21 +1618,44 @@ export class SR2ActorSheet extends ActorSheet {
   }
 
   /**
+   * Test function to validate damage box functionality
+   */
+  _testDamageBoxes() {
+    console.log('SR2E | Testing damage box functionality...');
+    
+    const physicalBoxes = this.element.find('.damage-boxes[data-damage-type="physical"] .damage-box');
+    const stunBoxes = this.element.find('.damage-boxes[data-damage-type="stun"] .damage-box');
+    
+    console.log('SR2E | Found physical damage boxes:', physicalBoxes.length);
+    console.log('SR2E | Found stun damage boxes:', stunBoxes.length);
+    
+    physicalBoxes.each((index, element) => {
+      const boxNumber = element.dataset.boxNumber || element.getAttribute('data-box-number');
+      console.log(`SR2E | Physical box ${index + 1}: data-box-number = ${boxNumber}`);
+    });
+    
+    stunBoxes.each((index, element) => {
+      const boxNumber = element.dataset.boxNumber || element.getAttribute('data-box-number');
+      console.log(`SR2E | Stun box ${index + 1}: data-box-number = ${boxNumber}`);
+    });
+  }
+
+  /**
    * Handle initiative roll button clicks
    */
   async _onInitiativeRoll(event) {
     event.preventDefault();
-    
+
     try {
       // Validate actor exists and has required data
       if (!this.actor) {
         throw new Error("Actor not found");
       }
-      
+
       if (!this.actor.system) {
         throw new Error("Actor system data not found");
       }
-      
+
       // Validate initiative data structure exists
       if (!this.actor.system.initiative) {
         console.warn("SR2E | Initiative data missing, creating default structure");
@@ -1569,12 +1666,12 @@ export class SR2ActorSheet extends ActorSheet {
           }
         });
       }
-      
+
       // Validate attributes data structure exists
       if (!this.actor.system.attributes) {
         throw new Error("Actor attributes data not found");
       }
-      
+
       if (!this.actor.system.attributes.reaction) {
         console.warn("SR2E | Reaction attribute missing, creating default structure");
         await this.actor.update({
@@ -1583,10 +1680,10 @@ export class SR2ActorSheet extends ActorSheet {
           }
         });
       }
-      
+
       // Get initiative dice with validation and sensible defaults
       let initiativeDice = this.actor.system.initiative.dice;
-      
+
       if (typeof initiativeDice !== 'number' || isNaN(initiativeDice) || initiativeDice < 1) {
         console.warn(`SR2E | Invalid initiative dice value: ${initiativeDice}, defaulting to 1`);
         initiativeDice = 1;
@@ -1595,7 +1692,7 @@ export class SR2ActorSheet extends ActorSheet {
           'system.initiative.dice': 1
         });
       }
-      
+
       // Cap initiative dice at reasonable maximum (10 dice)
       if (initiativeDice > 10) {
         console.warn(`SR2E | Initiative dice value too high: ${initiativeDice}, capping at 10`);
@@ -1604,10 +1701,10 @@ export class SR2ActorSheet extends ActorSheet {
           'system.initiative.dice': 10
         });
       }
-      
+
       // Get reaction bonus with validation and sensible defaults
       let reactionBonus = this.actor.system.attributes.reaction.value;
-      
+
       if (typeof reactionBonus !== 'number' || isNaN(reactionBonus) || reactionBonus < 1) {
         console.warn(`SR2E | Invalid reaction value: ${reactionBonus}, defaulting to 1`);
         reactionBonus = 1;
@@ -1616,7 +1713,7 @@ export class SR2ActorSheet extends ActorSheet {
           'system.attributes.reaction.value': 1
         });
       }
-      
+
       // Cap reaction at reasonable maximum (30 for heavily augmented characters)
       if (reactionBonus > 30) {
         console.warn(`SR2E | Reaction value too high: ${reactionBonus}, capping at 30`);
@@ -1625,12 +1722,12 @@ export class SR2ActorSheet extends ActorSheet {
           'system.attributes.reaction.value': 30
         });
       }
-      
+
       // Create the roll formula (e.g., "3d6 + 12")
       const rollFormula = `${initiativeDice}d6 + ${reactionBonus}`;
-      
+
       console.log(`SR2E | Rolling initiative for ${this.actor.name}: ${rollFormula}`);
-      
+
       // Create and evaluate the roll using Foundry's Roll class
       // Note: Using standard d6 without exploding dice for initiative
       let roll;
@@ -1641,16 +1738,16 @@ export class SR2ActorSheet extends ActorSheet {
         console.error("SR2E | Error creating or evaluating roll:", rollError);
         throw new Error(`Failed to create initiative roll with formula ${rollFormula}: ${rollError.message}`);
       }
-      
+
       // Validate roll results
       if (!roll || typeof roll.total !== 'number' || isNaN(roll.total)) {
         throw new Error(`Invalid roll result: ${roll?.total}`);
       }
-      
+
       // Extract dice results with error handling
       let diceResults = [];
       let diceTotal = 0;
-      
+
       try {
         if (roll.terms && roll.terms[0] && roll.terms[0].results) {
           diceResults = roll.terms[0].results.map(r => r.result);
@@ -1665,14 +1762,14 @@ export class SR2ActorSheet extends ActorSheet {
         diceTotal = roll.total - reactionBonus;
         diceResults = [`${diceTotal} (total)`];
       }
-      
+
       const finalTotal = roll.total;
-      
+
       // Validate final total is reasonable
       if (finalTotal < 1 || finalTotal > 100) {
         console.warn(`SR2E | Unusual initiative total: ${finalTotal}`);
       }
-      
+
       // Update the actor's current initiative with error handling
       try {
         await this.actor.update({
@@ -1683,7 +1780,7 @@ export class SR2ActorSheet extends ActorSheet {
         ui.notifications.error("Failed to save initiative result. You may not have permission to modify this character.");
         // Continue with display and chat message even if update fails
       }
-      
+
       // Display the result in the UI with error handling
       try {
         this._displayInitiativeResult(diceResults, diceTotal, reactionBonus, finalTotal, rollFormula);
@@ -1691,7 +1788,7 @@ export class SR2ActorSheet extends ActorSheet {
         console.error("SR2E | Failed to display initiative result:", displayError);
         ui.notifications.warn("Initiative rolled successfully but display failed. Check chat for results.");
       }
-      
+
       // Send roll to chat with error handling
       try {
         await roll.toMessage({
@@ -1702,7 +1799,7 @@ export class SR2ActorSheet extends ActorSheet {
         console.error("SR2E | Failed to send initiative roll to chat:", chatError);
         ui.notifications.warn("Initiative rolled successfully but failed to post to chat.");
       }
-      
+
       // Automatically add character to initiative tracker with error handling
       try {
         await this._addToInitiativeTracker(finalTotal);
@@ -1710,16 +1807,16 @@ export class SR2ActorSheet extends ActorSheet {
         console.error("SR2E | Failed to add to initiative tracker:", trackerError);
         ui.notifications.warn(`Initiative rolled (${finalTotal}) but failed to add to tracker. You can add manually.`);
       }
-      
+
       console.log(`SR2E | ${this.actor.name} rolled initiative: ${rollFormula} = ${finalTotal}`);
       ui.notifications.info(`${this.actor.name} rolled initiative: ${finalTotal}`);
-      
+
     } catch (error) {
       console.error("SR2E | Error rolling initiative:", error);
-      
+
       // Provide specific error messages based on error type
       let errorMessage = "Failed to roll initiative.";
-      
+
       if (error.message.includes("not found")) {
         errorMessage = "Character data is missing or corrupted. Try refreshing the sheet.";
       } else if (error.message.includes("permission")) {
@@ -1729,9 +1826,9 @@ export class SR2ActorSheet extends ActorSheet {
       } else {
         errorMessage = `Initiative roll failed: ${error.message}`;
       }
-      
+
       ui.notifications.error(errorMessage);
-      
+
       // Try to refresh the sheet to show current state
       try {
         this.render(false);
@@ -1749,10 +1846,10 @@ export class SR2ActorSheet extends ActorSheet {
     const damageBoxes = element.closest('.damage-boxes');
     const allBoxes = Array.from(damageBoxes.querySelectorAll('.damage-box'));
     const currentIndex = allBoxes.indexOf(element);
-    
+
     let targetIndex = currentIndex;
     let handled = false;
-    
+
     switch (event.key) {
       case 'Enter':
       case ' ':
@@ -1761,33 +1858,33 @@ export class SR2ActorSheet extends ActorSheet {
         this._onDamageBoxClick(event);
         handled = true;
         break;
-        
+
       case 'ArrowLeft':
       case 'ArrowUp':
         event.preventDefault();
         targetIndex = Math.max(0, currentIndex - 1);
         handled = true;
         break;
-        
+
       case 'ArrowRight':
       case 'ArrowDown':
         event.preventDefault();
         targetIndex = Math.min(allBoxes.length - 1, currentIndex + 1);
         handled = true;
         break;
-        
+
       case 'Home':
         event.preventDefault();
         targetIndex = 0;
         handled = true;
         break;
-        
+
       case 'End':
         event.preventDefault();
         targetIndex = allBoxes.length - 1;
         handled = true;
         break;
-        
+
       case '0':
       case 'Delete':
       case 'Backspace':
@@ -1797,7 +1894,7 @@ export class SR2ActorSheet extends ActorSheet {
         this._clearDamage(damageType);
         handled = true;
         break;
-        
+
       default:
         // Handle number keys 1-9 for direct damage setting
         if (event.key >= '1' && event.key <= '9') {
@@ -1807,7 +1904,7 @@ export class SR2ActorSheet extends ActorSheet {
             // Create a synthetic click event for the target box
             const targetBox = allBoxes[boxNumber - 1];
             const syntheticEvent = {
-              preventDefault: () => {},
+              preventDefault: () => { },
               currentTarget: targetBox
             };
             this._onDamageBoxClick(syntheticEvent);
@@ -1818,7 +1915,7 @@ export class SR2ActorSheet extends ActorSheet {
         }
         break;
     }
-    
+
     // Move focus to target box if navigation occurred
     if (handled && targetIndex !== currentIndex && allBoxes[targetIndex]) {
       this._updateDamageBoxTabIndex(damageBoxes, targetIndex);
@@ -1832,7 +1929,7 @@ export class SR2ActorSheet extends ActorSheet {
   _onDamageBoxesFocusIn(event) {
     const damageBoxes = event.currentTarget;
     const focusedBox = event.target;
-    
+
     if (focusedBox.classList.contains('damage-box')) {
       const allBoxes = Array.from(damageBoxes.querySelectorAll('.damage-box'));
       const focusedIndex = allBoxes.indexOf(focusedBox);
@@ -1858,27 +1955,86 @@ export class SR2ActorSheet extends ActorSheet {
       if (!['physical', 'stun'].includes(damageType)) {
         throw new Error(`Invalid damage type: ${damageType}`);
       }
-      
+
       const currentDamage = this.actor.system.health[damageType].value;
-      
+
       if (currentDamage === 0) {
         ui.notifications.info(`${damageType} damage is already at 0.`);
         return;
       }
-      
+
       // Update the actor's damage value
       this._queueUpdate({
         [`system.health.${damageType}.value`]: 0
       });
-      
+
       // Provide immediate UI feedback
       this._updateDamageBoxDisplay(damageType, 0);
-      
+
       ui.notifications.info(`${this.actor.name}'s ${damageType} damage has been cleared.`);
-      
+
     } catch (error) {
       console.error(`SR2E | Error clearing ${damageType} damage:`, error);
       ui.notifications.error(`Failed to clear ${damageType} damage: ${error.message}`);
+    }
+  }
+
+  /**
+   * Initialize health data structure if it doesn't exist or has invalid values
+   */
+  async _initializeHealthData() {
+    try {
+      const currentHealth = this.actor.system.health;
+      let needsUpdate = false;
+      const updateData = {};
+
+      // Check if health structure exists
+      if (!currentHealth) {
+        updateData['system.health'] = {
+          physical: { value: 0, max: 10 },
+          stun: { value: 0, max: 10 }
+        };
+        needsUpdate = true;
+      } else {
+        // Check physical health
+        if (!currentHealth.physical) {
+          updateData['system.health.physical'] = { value: 0, max: 10 };
+          needsUpdate = true;
+        } else {
+          if (typeof currentHealth.physical.value !== 'number' || isNaN(currentHealth.physical.value)) {
+            updateData['system.health.physical.value'] = 0;
+            needsUpdate = true;
+          }
+          if (typeof currentHealth.physical.max !== 'number' || isNaN(currentHealth.physical.max)) {
+            updateData['system.health.physical.max'] = 10;
+            needsUpdate = true;
+          }
+        }
+
+        // Check stun health
+        if (!currentHealth.stun) {
+          updateData['system.health.stun'] = { value: 0, max: 10 };
+          needsUpdate = true;
+        } else {
+          if (typeof currentHealth.stun.value !== 'number' || isNaN(currentHealth.stun.value)) {
+            updateData['system.health.stun.value'] = 0;
+            needsUpdate = true;
+          }
+          if (typeof currentHealth.stun.max !== 'number' || isNaN(currentHealth.stun.max)) {
+            updateData['system.health.stun.max'] = 10;
+            needsUpdate = true;
+          }
+        }
+      }
+
+      // Apply updates if needed
+      if (needsUpdate) {
+        console.log('SR2E | Initializing health data structure:', updateData);
+        await this.actor.update(updateData);
+      }
+
+    } catch (error) {
+      console.error('SR2E | Error initializing health data:', error);
     }
   }
 
@@ -1902,7 +2058,7 @@ export class SR2ActorSheet extends ActorSheet {
    */
   _throttle(func, limit) {
     let inThrottle;
-    return function(...args) {
+    return function (...args) {
       if (!inThrottle) {
         func.apply(this, args);
         inThrottle = true;
@@ -1939,7 +2095,7 @@ export class SR2ActorSheet extends ActorSheet {
     for (const [key, value] of Object.entries(updateData)) {
       this._updateQueue.set(key, value);
     }
-    
+
     // Debounce the actual update
     this._debouncedUpdate();
   }
@@ -1949,16 +2105,16 @@ export class SR2ActorSheet extends ActorSheet {
    */
   async _processUpdateQueue() {
     if (this._updateQueue.size === 0) return;
-    
+
     // Convert Map to object
     const updateData = {};
     for (const [key, value] of this._updateQueue.entries()) {
       updateData[key] = value;
     }
-    
+
     // Clear the queue
     this._updateQueue.clear();
-    
+
     try {
       await this.actor.update(updateData);
     } catch (error) {
@@ -1974,20 +2130,20 @@ export class SR2ActorSheet extends ActorSheet {
     try {
       // Use cached selector for better performance
       const damageBoxes = this._getCachedElement(`.damage-boxes[data-damage-type="${damageType}"] .damage-box`);
-      
+
       if (!damageBoxes || damageBoxes.length === 0) {
         console.warn(`SR2E | No damage boxes found for type: ${damageType}`);
         return;
       }
-      
+
       // Batch DOM updates for better performance
       const updates = [];
-      
+
       damageBoxes.each((index, box) => {
         const boxNumber = parseInt(box.dataset.boxNumber);
         const shouldBeFilled = boxNumber <= newDamage;
         const currentlyFilled = box.dataset.filled === 'true';
-        
+
         if (shouldBeFilled !== currentlyFilled) {
           updates.push({
             element: box,
@@ -1996,20 +2152,20 @@ export class SR2ActorSheet extends ActorSheet {
           });
         }
       });
-      
+
       // Apply all updates at once
       updates.forEach(update => {
         update.element.dataset.filled = update.filled.toString();
         update.element.setAttribute('aria-checked', update.filled.toString());
       });
-      
+
       // Update damage counter with cached element
       const damageCounter = this._getCachedElement(`.${damageType}-monitor .damage-counter`);
       if (damageCounter && damageCounter.length > 0) {
         const maxDamage = this.actor.system.health[damageType].max || 10;
         damageCounter.text(`${newDamage}/${maxDamage}`);
       }
-      
+
     } catch (error) {
       console.error(`SR2E | Error updating ${damageType} damage display:`, error);
     }
@@ -2021,13 +2177,13 @@ export class SR2ActorSheet extends ActorSheet {
   async render(force = false, options = {}) {
     // Clear DOM cache on render
     this._clearDomCache();
-    
+
     // Throttle renders for performance
     const now = Date.now();
     if (!force && (now - this._lastRenderTime) < this._renderThrottle) {
       return this._throttledRender(force, options);
     }
-    
+
     this._lastRenderTime = now;
     return super.render(force, options);
   }
@@ -2040,15 +2196,15 @@ export class SR2ActorSheet extends ActorSheet {
     if (this._updateQueue.size > 0) {
       await this._processUpdateQueue();
     }
-    
+
     // Clear caches
     this._clearDomCache();
-    
+
     // Clear timeouts
     if (this._updateTimeout) {
       clearTimeout(this._updateTimeout);
     }
-    
+
     return super.close(options);
   }
 
@@ -2062,18 +2218,18 @@ export class SR2ActorSheet extends ActorSheet {
         console.warn("SR2E | Character sheet element not found, cannot display initiative result");
         return;
       }
-      
+
       const resultDiv = this.element.find('.initiative-result');
       if (resultDiv.length === 0) {
         console.warn("SR2E | Initiative result display area not found in UI");
         return;
       }
-      
+
       const diceResultSpan = resultDiv.find('.dice-result');
       const bonusResultSpan = resultDiv.find('.bonus-result');
       const totalResultSpan = resultDiv.find('.total-result');
       const formulaSpan = resultDiv.find('.formula-text');
-      
+
       // Format dice results display with error handling
       let diceDisplay = '';
       try {
@@ -2086,7 +2242,7 @@ export class SR2ActorSheet extends ActorSheet {
         console.warn("SR2E | Error formatting dice display:", displayError);
         diceDisplay = `Dice Total: ${diceTotal}`;
       }
-      
+
       // Update UI elements with error handling for each
       try {
         if (diceResultSpan.length > 0) {
@@ -2095,7 +2251,7 @@ export class SR2ActorSheet extends ActorSheet {
       } catch (error) {
         console.warn("SR2E | Failed to update dice result display:", error);
       }
-      
+
       try {
         if (bonusResultSpan.length > 0) {
           bonusResultSpan.text(`+ ${reactionBonus}`);
@@ -2103,7 +2259,7 @@ export class SR2ActorSheet extends ActorSheet {
       } catch (error) {
         console.warn("SR2E | Failed to update bonus result display:", error);
       }
-      
+
       try {
         if (totalResultSpan.length > 0) {
           totalResultSpan.text(`= ${finalTotal}`);
@@ -2111,7 +2267,7 @@ export class SR2ActorSheet extends ActorSheet {
       } catch (error) {
         console.warn("SR2E | Failed to update total result display:", error);
       }
-      
+
       try {
         if (formulaSpan.length > 0) {
           formulaSpan.text(`Formula: ${rollFormula}`);
@@ -2119,7 +2275,7 @@ export class SR2ActorSheet extends ActorSheet {
       } catch (error) {
         console.warn("SR2E | Failed to update formula display:", error);
       }
-      
+
       // Show the result div with animation and error handling
       try {
         resultDiv.slideDown(300);
@@ -2132,27 +2288,14 @@ export class SR2ActorSheet extends ActorSheet {
           console.warn("SR2E | Failed to show result display:", showError);
         }
       }
-      
+
       // Trigger UI synchronization
       this._synchronizeUIState();
-      
+
     } catch (error) {
       console.error("SR2E | Error displaying initiative result:", error);
       // Don't throw error, just log it since this is a display function
     }
-  }
-    
-    // Format bonus display
-    bonusResultSpan.text(`+ ${reactionBonus}`);
-    
-    // Format total display
-    totalResultSpan.text(`= ${finalTotal}`);
-    
-    // Format formula display
-    formulaSpan.text(`Formula: ${rollFormula}`);
-    
-    // Show the result div with animation
-    resultDiv.slideDown(300);
   }
 
   /**
@@ -2167,16 +2310,16 @@ export class SR2ActorSheet extends ActorSheet {
       if (typeof initiativeScore !== 'number' || isNaN(initiativeScore)) {
         throw new Error(`Invalid initiative score: ${initiativeScore}. Must be a number.`);
       }
-      
+
       if (initiativeScore < 1) {
         console.warn(`SR2E | Initiative score too low: ${initiativeScore}, using minimum of 1`);
         initiativeScore = 1;
       }
-      
+
       if (initiativeScore > 100) {
         console.warn(`SR2E | Initiative score very high: ${initiativeScore}, this may indicate an error`);
       }
-      
+
       const phases = [];
       let currentPhase = Math.floor(initiativeScore); // Ensure integer
       let iterationCount = 0;
@@ -2187,20 +2330,20 @@ export class SR2ActorSheet extends ActorSheet {
         currentPhase -= 10;
         iterationCount++;
       }
-      
+
       if (iterationCount >= maxIterations) {
         console.warn(`SR2E | Phase calculation hit iteration limit for initiative ${initiativeScore}`);
       }
-      
+
       // Validate result
       if (phases.length === 0) {
         console.warn(`SR2E | No phases calculated for initiative ${initiativeScore}, adding single phase`);
         phases.push(Math.max(1, Math.floor(initiativeScore)));
       }
-      
+
       console.log(`SR2E | Calculated ${phases.length} action phases for initiative ${initiativeScore}: [${phases.join(', ')}]`);
       return phases;
-      
+
     } catch (error) {
       console.error("SR2E | Error calculating action phases:", error);
       // Return fallback single phase
@@ -2219,25 +2362,25 @@ export class SR2ActorSheet extends ActorSheet {
       if (typeof initiativeResult !== 'number' || isNaN(initiativeResult) || initiativeResult < 1) {
         throw new Error(`Invalid initiative result: ${initiativeResult}`);
       }
-      
+
       // Validate actor data
       if (!this.actor || !this.actor.id) {
         throw new Error("Actor data is missing or invalid");
       }
-      
+
       // Check if canvas and tokens are available
       if (!canvas || !canvas.tokens) {
         throw new Error("Canvas or tokens not available. Make sure you're on a scene with tokens.");
       }
-      
+
       // Get or create the global initiative tracker instance
       let initiativeTracker = game.shadowrun2e?.initiativeTracker;
-      
+
       if (!initiativeTracker) {
         try {
           // Create new tracker instance if it doesn't exist
           initiativeTracker = new SR2InitiativeTracker();
-          
+
           // Store reference globally for access from other parts of the system
           if (!game.shadowrun2e) {
             game.shadowrun2e = {};
@@ -2250,10 +2393,10 @@ export class SR2ActorSheet extends ActorSheet {
 
       // Get the token for this actor (prefer controlled token, fallback to any token)
       let token = null;
-      
+
       try {
         const controlledTokens = canvas.tokens.controlled.filter(t => t.actor?.id === this.actor.id);
-        
+
         if (controlledTokens.length > 0) {
           token = controlledTokens[0];
         } else {
@@ -2269,7 +2412,7 @@ export class SR2ActorSheet extends ActorSheet {
         ui.notifications.warn(`No token found for ${this.actor.name}. Place a token on the scene to add to initiative tracker.`);
         return;
       }
-      
+
       // Validate token data
       if (!token.id) {
         throw new Error("Token ID is missing");
@@ -2283,12 +2426,12 @@ export class SR2ActorSheet extends ActorSheet {
 
       // Check if character is already in the tracker
       const existingCombatant = initiativeTracker.combatants.find(c => c.actorId === this.actor.id);
-      
+
       // Calculate action phases for this initiative result with error handling
       let actionPhases;
       try {
         actionPhases = this._calculateActionPhases(initiativeResult);
-        
+
         // Validate action phases result
         if (!Array.isArray(actionPhases) || actionPhases.length === 0) {
           throw new Error(`Invalid action phases calculated: ${actionPhases}`);
@@ -2300,15 +2443,15 @@ export class SR2ActorSheet extends ActorSheet {
       }
 
       // Get safe values for initiative dice and reaction
-      const initiativeDice = (this.actor.system?.initiative?.dice && 
-                            typeof this.actor.system.initiative.dice === 'number' && 
-                            !isNaN(this.actor.system.initiative.dice)) 
-                            ? this.actor.system.initiative.dice : 1;
-                            
-      const reaction = (this.actor.system?.attributes?.reaction?.value && 
-                       typeof this.actor.system.attributes.reaction.value === 'number' && 
-                       !isNaN(this.actor.system.attributes.reaction.value)) 
-                       ? this.actor.system.attributes.reaction.value : 1;
+      const initiativeDice = (this.actor.system?.initiative?.dice &&
+        typeof this.actor.system.initiative.dice === 'number' &&
+        !isNaN(this.actor.system.initiative.dice))
+        ? this.actor.system.initiative.dice : 1;
+
+      const reaction = (this.actor.system?.attributes?.reaction?.value &&
+        typeof this.actor.system.attributes.reaction.value === 'number' &&
+        !isNaN(this.actor.system.attributes.reaction.value))
+        ? this.actor.system.attributes.reaction.value : 1;
 
       if (existingCombatant) {
         // Update existing combatant's initiative and phases
@@ -2318,7 +2461,7 @@ export class SR2ActorSheet extends ActorSheet {
           existingCombatant.hasRolled = true;
           existingCombatant.initiativeDice = initiativeDice;
           existingCombatant.reaction = reaction;
-          
+
           console.log(`SR2E | Updated ${this.actor.name}'s initiative in tracker: ${initiativeResult}, phases: [${actionPhases.join(', ')}]`);
         } catch (updateError) {
           throw new Error(`Failed to update existing combatant: ${updateError.message}`);
@@ -2357,17 +2500,17 @@ export class SR2ActorSheet extends ActorSheet {
       }
 
       // Show notification
-      const message = existingCombatant 
+      const message = existingCombatant
         ? `${this.actor.name} updated in initiative tracker with initiative ${initiativeResult}`
         : `${this.actor.name} added to initiative tracker with initiative ${initiativeResult}`;
       ui.notifications.info(message);
 
     } catch (error) {
       console.error("SR2E | Error adding character to initiative tracker:", error);
-      
+
       // Provide specific error messages
       let errorMessage = "Failed to add character to initiative tracker.";
-      
+
       if (error.message.includes("Canvas")) {
         errorMessage = "No active scene found. Open a scene with tokens to use the initiative tracker.";
       } else if (error.message.includes("token")) {
@@ -2377,7 +2520,7 @@ export class SR2ActorSheet extends ActorSheet {
       } else {
         errorMessage = `Initiative tracker error: ${error.message}`;
       }
-      
+
       ui.notifications.error(errorMessage);
       throw error; // Re-throw to be handled by calling function
     }
@@ -2391,16 +2534,16 @@ export class SR2ActorSheet extends ActorSheet {
     try {
       // Update damage displays in other tabs if they exist
       this._updateDamageDisplays();
-      
+
       // Update initiative displays in other parts of the sheet
       this._updateInitiativeDisplays();
-      
+
       // Trigger any dependent calculations
       this._updateDependentValues();
-      
+
       // Emit custom event for other systems to listen to
       this._emitCombatStateChange();
-      
+
     } catch (error) {
       console.error("SR2E | Error synchronizing UI state:", error);
       // Don't throw error, just log it since this is a synchronization function
@@ -2413,17 +2556,17 @@ export class SR2ActorSheet extends ActorSheet {
   _updateDamageDisplays() {
     try {
       if (!this.actor?.system?.health) return;
-      
+
       const physicalDamage = this.actor.system.health.physical?.value || 0;
       const stunDamage = this.actor.system.health.stun?.value || 0;
-      
+
       // Update any damage indicators outside the combat panel
       const damageIndicators = this.element.find('.damage-indicator, .health-status');
       damageIndicators.each((index, element) => {
         try {
           const $element = $(element);
           const damageType = $element.data('damage-type');
-          
+
           if (damageType === 'physical') {
             $element.text(physicalDamage);
             $element.attr('data-damage-level', physicalDamage);
@@ -2435,10 +2578,10 @@ export class SR2ActorSheet extends ActorSheet {
           console.warn("SR2E | Error updating damage indicator:", elementError);
         }
       });
-      
+
       // Update damage-based CSS classes for visual feedback
       this.element.removeClass('light-damage moderate-damage heavy-damage critical-damage');
-      
+
       const totalDamage = physicalDamage + stunDamage;
       if (totalDamage >= 16) {
         this.element.addClass('critical-damage');
@@ -2449,7 +2592,7 @@ export class SR2ActorSheet extends ActorSheet {
       } else if (totalDamage > 0) {
         this.element.addClass('light-damage');
       }
-      
+
     } catch (error) {
       console.error("SR2E | Error updating damage displays:", error);
     }
@@ -2461,9 +2604,9 @@ export class SR2ActorSheet extends ActorSheet {
   _updateInitiativeDisplays() {
     try {
       if (!this.actor?.system?.initiative) return;
-      
+
       const currentInitiative = this.actor.system.initiative.current || 0;
-      
+
       // Update any initiative indicators outside the combat panel
       const initiativeIndicators = this.element.find('.initiative-indicator, .initiative-display');
       initiativeIndicators.each((index, element) => {
@@ -2475,7 +2618,7 @@ export class SR2ActorSheet extends ActorSheet {
           console.warn("SR2E | Error updating initiative indicator:", elementError);
         }
       });
-      
+
     } catch (error) {
       console.error("SR2E | Error updating initiative displays:", error);
     }
@@ -2487,17 +2630,17 @@ export class SR2ActorSheet extends ActorSheet {
   _updateDependentValues() {
     try {
       if (!this.actor?.system?.health) return;
-      
+
       const physicalDamage = this.actor.system.health.physical?.value || 0;
       const stunDamage = this.actor.system.health.stun?.value || 0;
-      
+
       // Calculate damage penalties according to SR2 rules
       // Physical damage: -1 die per 3 boxes of damage
       // Stun damage: -1 die per 3 boxes of damage
       const physicalPenalty = Math.floor(physicalDamage / 3);
       const stunPenalty = Math.floor(stunDamage / 3);
       const totalPenalty = physicalPenalty + stunPenalty;
-      
+
       // Update penalty displays
       const penaltyIndicators = this.element.find('.damage-penalty, .wound-penalty');
       penaltyIndicators.each((index, element) => {
@@ -2505,7 +2648,7 @@ export class SR2ActorSheet extends ActorSheet {
           const $element = $(element);
           $element.text(totalPenalty > 0 ? `-${totalPenalty}` : '0');
           $element.attr('data-penalty', totalPenalty);
-          
+
           // Add visual styling based on penalty severity
           $element.removeClass('minor-penalty major-penalty severe-penalty');
           if (totalPenalty >= 6) {
@@ -2519,7 +2662,7 @@ export class SR2ActorSheet extends ActorSheet {
           console.warn("SR2E | Error updating penalty indicator:", elementError);
         }
       });
-      
+
     } catch (error) {
       console.error("SR2E | Error updating dependent values:", error);
     }
@@ -2537,15 +2680,15 @@ export class SR2ActorSheet extends ActorSheet {
         initiative: this.actor.system.initiative?.current || 0,
         timestamp: Date.now()
       };
-      
+
       // Emit event for other systems to listen to
       Hooks.callAll('sr2e.combatStateChanged', combatState);
-      
+
       // Also emit on the actor for actor-specific listeners
       if (this.actor.sheet) {
         $(this.actor.sheet.element).trigger('combatStateChanged', combatState);
       }
-      
+
     } catch (error) {
       console.error("SR2E | Error emitting combat state change:", error);
     }
@@ -2561,19 +2704,19 @@ export class SR2ActorSheet extends ActorSheet {
         console.warn("SR2E | Cannot update actor: not owner or actor invalid");
         return;
       }
-      
+
       // Merge any pending updates
       if (this._pendingUpdates) {
         updateData = foundry.utils.mergeObject(this._pendingUpdates, updateData);
         this._pendingUpdates = null;
       }
-      
+
       // Perform the update with error handling
       await this.actor.update(updateData);
-      
+
       // Synchronize UI after successful update
       this._synchronizeUIState();
-      
+
     } catch (error) {
       console.error("SR2E | Error in debounced update:", error);
       ui.notifications.error("Failed to save changes. You may not have permission or the data may be invalid.");
@@ -2591,30 +2734,30 @@ export class SR2ActorSheet extends ActorSheet {
       if (this.element && this.element.length > 0) {
         this.element.addClass('loading');
       }
-      
+
       // Call parent render method
       const result = await super.render(force, options);
-      
+
       // Remove loading state and synchronize UI
       if (this.element && this.element.length > 0) {
         this.element.removeClass('loading');
-        
+
         // Synchronize UI state after render
         setTimeout(() => {
           this._synchronizeUIState();
         }, 100);
       }
-      
+
       return result;
-      
+
     } catch (error) {
       console.error("SR2E | Error rendering character sheet:", error);
-      
+
       // Remove loading state even on error
       if (this.element && this.element.length > 0) {
         this.element.removeClass('loading');
       }
-      
+
       // Show user-friendly error
       ui.notifications.error("Failed to render character sheet. Try refreshing the page.");
       throw error;
@@ -2628,23 +2771,23 @@ export class SR2ActorSheet extends ActorSheet {
     try {
       // Only process updates for this actor
       if (actor.id !== this.actor.id) return;
-      
+
       // Check if combat-related data was updated
       const combatDataUpdated = (
         updateData.system?.health ||
         updateData.system?.initiative ||
         updateData.system?.attributes?.reaction
       );
-      
+
       if (combatDataUpdated) {
         console.log("SR2E | Combat data updated externally, synchronizing UI");
-        
+
         // Synchronize UI with a small delay to ensure data is fully updated
         setTimeout(() => {
           this._synchronizeUIState();
         }, 50);
       }
-      
+
     } catch (error) {
       console.error("SR2E | Error handling actor update:", error);
     }
@@ -2658,7 +2801,7 @@ export class SR2ActorSheet extends ActorSheet {
   close(options = {}) {
     // Remove actor update listener
     Hooks.off('updateActor', this._onActorUpdate);
-    
+
     return super.close(options);
   }
 }

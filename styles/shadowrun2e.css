@@ -4777,6 +4777,7 @@ header.window-header.flexrow.draggable.resizable {
 }
 
 .target-number-dialog select,
+.target-number-dialog option,
 .target-number-dialog input[type="number"] {
   background: var(--cyber-bg-secondary);
   border: 1px solid var(--cyber-border-bright);

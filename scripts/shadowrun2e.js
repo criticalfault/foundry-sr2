@@ -276,6 +276,16 @@ function registerHandlebarsHelpers() {
     Handlebars.registerHelper('add', function (a, b) {
         return a + b;
     });
+
+    // Helper for safe number display (handles NaN and undefined)
+    Handlebars.registerHelper('safeNumber', function (value, defaultValue = 0) {
+        if (typeof value === 'number' && !isNaN(value)) {
+            return value;
+        }
+        return defaultValue;
+    });
+
+    console.log('SR2E | Registered safeNumber Handlebars helper');
 }
 
 /* -------------------------------------------- */
