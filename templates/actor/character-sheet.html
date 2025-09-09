@@ -316,43 +316,220 @@
           <div class="damage-monitor physical-monitor" role="group" aria-labelledby="physical-damage-label">
             <div class="monitor-header">
               <label class="monitor-label" id="physical-damage-label">Physical Damage</label>
-              <span class="damage-counter" aria-live="polite">{{system.health.physical.value}}/{{system.health.physical.max}}</span>
+              <span class="damage-counter" aria-live="polite">{{#if system.health.physical.value}}{{system.health.physical.value}}{{else}}0{{/if}}/{{#if system.health.physical.max}}{{system.health.physical.max}}{{else}}10{{/if}}</span>
             </div>
             <div class="damage-boxes" data-damage-type="physical" role="radiogroup" aria-labelledby="physical-damage-label">
-              {{#times system.health.physical.max}}
-                <div class="damage-box" 
-                     data-box-number="{{add @index 1}}" 
-                     data-filled="{{#if (lte (add @index 1) ../system.health.physical.value)}}true{{else}}false{{/if}}"
+              <div class="damage-box" 
+                     data-box-number="1" 
+                     data-filled="{{#if (lte (1) ../system.health.physical.value)}}true{{else}}false{{/if}}"
                      role="radio"
-                     aria-checked="{{#if (lte (add @index 1) ../system.health.physical.value)}}true{{else}}false{{/if}}"
-                     aria-label="Physical damage level {{add @index 1}}"
-                     tabindex="{{#if (eq @index 0)}}0{{else}}-1{{/if}}"
-                     title="Click to set physical damage to {{add @index 1}} or press Enter/Space">
-                  <span class="box-number" aria-hidden="true">{{add @index 1}}</span>
-                </div>
-              {{/times}}
+                     aria-checked="{{#if (lte (1) ../system.health.physical.value)}}true{{else}}false{{/if}}"
+                     aria-label="Physical damage level 1"
+                     tabindex="0"
+                     title="Click to set physical damage to 1 or press Enter/Space">
+                  <span class="box-number" aria-hidden="true">1</span>
+              </div>
+              <div class="damage-box" 
+                     data-box-number="2" 
+                     data-filled="{{#if (lte (2) ../system.health.physical.value)}}true{{else}}false{{/if}}"
+                     role="radio"
+                     aria-checked="{{#if (lte (2) ../system.health.physical.value)}}true{{else}}false{{/if}}"
+                     aria-label="Physical damage level 2"
+                     tabindex="0"
+                     title="Click to set physical damage to 2 or press Enter/Space">
+                  <span class="box-number" aria-hidden="true">2</span>
+              </div>
+              <div class="damage-box" 
+                    data-box-number="3" 
+                    data-filled="{{#if (lte (3) ../system.health.physical.value)}}true{{else}}false{{/if}}"
+                    role="radio"
+                    aria-checked="{{#if (lte (3) ../system.health.physical.value)}}true{{else}}false{{/if}}"
+                    aria-label="Physical damage level 3"
+                    tabindex="0"
+                    title="Click to set physical damage to 3 or press Enter/Space">
+                  <span class="box-number" aria-hidden="true">3</span>
+              </div>
+              <div class="damage-box" 
+                    data-box-number="4" 
+                    data-filled="{{#if (lte (4) ../system.health.physical.value)}}true{{else}}false{{/if}}"
+                    role="radio"
+                    aria-checked="{{#if (lte (4) ../system.health.physical.value)}}true{{else}}false{{/if}}"
+                    aria-label="Physical damage level 4"
+                    tabindex="0"
+                    title="Click to set physical damage to 4 or press Enter/Space">
+                  <span class="box-number" aria-hidden="true">4</span>
+              </div>
+              <div class="damage-box" 
+                  data-box-number="5" 
+                  data-filled="{{#if (lte (5) ../system.health.physical.value)}}true{{else}}false{{/if}}"
+                  role="radio"
+                  aria-checked="{{#if (lte (5) ../system.health.physical.value)}}true{{else}}false{{/if}}"
+                  aria-label="Physical damage level 5"
+                  tabindex="0"
+                  title="Click to set physical damage to 5 or press Enter/Space">
+                <span class="box-number" aria-hidden="true">5</span>
             </div>
+            <div class="damage-box" 
+                data-box-number="6" 
+                data-filled="{{#if (lte (6) ../system.health.physical.value)}}true{{else}}false{{/if}}"
+                role="radio"
+                aria-checked="{{#if (lte (6) ../system.health.physical.value)}}true{{else}}false{{/if}}"
+                aria-label="Physical damage level 6"
+                tabindex="0"
+                title="Click to set physical damage to 6 or press Enter/Space">
+              <span class="box-number" aria-hidden="true">6</span>
           </div>
+          <div class="damage-box" 
+              data-box-number="7" 
+              data-filled="{{#if (lte (7) ../system.health.physical.value)}}true{{else}}false{{/if}}"
+              role="radio"
+              aria-checked="{{#if (lte (7) ../system.health.physical.value)}}true{{else}}false{{/if}}"
+              aria-label="Physical damage level 7"
+              tabindex="0"
+              title="Click to set physical damage to 7 or press Enter/Space">
+            <span class="box-number" aria-hidden="true">7</span>
+        </div>
+        <div class="damage-box" 
+              data-box-number="8" 
+              data-filled="{{#if (lte (8) ../system.health.physical.value)}}true{{else}}false{{/if}}"
+              role="radio"
+              aria-checked="{{#if (lte (8) ../system.health.physical.value)}}true{{else}}false{{/if}}"
+              aria-label="Physical damage level 8"
+              tabindex="0"
+              title="Click to set physical damage to 8 or press Enter/Space">
+              <span class="box-number" aria-hidden="true">8</span>
+        </div>
+          <div class="damage-box" 
+              data-box-number="9" 
+              data-filled="{{#if (lte (9) ../system.health.physical.value)}}true{{else}}false{{/if}}"
+              role="radio"
+              aria-checked="{{#if (lte (9) ../system.health.physical.value)}}true{{else}}false{{/if}}"
+              aria-label="Physical damage level 9"
+              tabindex="0"
+              title="Click to set physical damage to 9 or press Enter/Space">
+              <span class="box-number" aria-hidden="true">9</span>
+          </div>
+          <div class="damage-box" 
+              data-box-number="10" 
+              data-filled="{{#if (lte (10) ../system.health.physical.value)}}true{{else}}false{{/if}}"
+              role="radio"
+              aria-checked="{{#if (lte (10) ../system.health.physical.value)}}true{{else}}false{{/if}}"
+              aria-label="Physical damage level 10"
+              tabindex="0"
+              title="Click to set physical damage to 10 or press Enter/Space">
+              <span class="box-number" aria-hidden="true">10</span>
+          </div>
+        </div>
+      </div>
 
           {{!-- Stun Damage Monitor --}}
           <div class="damage-monitor stun-monitor" role="group" aria-labelledby="stun-damage-label">
             <div class="monitor-header">
               <label class="monitor-label" id="stun-damage-label">Stun Damage</label>
-              <span class="damage-counter" aria-live="polite">{{system.health.stun.value}}/{{system.health.stun.max}}</span>
+              <span class="damage-counter" aria-live="polite">{{#if system.health.stun.value}}{{system.health.stun.value}}{{else}}0{{/if}}/{{#if system.health.stun.max}}{{system.health.stun.max}}{{else}}10{{/if}}</span>
             </div>
             <div class="damage-boxes" data-damage-type="stun" role="radiogroup" aria-labelledby="stun-damage-label">
-              {{#times system.health.stun.max}}
-                <div class="damage-box" 
-                     data-box-number="{{add @index 1}}" 
-                     data-filled="{{#if (lte (add @index 1) ../system.health.stun.value)}}true{{else}}false{{/if}}"
+              <div class="damage-box" 
+                     data-box-number="1" 
+                     data-filled="{{#if (lte (1) ../system.health.stun.value)}}true{{else}}false{{/if}}"
                      role="radio"
-                     aria-checked="{{#if (lte (add @index 1) ../system.health.stun.value)}}true{{else}}false{{/if}}"
-                     aria-label="Stun damage level {{add @index 1}}"
-                     tabindex="{{#if (eq @index 0)}}0{{else}}-1{{/if}}"
-                     title="Click to set stun damage to {{add @index 1}} or press Enter/Space">
-                  <span class="box-number" aria-hidden="true">{{add @index 1}}</span>
-                </div>
-              {{/times}}
+                     aria-checked="{{#if (lte (1) ../system.health.stun.value)}}true{{else}}false{{/if}}"
+                     aria-label="Stun damage level 1"
+                     tabindex="0"
+                     title="Click to set stun damage to 1 or press Enter/Space">
+                  <span class="box-number" aria-hidden="true">1</span>
+              </div>
+              <div class="damage-box" 
+                     data-box-number="2" 
+                     data-filled="{{#if (lte (2) ../system.health.stun.value)}}true{{else}}false{{/if}}"
+                     role="radio"
+                     aria-checked="{{#if (lte (2) ../system.health.stun.value)}}true{{else}}false{{/if}}"
+                     aria-label="Stun damage level 2"
+                     tabindex="0"
+                     title="Click to set stun damage to 2 or press Enter/Space">
+                  <span class="box-number" aria-hidden="true">2</span>
+              </div>
+              <div class="damage-box" 
+                    data-box-number="3" 
+                    data-filled="{{#if (lte (3) ../system.health.stun.value)}}true{{else}}false{{/if}}"
+                    role="radio"
+                    aria-checked="{{#if (lte (3) ../system.health.stun.value)}}true{{else}}false{{/if}}"
+                    aria-label="Stun damage level 3"
+                    tabindex="0"
+                    title="Click to set stun damage to 3 or press Enter/Space">
+                  <span class="box-number" aria-hidden="true">3</span>
+              </div>
+              <div class="damage-box" 
+                    data-box-number="4" 
+                    data-filled="{{#if (lte (4) ../system.health.stun.value)}}true{{else}}false{{/if}}"
+                    role="radio"
+                    aria-checked="{{#if (lte (4) ../system.health.stun.value)}}true{{else}}false{{/if}}"
+                    aria-label="Stun damage level 4"
+                    tabindex="0"
+                    title="Click to set stun damage to 4 or press Enter/Space">
+                  <span class="box-number" aria-hidden="true">4</span>
+              </div>
+              <div class="damage-box" 
+                  data-box-number="5" 
+                  data-filled="{{#if (lte (5) ../system.health.stun.value)}}true{{else}}false{{/if}}"
+                  role="radio"
+                  aria-checked="{{#if (lte (5) ../system.health.stun.value)}}true{{else}}false{{/if}}"
+                  aria-label="Stun damage level 5"
+                  tabindex="0"
+                  title="Click to set stun damage to 5 or press Enter/Space">
+                <span class="box-number" aria-hidden="true">5</span>
+            </div>
+            <div class="damage-box" 
+                data-box-number="6" 
+                data-filled="{{#if (lte (6) ../system.health.stun.value)}}true{{else}}false{{/if}}"
+                role="radio"
+                aria-checked="{{#if (lte (6) ../system.health.stun.value)}}true{{else}}false{{/if}}"
+                aria-label="Stun damage level 6"
+                tabindex="0"
+                title="Click to set stun damage to 6 or press Enter/Space">
+              <span class="box-number" aria-hidden="true">6</span>
+          </div>
+          <div class="damage-box" 
+              data-box-number="7" 
+              data-filled="{{#if (lte (7) ../system.health.stun.value)}}true{{else}}false{{/if}}"
+              role="radio"
+              aria-checked="{{#if (lte (7) ../system.health.stun.value)}}true{{else}}false{{/if}}"
+              aria-label="Stun damage level 7"
+              tabindex="0"
+              title="Click to set stun damage to 7 or press Enter/Space">
+            <span class="box-number" aria-hidden="true">7</span>
+        </div>
+        <div class="damage-box" 
+              data-box-number="8" 
+              data-filled="{{#if (lte (8) ../system.health.stun.value)}}true{{else}}false{{/if}}"
+              role="radio"
+              aria-checked="{{#if (lte (8) ../system.health.stun.value)}}true{{else}}false{{/if}}"
+              aria-label="Stun damage level 8"
+              tabindex="0"
+              title="Click to set stun damage to 8 or press Enter/Space">
+              <span class="box-number" aria-hidden="true">8</span>
+        </div>
+          <div class="damage-box" 
+              data-box-number="9" 
+              data-filled="{{#if (lte (9) ../system.health.stun.value)}}true{{else}}false{{/if}}"
+              role="radio"
+              aria-checked="{{#if (lte (9) ../system.health.stun.value)}}true{{else}}false{{/if}}"
+              aria-label="Stun damage level 9"
+              tabindex="0"
+              title="Click to set stun damage to 9 or press Enter/Space">
+              <span class="box-number" aria-hidden="true">9</span>
+          </div>
+          <div class="damage-box" 
+              data-box-number="10" 
+              data-filled="{{#if (lte (10) ../system.health.stun.value)}}true{{else}}false{{/if}}"
+              role="radio"
+              aria-checked="{{#if (lte (10) ../system.health.stun.value)}}true{{else}}false{{/if}}"
+              aria-label="Stun damage level 10"
+              tabindex="0"
+              title="Click to set stun damage to 10 or press Enter/Space">
+              <span class="box-number" aria-hidden="true">10</span>
+          </div>
+        </div>
             </div>
           </div>
         </div>
