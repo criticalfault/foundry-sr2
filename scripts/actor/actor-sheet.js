@@ -234,8 +234,16 @@ export class SR2ActorSheet extends ActorSheet {
           skill.availableConcentrations = [];
         }
 
+        // Ensure all skill system properties exist with defaults
+        if (!skill.system.baseSkill) skill.system.baseSkill = '';
+        if (!skill.system.concentration) skill.system.concentration = '';
+        if (!skill.system.specialization) skill.system.specialization = '';
+        if (typeof skill.system.baseRating !== 'number') skill.system.baseRating = 0;
+        if (typeof skill.system.concentrationRating !== 'number') skill.system.concentrationRating = 0;
+        if (typeof skill.system.specializationRating !== 'number') skill.system.specializationRating = 0;
+
         // Debug logging for skill data
-        console.log(`SR2E | Skill ${skill.name}: baseSkill=${skill.system.baseSkill}, concentration=${skill.system.concentration}, specialization=${skill.system.specialization}`);
+        console.log(`SR2E | Skill ${skill.name}: baseSkill="${skill.system.baseSkill}", concentration="${skill.system.concentration}", specialization="${skill.system.specialization}"`);
         console.log(`SR2E | Ratings: base=${skill.system.baseRating}, conc=${skill.system.concentrationRating}, spec=${skill.system.specializationRating}`);
       });
 
@@ -256,6 +264,9 @@ export class SR2ActorSheet extends ActorSheet {
 
     // Set up actor update listener for external changes
     Hooks.on('updateActor', this._onActorUpdate.bind(this));
+
+    // Ensure skill selects show correct values after render
+    this._refreshSkillSelects(html);
 
     // Rollable abilities
     html.find('.rollable').click(this._onRoll.bind(this));
@@ -336,8 +347,18 @@ export class SR2ActorSheet extends ActorSheet {
     // Skill management
     html.find('.base-skill-select').change(this._onBaseSkillChange.bind(this));
     html.find('.concentration-select').change(this._onConcentrationChange.bind(this));
-    html.find('input[name*="specialization"]').on('change', this._onSpecializationChange.bind(this));
+    html.find('input[name*="specialization"]:not([name*="Rating"])').on('change', this._onSpecializationChange.bind(this));
     html.find('.skill-roll').click(this._onSkillRoll.bind(this));
+
+    // Handle skill rating changes to ensure proper updates
+    html.find('input[name*="baseRating"], input[name*="concentrationRating"], input[name*="specializationRating"]').on('change', this._onSkillRatingChange.bind(this));
+    html.find('input[name*="baseRating"], input[name*="concentrationRating"], input[name*="specializationRating"]').on('blur', this._onSkillRatingChange.bind(this));
+
+    // Also handle input events for immediate feedback
+    html.find('input[name*="baseRating"], input[name*="concentrationRating"], input[name*="specializationRating"]').on('input', this._onSkillRatingInput.bind(this));
+
+    // Handle form submission to ensure skill data is saved
+    html.find('form').on('submit', this._onFormSubmit.bind(this));
 
     // Attribute rolls
     html.find('.attribute-roll').click(this._onAttributeRoll.bind(this));
@@ -524,8 +545,13 @@ export class SR2ActorSheet extends ActorSheet {
 
         console.log("SR2E | Updated skill:", item.name, "with base skill:", baseSkill);
 
-        // Re-render the sheet to update the UI
-        this.render(false);
+        // Force a full re-render to update the UI with new concentrations
+        setTimeout(() => {
+          this.render(true);
+        }, 100);
+      } else {
+        // Even if the base skill didn't change, make sure the select shows the correct value
+        element.value = baseSkill;
       }
     } else {
       console.error("SR2E | Could not find skill item for base skill change:", skillId);
@@ -557,10 +583,10 @@ export class SR2ActorSheet extends ActorSheet {
 
       await item.update(updateData);
 
-      // Only re-render if we need to update the available concentrations
-      if (concentration) {
+      // Re-render to update the UI (enable/disable concentration rating input)
+      setTimeout(() => {
         this.render(false);
-      }
+      }, 50);
     } else if (!item) {
       console.error("SR2E | Could not find skill item for concentration change:", skillId);
     }
@@ -591,7 +617,10 @@ export class SR2ActorSheet extends ActorSheet {
 
       await item.update(updateData);
 
-      // Don't auto-render for specialization changes - let the user finish typing
+      // Re-render to update the UI (enable/disable specialization rating input and roll button)
+      setTimeout(() => {
+        this.render(false);
+      }, 100);
     } else if (!item) {
       console.error("SR2E | Could not find skill item for specialization change:", skillId);
     }
@@ -600,13 +629,117 @@ export class SR2ActorSheet extends ActorSheet {
 
 
   /**
+   * Refresh skill select elements to ensure they show correct values
+   */
+  _refreshSkillSelects(html) {
+    // Ensure base skill selects show the correct selected values
+    html.find('.base-skill-select').each((i, select) => {
+      const skillId = select.dataset.skillId;
+      const skill = this.actor.items.get(skillId);
+      if (skill && skill.system.baseSkill) {
+        select.value = skill.system.baseSkill;
+        console.log(`SR2E | Refreshed base skill select for ${skill.name}: ${skill.system.baseSkill}`);
+      }
+    });
+
+    // Ensure concentration selects show the correct selected values
+    html.find('.concentration-select').each((i, select) => {
+      const skillId = select.dataset.skillId;
+      const skill = this.actor.items.get(skillId);
+      if (skill && skill.system.concentration) {
+        select.value = skill.system.concentration;
+        console.log(`SR2E | Refreshed concentration select for ${skill.name}: ${skill.system.concentration}`);
+      }
+    });
+  }
+
+  /**
+   * Handle skill rating changes
+   */
+  async _onSkillRatingChange(event) {
+    const element = event.currentTarget;
+    const skillId = element.closest('.skill-item').dataset.itemId;
+    const item = this.actor.items.get(skillId);
+
+    if (item) {
+      const rating = parseInt(element.value) || 0;
+      const clampedRating = Math.max(0, Math.min(12, rating));
+
+      if (rating !== clampedRating) {
+        element.value = clampedRating;
+        ui.notifications.warn("Skill ratings must be between 0 and 12.");
+      }
+
+      // Determine which rating field this is and update the item directly
+      const fieldName = element.name;
+      let updateKey = '';
+
+      if (fieldName.includes('baseRating')) {
+        updateKey = 'system.baseRating';
+      } else if (fieldName.includes('concentrationRating')) {
+        updateKey = 'system.concentrationRating';
+      } else if (fieldName.includes('specializationRating')) {
+        updateKey = 'system.specializationRating';
+      }
+
+      if (updateKey) {
+        console.log(`SR2E | Updating ${item.name} ${updateKey} from ${item.system[updateKey.split('.')[1]]} to ${clampedRating}`);
+
+        try {
+          await item.update({ [updateKey]: clampedRating });
+          console.log(`SR2E | Successfully updated ${item.name} ${updateKey} to ${clampedRating}`);
+
+          // Verify the update worked
+          const updatedItem = this.actor.items.get(skillId);
+          const actualValue = updatedItem.system[updateKey.split('.')[1]];
+          console.log(`SR2E | Verification: ${updateKey} is now ${actualValue}`);
+
+        } catch (error) {
+          console.error(`SR2E | Failed to update ${item.name} ${updateKey}:`, error);
+          ui.notifications.error(`Failed to update skill rating: ${error.message}`);
+        }
+      }
+    } else {
+      console.error("SR2E | Could not find skill item for rating change:", skillId);
+    }
+  }
+
+  /**
+   * Handle skill rating input for immediate validation
+   */
+  _onSkillRatingInput(event) {
+    const element = event.currentTarget;
+    const rating = parseInt(element.value) || 0;
+
+    // Visual feedback for invalid values
+    if (rating < 0 || rating > 12) {
+      element.style.borderColor = '#ff6b6b';
+    } else {
+      element.style.borderColor = '';
+    }
+  }
+
+  /**
+   * Handle form submission to ensure all data is properly saved
+   */
+  async _onFormSubmit(event) {
+    console.log("SR2E | Form submitted");
+    // Let the default form submission handle the data
+    // Our _updateObject method will process it
+  }
+
+  /**
    * Handle skill roll
    */
   async _onSkillRoll(event) {
     event.preventDefault();
     const skillId = event.currentTarget.dataset.skillId;
     const rollType = event.currentTarget.dataset.rollType || 'base';
-    const skill = this.actor.items.get(skillId);
+
+    console.log("SR2E | Skill roll requested - ID:", skillId, "Type:", rollType);
+
+    // Get the skill item and force a fresh read
+    let skill = this.actor.items.get(skillId);
 
     if (!skill) {
       console.error("SR2E | Skill not found for roll:", skillId);
@@ -614,11 +747,44 @@ export class SR2ActorSheet extends ActorSheet {
       return;
     }
 
+    // Check what the form inputs currently show vs what the item data shows
+    const formElement = event.currentTarget.closest('form');
+    if (formElement) {
+      const baseRatingInput = formElement.querySelector(`input[name*="${skillId}"][name*="baseRating"]`);
+      const concRatingInput = formElement.querySelector(`input[name*="${skillId}"][name*="concentrationRating"]`);
+      const specRatingInput = formElement.querySelector(`input[name*="${skillId}"][name*="specializationRating"]`);
+
+      console.log("SR2E | Form input values:");
+      console.log("  Base rating input:", baseRatingInput?.value);
+      console.log("  Conc rating input:", concRatingInput?.value);
+      console.log("  Spec rating input:", specRatingInput?.value);
+
+      console.log("SR2E | Item data values:");
+      console.log("  Base rating item:", skill.system.baseRating);
+      console.log("  Conc rating item:", skill.system.concentrationRating);
+      console.log("  Spec rating item:", skill.system.specializationRating);
+
+      // If there's a mismatch, use the form values (they're more current)
+      if (baseRatingInput && parseInt(baseRatingInput.value) !== skill.system.baseRating) {
+        console.log("SR2E | Mismatch detected! Using form values instead of item data");
+        skill = {
+          ...skill,
+          system: {
+            ...skill.system,
+            baseRating: parseInt(baseRatingInput.value) || 0,
+            concentrationRating: parseInt(concRatingInput.value) || 0,
+            specializationRating: parseInt(specRatingInput.value) || 0
+          }
+        };
+      }
+    }
+
     let skillRating = 0;
     let title = skill.name || skill.system.baseSkill || 'Unknown Skill';
     let rollDescription = '';
 
-    console.log("SR2E | Rolling skill:", skill.name, "Type:", rollType, "System data:", skill.system);
+    console.log("SR2E | Rolling skill:", skill.name, "Type:", rollType);
+    console.log("SR2E | Using skill data:", JSON.stringify(skill.system, null, 2));
 
     // Determine which rating to use based on roll type
     switch (rollType) {
@@ -626,12 +792,14 @@ export class SR2ActorSheet extends ActorSheet {
         skillRating = parseInt(skill.system.baseRating) || 0;
         rollDescription = 'Base Skill';
         title = skill.system.baseSkill || skill.name || 'Unknown Skill';
+        console.log(`SR2E | Base skill roll: baseRating=${skill.system.baseRating}, parsed=${skillRating}`);
         break;
       case 'concentration':
         skillRating = parseInt(skill.system.concentrationRating) || 0;
         if (skill.system.concentration) {
           title = `${skill.system.baseSkill || skill.name} (${skill.system.concentration})`;
           rollDescription = 'Concentration';
+          console.log(`SR2E | Concentration roll: concentrationRating=${skill.system.concentrationRating}, parsed=${skillRating}`);
         } else {
           ui.notifications.warn("No concentration selected for this skill.");
           return;
@@ -642,6 +810,7 @@ export class SR2ActorSheet extends ActorSheet {
         if (skill.system.specialization) {
           title = `${skill.system.baseSkill || skill.name} [${skill.system.specialization}]`;
           rollDescription = 'Specialization';
+          console.log(`SR2E | Specialization roll: specializationRating=${skill.system.specializationRating}, parsed=${skillRating}`);
         } else {
           ui.notifications.warn("No specialization entered for this skill.");
           return;
@@ -1463,13 +1632,13 @@ export class SR2ActorSheet extends ActorSheet {
    */
   async _onDamageBoxClick(event) {
     event.preventDefault();
-    
+
     // Find the actual damage box element (in case user clicked on a child element)
     let element = event.currentTarget;
     if (!element.classList.contains('damage-box')) {
       element = element.closest('.damage-box');
     }
-    
+
     if (!element) {
       console.error('SR2E | Could not find damage box element');
       return;
@@ -1478,7 +1647,7 @@ export class SR2ActorSheet extends ActorSheet {
     try {
       // Try to get box number from multiple sources
       let boxNumberStr = element.dataset.boxNumber || element.getAttribute('data-box-number');
-      
+
       // If we still don't have a box number, try to find it from the element's position
       if (!boxNumberStr) {
         const damageBoxes = element.parentElement.querySelectorAll('.damage-box');
@@ -1488,7 +1657,7 @@ export class SR2ActorSheet extends ActorSheet {
           console.log('SR2E | Box number derived from position:', boxNumberStr);
         }
       }
-      
+
       // Last resort: try to get it from the text content of the box-number span
       if (!boxNumberStr) {
         const boxNumberSpan = element.querySelector('.box-number');
@@ -1497,7 +1666,7 @@ export class SR2ActorSheet extends ActorSheet {
           console.log('SR2E | Box number derived from text content:', boxNumberStr);
         }
       }
-      
+
       // Validate input parameters
       const boxNumber = parseInt(boxNumberStr);
       const damageBoxesContainer = element.closest('.damage-boxes');
@@ -1622,18 +1791,18 @@ export class SR2ActorSheet extends ActorSheet {
    */
   _testDamageBoxes() {
     console.log('SR2E | Testing damage box functionality...');
-    
+
     const physicalBoxes = this.element.find('.damage-boxes[data-damage-type="physical"] .damage-box');
     const stunBoxes = this.element.find('.damage-boxes[data-damage-type="stun"] .damage-box');
-    
+
     console.log('SR2E | Found physical damage boxes:', physicalBoxes.length);
     console.log('SR2E | Found stun damage boxes:', stunBoxes.length);
-    
+
     physicalBoxes.each((index, element) => {
       const boxNumber = element.dataset.boxNumber || element.getAttribute('data-box-number');
       console.log(`SR2E | Physical box ${index + 1}: data-box-number = ${boxNumber}`);
     });
-    
+
     stunBoxes.each((index, element) => {
       const boxNumber = element.dataset.boxNumber || element.getAttribute('data-box-number');
       console.log(`SR2E | Stun box ${index + 1}: data-box-number = ${boxNumber}`);
@@ -2803,5 +2972,59 @@ export class SR2ActorSheet extends ActorSheet {
     Hooks.off('updateActor', this._onActorUpdate);
 
     return super.close(options);
+  }
+
+  /** @override */
+  async _updateObject(event, formData) {
+    console.log("SR2E | Form data received:", formData);
+
+    // Separate actor updates from item updates
+    const actorUpdates = {};
+    const itemUpdates = {};
+
+    for (const [key, value] of Object.entries(formData)) {
+      if (key.startsWith('items.')) {
+        // This is an item update
+        const match = key.match(/^items\.([^.]+)\.(.+)$/);
+        if (match) {
+          const itemId = match[1];
+          const itemPath = match[2];
+
+          if (!itemUpdates[itemId]) {
+            itemUpdates[itemId] = {};
+          }
+
+          // Handle skill rating fields to ensure they're numbers
+          if (itemPath.includes('Rating')) {
+            itemUpdates[itemId][itemPath] = parseInt(value) || 0;
+          } else {
+            itemUpdates[itemId][itemPath] = value;
+          }
+        }
+      } else {
+        // This is an actor update
+        actorUpdates[key] = value;
+      }
+    }
+
+    console.log("SR2E | Actor updates:", actorUpdates);
+    console.log("SR2E | Item updates:", itemUpdates);
+
+    // Update items first
+    for (const [itemId, updateData] of Object.entries(itemUpdates)) {
+      const item = this.actor.items.get(itemId);
+      if (item) {
+        console.log(`SR2E | Updating item ${item.name} with:`, updateData);
+        await item.update(updateData);
+      }
+    }
+
+    // Then update actor if there are actor-level changes
+    if (Object.keys(actorUpdates).length > 0) {
+      console.log("SR2E | Updating actor with:", actorUpdates);
+      await this.object.update(actorUpdates);
+    }
+
+    return true;
   }
 }
