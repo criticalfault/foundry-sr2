@@ -14,6 +14,7 @@ import { initializeInitiativeTracker } from "./initiative-tracker.js";
 import { SR2ItemBrowser } from "./item-browser.js";
 import { SR2DataImporter } from "./data-importer.js";
 import { SR2CharacterImporter } from "./character-importer.js";
+import "./hotbar.js";
 
 /* -------------------------------------------- */
 /*  Foundry VTT Initialization                  */

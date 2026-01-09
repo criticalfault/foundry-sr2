@@ -97,6 +97,9 @@ export class SR2InitiativeTracker extends Application {
         html.find('.roll-npc-initiative').click(this._onRollNPCInitiative.bind(this));
         html.find('.modify-npc').click(this._onModifyNPC.bind(this));
         html.find('.manage-npcs').click(this._onManageNPCs.bind(this));
+
+        // Foundry combat sync
+        html.find('.sync-foundry-combat').click(this._onSyncFoundryCombat.bind(this));
     }
 
     /**
@@ -112,6 +115,9 @@ export class SR2InitiativeTracker extends Application {
             ui.notifications.warn("Please select one or more tokens to add to initiative.");
             return;
         }
+
+        // Ensure we have a combat encounter
+        await this._ensureCombatEncounter();
 
         for (const token of controlled) {
             const actor = token.actor;
@@ -137,6 +143,9 @@ export class SR2InitiativeTracker extends Application {
             };
 
             this.combatants.push(combatant);
+
+            // Add to Foundry combat if it exists
+            await this._addToFoundryCombat(token, combatant);
         }
 
         this.render();
@@ -200,6 +209,9 @@ export class SR2InitiativeTracker extends Application {
                             return;
                         }
 
+                        // Ensure we have a combat encounter
+                        await this._ensureCombatEncounter();
+
                         for (const actor of selectedNPCs) {
                             // Check if already in tracker
                             if (this.combatants.find(c => c.actorId === actor.id)) {
@@ -221,6 +233,12 @@ export class SR2InitiativeTracker extends Application {
                             };
 
                             this.combatants.push(combatant);
+
+                            // Try to add to Foundry combat (will work if there's a token)
+                            const token = canvas.tokens.placeables.find(t => t.actor?.id === actor.id);
+                            if (token) {
+                                await this._addToFoundryCombat(token, combatant);
+                            }
                         }
 
                         this.render();
@@ -378,7 +396,7 @@ export class SR2InitiativeTracker extends Application {
     /**
      * Remove a combatant from the tracker
      */
-    _onRemoveCombatant(event) {
+    async _onRemoveCombatant(event) {
         event.preventDefault();
         const combatantId = event.currentTarget.dataset.combatantId;
         const combatant = this.combatants.find(c => c.id === combatantId);
@@ -396,6 +414,9 @@ export class SR2InitiativeTracker extends Application {
             const confirmed = confirm(`Remove ${combatant.name} from combat?`);
             if (!confirmed) return;
         }
+
+        // Remove from Foundry combat first
+        await this._removeFromFoundryCombat(combatant);
 
         this.combatants = this.combatants.filter(c => c.id !== combatantId);
 
@@ -443,7 +464,7 @@ export class SR2InitiativeTracker extends Application {
     /**
      * Start combat
      */
-    _onStartCombat(event) {
+    async _onStartCombat(event) {
         event.preventDefault();
 
         if (this.combatants.length === 0) {
@@ -462,6 +483,9 @@ export class SR2InitiativeTracker extends Application {
         this.currentPhase = 1;
         this.currentTurn = 0;
 
+        // Start Foundry combat
+        await this._startCombatInFoundry();
+
         this._announceCurrentTurn();
         this.render();
     }
@@ -469,7 +493,7 @@ export class SR2InitiativeTracker extends Application {
     /**
      * Advance to next turn
      */
-    _onNextTurn(event) {
+    async _onNextTurn(event) {
         event.preventDefault();
 
         if (!this.isActive) return;
@@ -479,9 +503,12 @@ export class SR2InitiativeTracker extends Application {
         // Check if we need to move to next phase
         const activeCombatants = this._getActiveCombatantsForPhase();
         if (this.currentTurn >= activeCombatants.length) {
-            this._onNextPhase();
+            await this._onNextPhase();
             return;
         }
+
+        // Sync with Foundry combat
+        await this._syncFoundryTurn();
 
         this._announceCurrentTurn();
         this.render();
@@ -491,7 +518,7 @@ export class SR2InitiativeTracker extends Application {
      * Advance to next phase
      * Updated to handle SR2 phase system properly
      */
-    _onNextPhase(event = null) {
+    async _onNextPhase(event = null) {
         if (event) event.preventDefault();
 
         if (!this.isActive) return;
@@ -520,6 +547,9 @@ export class SR2InitiativeTracker extends Application {
                 });
             }
         }
+
+        // Sync with Foundry combat
+        await this._syncFoundryTurn();
 
         this._announceCurrentTurn();
         this.render();
@@ -581,6 +611,9 @@ export class SR2InitiativeTracker extends Application {
         combatant.initiative = total;
         combatant.actionPhases = this._calculateActionPhases(total);
         combatant.hasRolled = true;
+
+        // Update Foundry combat if it exists
+        await this._updateFoundryCombatInitiative(combatant, total);
 
         // Create chat message
         const chatData = {
@@ -869,6 +902,234 @@ export class SR2InitiativeTracker extends Application {
       </div>`,
             speaker: { alias: "Initiative Tracker" }
         });
+    }
+
+    /**
+     * Ensure a combat encounter exists, create one if needed
+     */
+    async _ensureCombatEncounter() {
+        if (!game.combat) {
+            // Create a new combat encounter
+            const combat = await Combat.create({
+                scene: canvas.scene?.id,
+                active: true
+            });
+            
+            if (combat) {
+                ui.notifications.info("Created new combat encounter.");
+            }
+        }
+    }
+
+    /**
+     * Add a combatant to Foundry's combat system
+     */
+    async _addToFoundryCombat(token, combatant) {
+        if (!game.combat || !token) return;
+
+        try {
+            // Check if already in Foundry combat
+            const existingCombatant = game.combat.combatants.find(c => c.tokenId === token.id);
+            if (existingCombatant) {
+                // Store the Foundry combatant ID for later reference
+                combatant.foundryCombatantId = existingCombatant.id;
+                return;
+            }
+
+            // Add to Foundry combat
+            const combatantData = {
+                tokenId: token.id,
+                actorId: token.actor.id,
+                sceneId: token.scene.id,
+                initiative: null,
+                hidden: combatant.isNPC && game.settings.get("core", "combatTrackerHideNPCNames")
+            };
+
+            const [newCombatant] = await game.combat.createEmbeddedDocuments("Combatant", [combatantData]);
+            if (newCombatant) {
+                combatant.foundryCombatantId = newCombatant.id;
+            }
+        } catch (error) {
+            console.warn("Failed to add combatant to Foundry combat:", error);
+        }
+    }
+
+    /**
+     * Update initiative in Foundry's combat system
+     */
+    async _updateFoundryCombatInitiative(combatant, initiative) {
+        if (!game.combat || !combatant.foundryCombatantId) return;
+
+        try {
+            const foundryCombatant = game.combat.combatants.get(combatant.foundryCombatantId);
+            if (foundryCombatant) {
+                await foundryCombatant.update({ initiative: initiative });
+            }
+        } catch (error) {
+            console.warn("Failed to update Foundry combat initiative:", error);
+        }
+    }
+
+    /**
+     * Start combat in both systems
+     */
+    async _startCombatInFoundry() {
+        if (!game.combat) return;
+
+        try {
+            // Start Foundry combat if not already started
+            if (!game.combat.started) {
+                await game.combat.startCombat();
+            }
+
+            // Set the current combatant based on our phase system
+            const activeCombatants = this._getActiveCombatantsForPhase();
+            if (activeCombatants.length > 0 && this.currentTurn < activeCombatants.length) {
+                const currentCombatant = activeCombatants[this.currentTurn];
+                if (currentCombatant.foundryCombatantId) {
+                    const foundryCombatant = game.combat.combatants.get(currentCombatant.foundryCombatantId);
+                    if (foundryCombatant) {
+                        await game.combat.update({ turn: game.combat.turns.indexOf(foundryCombatant) });
+                    }
+                }
+            }
+        } catch (error) {
+            console.warn("Failed to start Foundry combat:", error);
+        }
+    }
+
+    /**
+     * Sync turn changes with Foundry combat
+     */
+    async _syncFoundryTurn() {
+        if (!game.combat || !game.combat.started) return;
+
+        try {
+            const activeCombatants = this._getActiveCombatantsForPhase();
+            if (activeCombatants.length > 0 && this.currentTurn < activeCombatants.length) {
+                const currentCombatant = activeCombatants[this.currentTurn];
+                if (currentCombatant.foundryCombatantId) {
+                    const foundryCombatant = game.combat.combatants.get(currentCombatant.foundryCombatantId);
+                    if (foundryCombatant) {
+                        const turnIndex = game.combat.turns.indexOf(foundryCombatant);
+                        if (turnIndex !== -1 && turnIndex !== game.combat.turn) {
+                            await game.combat.update({ turn: turnIndex });
+                        }
+                    }
+                }
+            }
+        } catch (error) {
+            console.warn("Failed to sync Foundry turn:", error);
+        }
+    }
+
+    /**
+     * Remove combatant from Foundry combat
+     */
+    async _removeFromFoundryCombat(combatant) {
+        if (!game.combat || !combatant.foundryCombatantId) return;
+
+        try {
+            const foundryCombatant = game.combat.combatants.get(combatant.foundryCombatantId);
+            if (foundryCombatant) {
+                await foundryCombatant.delete();
+            }
+        } catch (error) {
+            console.warn("Failed to remove combatant from Foundry combat:", error);
+        }
+    }
+
+    /**
+     * Sync with existing Foundry combat (GM only)
+     */
+    async _onSyncFoundryCombat(event) {
+        event.preventDefault();
+
+        if (!game.user.isGM) {
+            ui.notifications.warn("Only GMs can sync with Foundry combat.");
+            return;
+        }
+
+        if (!game.combat) {
+            ui.notifications.warn("No active Foundry combat to sync with.");
+            return;
+        }
+
+        const confirmed = await Dialog.confirm({
+            title: "Sync with Foundry Combat",
+            content: `<p>This will sync the initiative tracker with the current Foundry combat encounter.</p>
+                     <p>Existing combatants in the tracker will be matched with Foundry combatants where possible.</p>
+                     <p>Continue?</p>`,
+            yes: () => true,
+            no: () => false
+        });
+
+        if (!confirmed) return;
+
+        try {
+            // Match existing combatants with Foundry combatants
+            for (const combatant of this.combatants) {
+                if (combatant.foundryCombatantId) continue; // Already linked
+
+                // Try to find matching Foundry combatant
+                let foundryCombatant = null;
+                
+                if (combatant.tokenId) {
+                    // Match by token ID
+                    foundryCombatant = game.combat.combatants.find(c => c.tokenId === combatant.tokenId);
+                } else {
+                    // Match by actor ID (for NPCs without tokens)
+                    foundryCombatant = game.combat.combatants.find(c => c.actorId === combatant.actorId);
+                }
+
+                if (foundryCombatant) {
+                    combatant.foundryCombatantId = foundryCombatant.id;
+                    
+                    // Update Foundry initiative if we have one
+                    if (combatant.hasRolled && combatant.initiative > 0) {
+                        await foundryCombatant.update({ initiative: combatant.initiative });
+                    }
+                }
+            }
+
+            // Add any Foundry combatants that aren't in our tracker
+            for (const foundryCombatant of game.combat.combatants) {
+                const existingCombatant = this.combatants.find(c => 
+                    c.foundryCombatantId === foundryCombatant.id ||
+                    c.tokenId === foundryCombatant.tokenId ||
+                    c.actorId === foundryCombatant.actorId
+                );
+
+                if (!existingCombatant && foundryCombatant.actor) {
+                    const combatant = {
+                        id: foundry.utils.randomID(),
+                        tokenId: foundryCombatant.tokenId,
+                        actorId: foundryCombatant.actorId,
+                        name: foundryCombatant.actor.name,
+                        img: foundryCombatant.actor.img,
+                        initiative: foundryCombatant.initiative || 0,
+                        initiativeDice: this._getInitiativeDice(foundryCombatant.actor),
+                        reaction: this._getReaction(foundryCombatant.actor),
+                        hasRolled: foundryCombatant.initiative !== null,
+                        isNPC: this._isNPC(foundryCombatant.actor),
+                        foundryCombatantId: foundryCombatant.id
+                    };
+
+                    if (combatant.hasRolled) {
+                        combatant.actionPhases = this._calculateActionPhases(combatant.initiative);
+                    }
+
+                    this.combatants.push(combatant);
+                }
+            }
+
+            this.render();
+            ui.notifications.info("Successfully synced with Foundry combat.");
+
+        } catch (error) {
+            console.error("Failed to sync with Foundry combat:", error);
+            ui.notifications.error("Failed to sync with Foundry combat. Check console for details.");
+        }
     }
 }
 

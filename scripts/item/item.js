@@ -48,29 +48,139 @@ export class SR2Item extends Item {
     // Initialize chat data
     const speaker = ChatMessage.getSpeaker({ actor: this.actor });
     const rollMode = game.settings.get('core', 'rollMode');
-    const label = `[${item.type}] ${item.name}`;
+    const label = `[${item.type.capitalize()}] ${item.name}`;
 
-    // If there's no roll data, send a description instead
-    if (!this.system.formula) {
-      ChatMessage.create({
-        speaker: speaker,
-        rollMode: rollMode,
-        flavor: label,
-        content: item.system.description ?? ''
-      });
-    } else {
-      // Otherwise, create a roll and send a chat message from it
-      const rollData = this.getRollData();
-      const roll = new Roll(rollData.item.formula, rollData);
-      
-      // If you need to store the roll somewhere, uncomment the next line
-      // roll.toMessage({
-      //   speaker: speaker,
-      //   rollMode: rollMode,
-      //   flavor: label,
-      // });
-      return roll;
+    // Handle different item types
+    switch (item.type) {
+      case 'weapon':
+        return this._rollWeapon();
+      case 'spell':
+        return this._rollSpell();
+      case 'skill':
+        return this._rollSkill();
+      default:
+        // For other items, show description or basic info
+        ChatMessage.create({
+          speaker: speaker,
+          rollMode: rollMode,
+          flavor: label,
+          content: this._getItemDescription()
+        });
+        break;
     }
+  }
+
+  /**
+   * Roll a weapon attack
+   */
+  async _rollWeapon() {
+    const speaker = ChatMessage.getSpeaker({ actor: this.actor });
+    const rollMode = game.settings.get('core', 'rollMode');
+    
+    let content = `<div class="weapon-roll">
+      <h3>${this.name}</h3>
+      <p><strong>Damage:</strong> ${this.system.damage || 'Unknown'}</p>
+      <p><strong>Reach:</strong> ${this.system.reach || 'Unknown'}</p>
+    `;
+    
+    if (this.system.description) {
+      content += `<p><em>${this.system.description}</em></p>`;
+    }
+    
+    content += `<p><em>Use the weapon attack button for full combat rolls.</em></p></div>`;
+
+    ChatMessage.create({
+      speaker: speaker,
+      rollMode: rollMode,
+      flavor: `Weapon: ${this.name}`,
+      content: content
+    });
+  }
+
+  /**
+   * Roll a spell
+   */
+  async _rollSpell() {
+    const speaker = ChatMessage.getSpeaker({ actor: this.actor });
+    const rollMode = game.settings.get('core', 'rollMode');
+    
+    let content = `<div class="spell-roll">
+      <h3>${this.name}</h3>
+      <p><strong>Category:</strong> ${this.system.category || 'Unknown'}</p>
+      <p><strong>Target:</strong> ${this.system.target || 'Unknown'}</p>
+      <p><strong>Drain:</strong> ${this.system.drain || 'Unknown'}</p>
+    `;
+    
+    if (this.system.description) {
+      content += `<p><em>${this.system.description}</em></p>`;
+    }
+    
+    content += `<p><em>Use the spell cast button for full spellcasting rolls.</em></p></div>`;
+
+    ChatMessage.create({
+      speaker: speaker,
+      rollMode: rollMode,
+      flavor: `Spell: ${this.name}`,
+      content: content
+    });
+  }
+
+  /**
+   * Roll a skill
+   */
+  async _rollSkill() {
+    const speaker = ChatMessage.getSpeaker({ actor: this.actor });
+    const rollMode = game.settings.get('core', 'rollMode');
+    
+    let content = `<div class="skill-roll">
+      <h3>${this.name}</h3>
+      <p><strong>Base Skill:</strong> ${this.system.baseSkill || 'None'}</p>
+      <p><strong>Base Rating:</strong> ${this.system.baseRating || 0}</p>
+    `;
+    
+    if (this.system.concentration) {
+      content += `<p><strong>Concentration:</strong> ${this.system.concentration} (${this.system.concentrationRating || 0})</p>`;
+    }
+    
+    if (this.system.specialization) {
+      content += `<p><strong>Specialization:</strong> ${this.system.specialization} (${this.system.specializationRating || 0})</p>`;
+    }
+    
+    content += `<p><em>Use the skill roll button for dice rolls.</em></p></div>`;
+
+    ChatMessage.create({
+      speaker: speaker,
+      rollMode: rollMode,
+      flavor: `Skill: ${this.name}`,
+      content: content
+    });
+  }
+
+  /**
+   * Get item description for display
+   */
+  _getItemDescription() {
+    let content = `<div class="item-info">
+      <h3>${this.name}</h3>
+    `;
+    
+    if (this.system.description) {
+      content += `<p>${this.system.description}</p>`;
+    } else {
+      content += `<p><em>No description available.</em></p>`;
+    }
+    
+    // Add type-specific info
+    if (this.system.price) {
+      content += `<p><strong>Price:</strong> ${this.system.price}¥</p>`;
+    }
+    
+    if (this.system.weight) {
+      content += `<p><strong>Weight:</strong> ${this.system.weight} kg</p>`;
+    }
+    
+    content += `</div>`;
+    return content;
   }
 
   /**

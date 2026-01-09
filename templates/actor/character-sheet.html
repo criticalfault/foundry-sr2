@@ -157,36 +157,52 @@
             <span>{{system.pools.combat.current}} / {{system.pools.combat.max}}</span>
             <button class="pool-adjust" data-pool="combat" data-adjust="1">+</button>
           </div>
+          
+          {{#if (gt system.attributes.magic.value 0)}}
           <div class="pool">
             <label>Spell Pool</label>
             <button class="pool-adjust" data-pool="spell" data-adjust="-1">-</button>
             <span>{{system.pools.spell.current}} / {{system.pools.spell.max}}</span>
             <button class="pool-adjust" data-pool="spell" data-adjust="1">+</button>
           </div>
+          {{/if}}
+          
+          {{#if system.hasCyberdeck}}
           <div class="pool">
             <label>Hacking Pool</label>
             <button class="pool-adjust" data-pool="hacking" data-adjust="-1">-</button>
             <span>{{system.pools.hacking.current}} / {{system.pools.hacking.max}}</span>
             <button class="pool-adjust" data-pool="hacking" data-adjust="1">+</button>
           </div>
+          {{/if}}
+          
+          {{#if system.hasControlRig}}
           <div class="pool">
             <label>Control Pool</label>
             <button class="pool-adjust" data-pool="control" data-adjust="-1">-</button>
             <span>{{system.pools.control.current}} / {{system.pools.control.max}}</span>
             <button class="pool-adjust" data-pool="control" data-adjust="1">+</button>
           </div>
+          {{/if}}
+          
+          {{#if (gt system.pools.task.max 0)}}
           <div class="pool">
             <label>Task Pool</label>
             <button class="pool-adjust" data-pool="task" data-adjust="-1">-</button>
             <span>{{system.pools.task.current}} / {{system.pools.task.max}}</span>
             <button class="pool-adjust" data-pool="task" data-adjust="1">+</button>
           </div>
+          {{/if}}
+          
+          {{#if (gt system.attributes.magic.value 0)}}
           <div class="pool">
             <label>Astral Combat Pool</label>
             <button class="pool-adjust" data-pool="astral" data-adjust="-1">-</button>
             <span>{{system.pools.astral.current}} / {{system.pools.astral.max}}</span>
             <button class="pool-adjust" data-pool="astral" data-adjust="1">+</button>
           </div>
+          {{/if}}
+          
           <div class="pool karma-pool">
             <label>Karma Pool</label>
             <input type="number" name="system.pools.karma.current" value="{{system.pools.karma.current}}" data-dtype="Number"/>

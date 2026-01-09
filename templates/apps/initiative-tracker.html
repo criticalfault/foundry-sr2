@@ -49,7 +49,15 @@
     <button class="reset-combat" title="Reset Combat">
       <i class="fas fa-stop"></i> Reset
     </button>
-    {{/if}}
+
+    {{#if @root.isGM}}
+    <button
+      class="sync-foundry-combat"
+      title="Sync with Foundry Combat (GM Only)"
+    >
+      <i class="fas fa-sync"></i> Sync Combat
+    </button>
+    {{/if}} {{/if}}
   </div>
 
   <div class="combatants-list">

@@ -214,6 +214,19 @@ export class SR2ActorSheet extends ActorSheet {
       reaction: attrs.reaction.value, // Already includes modifiers
       initiativeDice: 1 + (modifiers.INI || 0)
     };
+
+    // Check for cyberdeck (for Hacking Pool visibility)
+    context.system.hasCyberdeck = this.actor.items.some(item => 
+      item.type === 'cyberware' && 
+      item.name.toLowerCase().includes('cyberdeck')
+    );
+
+    // Check for Vehicle Control Rig (for Control Pool visibility)
+    context.system.hasControlRig = this.actor.items.some(item => 
+      item.type === 'cyberware' && 
+      (item.name.toLowerCase().includes('control rig') || 
+       item.name.toLowerCase().includes('vehicle control rig'))
+    );
   }
 
   /**
@@ -274,10 +287,28 @@ export class SR2ActorSheet extends ActorSheet {
     // Drag events for macros
     if (this.actor.isOwner) {
       let handler = ev => this._onDragStart(ev);
-      html.find('li.item').each((i, li) => {
-        if (li.classList.contains("inventory-header")) return;
-        li.setAttribute("draggable", true);
-        li.addEventListener("dragstart", handler, false);
+      
+      // Enable drag for all item types
+      const itemSelectors = [
+        'li.item',           // Generic items
+        '.item-row',         // Weapons, armor, gear, cyberware, bioware, spells, adept powers
+        '.skill-item',       // Skills
+        '.program-row'       // Programs (for cyberdeck sheets)
+      ];
+      
+      itemSelectors.forEach(selector => {
+        html.find(selector).each((i, element) => {
+          // Skip headers and elements without item IDs
+          if (element.classList.contains("inventory-header") || 
+              element.classList.contains("header") ||
+              !element.dataset.itemId) return;
+              
+          element.setAttribute("draggable", true);
+          element.addEventListener("dragstart", handler, false);
+          
+          // Add visual feedback for draggable items
+          element.style.cursor = "grab";
+        });
       });
     }
 
@@ -467,11 +498,33 @@ export class SR2ActorSheet extends ActorSheet {
   async _onResetAllPools(event) {
     event.preventDefault();
 
+    // Check conditions for pool visibility
+    const magicAttribute = this.actor.system.attributes.magic?.value || 0;
+    const hasCyberdeck = this.actor.items.some(item => 
+      item.type === 'cyberware' && 
+      item.name.toLowerCase().includes('cyberdeck')
+    );
+    const hasControlRig = this.actor.items.some(item => 
+      item.type === 'cyberware' && 
+      (item.name.toLowerCase().includes('control rig') || 
+       item.name.toLowerCase().includes('vehicle control rig'))
+    );
+
+    // Build list of available pools for confirmation dialog
+    const availablePools = [];
+    if (true) availablePools.push('Combat');
+    if (magicAttribute > 0) availablePools.push('Spell');
+    if (hasCyberdeck) availablePools.push('Hacking');
+    if (hasControlRig) availablePools.push('Control');
+    if ((this.actor.system.pools.task?.max || 0) > 0) availablePools.push('Task');
+    if (magicAttribute > 0) availablePools.push('Astral');
+
     // Confirm with GM before resetting
     const confirmed = await Dialog.confirm({
       title: "Reset All Pools",
       content: `<p>Are you sure you want to reset all dice pools to maximum for <strong>${this.actor.name}</strong>?</p>
-                <p>This will restore all pools (Combat, Spell, Hacking, Control, Task, Astral) to their maximum values.</p>`,
+                <p>This will restore the following pools to their maximum values:</p>
+                <p><em>${availablePools.join(', ')}</em></p>`,
       yes: () => true,
       no: () => false,
       defaultYes: false
@@ -479,16 +532,25 @@ export class SR2ActorSheet extends ActorSheet {
 
     if (!confirmed) return;
 
-    // Build update data for all pools
+    // Build update data for available pools only
     const updateData = {};
     const poolData = this.actor.system.pools;
 
-    // Reset all pools except karma (karma is managed differently)
-    const poolTypes = ['combat', 'spell', 'hacking', 'control', 'task', 'astral'];
+    // Define pool types with their visibility conditions
+    const poolTypes = [
+      { key: 'combat', condition: true },
+      { key: 'spell', condition: magicAttribute > 0 },
+      { key: 'hacking', condition: hasCyberdeck },
+      { key: 'control', condition: hasControlRig },
+      { key: 'task', condition: (poolData.task?.max || 0) > 0 },
+      { key: 'astral', condition: magicAttribute > 0 }
+    ];
 
+    const resetPools = [];
     poolTypes.forEach(poolType => {
-      if (poolData[poolType]) {
-        updateData[`system.pools.${poolType}.current`] = poolData[poolType].max;
+      if (poolType.condition && poolData[poolType.key]) {
+        updateData[`system.pools.${poolType.key}.current`] = poolData[poolType.key].max;
+        resetPools.push(poolType.key);
       }
     });
 
@@ -496,7 +558,7 @@ export class SR2ActorSheet extends ActorSheet {
     await this.actor.update(updateData);
 
     // Show confirmation message
-    ui.notifications.info(`All dice pools reset to maximum for ${this.actor.name}`);
+    ui.notifications.info(`All available dice pools reset to maximum for ${this.actor.name}`);
 
     // Optional: Create chat message for transparency
     ChatMessage.create({
@@ -506,7 +568,7 @@ export class SR2ActorSheet extends ActorSheet {
         <h3>🔄 Pools Reset</h3>
         <p><strong>${this.actor.name}'s</strong> dice pools have been reset to maximum by the GM.</p>
         <ul>
-          ${poolTypes.map(type => {
+          ${resetPools.map(type => {
         const pool = poolData[type];
         return pool && pool.max > 0 ? `<li>${type.charAt(0).toUpperCase() + type.slice(1)} Pool: ${pool.max}/${pool.max}</li>` : '';
       }).filter(item => item).join('')}
@@ -885,27 +947,43 @@ export class SR2ActorSheet extends ActorSheet {
   _getAvailablePools() {
     const pools = [];
     const poolData = this.actor.system.pools;
+    const magicAttribute = this.actor.system.attributes.magic?.value || 0;
 
-    // Add all pools that have current dice available
+    // Check for cyberdeck and control rig
+    const hasCyberdeck = this.actor.items.some(item => 
+      item.type === 'cyberware' && 
+      item.name.toLowerCase().includes('cyberdeck')
+    );
+    
+    const hasControlRig = this.actor.items.some(item => 
+      item.type === 'cyberware' && 
+      (item.name.toLowerCase().includes('control rig') || 
+       item.name.toLowerCase().includes('vehicle control rig'))
+    );
+
+    // Define pool types with their visibility conditions
     const poolTypes = [
-      { key: 'karma', name: 'Karma Pool', maxKey: 'total' },
-      { key: 'combat', name: 'Combat Pool', maxKey: 'max' },
-      { key: 'spell', name: 'Spell Pool', maxKey: 'max' },
-      { key: 'hacking', name: 'Hacking Pool', maxKey: 'max' },
-      { key: 'control', name: 'Control Pool', maxKey: 'max' },
-      { key: 'task', name: 'Task Pool', maxKey: 'max' },
-      { key: 'astral', name: 'Astral Combat Pool', maxKey: 'max' }
+      { key: 'karma', name: 'Karma Pool', maxKey: 'total', condition: true },
+      { key: 'combat', name: 'Combat Pool', maxKey: 'max', condition: true },
+      { key: 'spell', name: 'Spell Pool', maxKey: 'max', condition: magicAttribute > 0 },
+      { key: 'hacking', name: 'Hacking Pool', maxKey: 'max', condition: hasCyberdeck },
+      { key: 'control', name: 'Control Pool', maxKey: 'max', condition: hasControlRig },
+      { key: 'task', name: 'Task Pool', maxKey: 'max', condition: (poolData.task?.max || 0) > 0 },
+      { key: 'astral', name: 'Astral Combat Pool', maxKey: 'max', condition: magicAttribute > 0 }
     ];
 
     poolTypes.forEach(poolType => {
-      const pool = poolData[poolType.key];
-      if (pool) {
-        pools.push({
-          key: poolType.key,
-          name: poolType.name,
-          current: pool.current || 0,
-          max: pool[poolType.maxKey] || 0
-        });
+      // Only add pools that meet their visibility condition
+      if (poolType.condition) {
+        const pool = poolData[poolType.key];
+        if (pool) {
+          pools.push({
+            key: poolType.key,
+            name: poolType.name,
+            current: pool.current || 0,
+            max: pool[poolType.maxKey] || 0
+          });
+        }
       }
     });
 
@@ -915,8 +993,111 @@ export class SR2ActorSheet extends ActorSheet {
   /**
    * Show Target Number selection dialog
    */
-  async _showTargetNumberDialog(dicePool, title, rollType, defaultTN = 4) {
+  async _showTargetNumberDialog(dicePool, title, rollType, defaultTN = 4, weaponData = null) {
     const availablePools = this._getAvailablePools();
+    const isRangedAttack = rollType === 'attack' && weaponData && weaponData.system.weaponType === 'ranged';
+
+    const rangedModifiersSection = isRangedAttack ? `
+      <div class="ranged-modifiers-section">
+        <h4><strong>Ranged Combat Modifiers:</strong></h4>
+        <div class="modifier-grid">
+          <div class="modifier-group">
+            <label><strong>Recoil:</strong></label>
+            <select name="recoil-modifier" class="modifier-select">
+              <option value="0">None</option>
+              <option value="1">Semi-automatic (+1)</option>
+              <option value="2">Burst-fire (+2)</option>
+              <option value="3">Full-auto (+3)</option>
+              <option value="2">Heavy weapon (+2)</option>
+            </select>
+          </div>
+          
+          <div class="modifier-group">
+            <label><strong>Visibility:</strong></label>
+            <select name="visibility-modifier" class="modifier-select">
+              <option value="0">Clear</option>
+              <option value="8">Blind Fire (+8)</option>
+            </select>
+          </div>
+          
+          <div class="modifier-group">
+            <label><strong>Cover:</strong></label>
+            <select name="cover-modifier" class="modifier-select">
+              <option value="0">None</option>
+              <option value="4">Partial Cover (+4)</option>
+            </select>
+          </div>
+          
+          <div class="modifier-group">
+            <label><strong>Multiple Targets:</strong></label>
+            <select name="multiple-targets-modifier" class="modifier-select">
+              <option value="0">Single Target</option>
+              <option value="2">2 Targets (+2)</option>
+              <option value="4">3 Targets (+4)</option>
+              <option value="6">4 Targets (+6)</option>
+              <option value="8">5 Targets (+8)</option>
+              <option value="10">6+ Targets (+10)</option>
+            </select>
+          </div>
+          
+          <div class="modifier-group">
+            <label><strong>Target Movement:</strong></label>
+            <select name="target-movement-modifier" class="modifier-select">
+              <option value="0">Normal</option>
+              <option value="2">Target Running (+2)</option>
+              <option value="-1">Target Stationary (-1)</option>
+            </select>
+          </div>
+          
+          <div class="modifier-group">
+            <label><strong>Attacker in Melee:</strong></label>
+            <select name="attacker-melee-modifier" class="modifier-select">
+              <option value="0">Not in Melee</option>
+              <option value="2">1 Opponent (+2)</option>
+              <option value="4">2 Opponents (+4)</option>
+              <option value="6">3 Opponents (+6)</option>
+              <option value="8">4+ Opponents (+8)</option>
+            </select>
+          </div>
+          
+          <div class="modifier-group">
+            <label><strong>Attacker Movement:</strong></label>
+            <select name="attacker-movement-modifier" class="modifier-select">
+              <option value="0">Stationary</option>
+              <option value="1">Walking (+1)</option>
+              <option value="2">Walking, Difficult Ground (+2)</option>
+              <option value="4">Running (+4)</option>
+              <option value="6">Running, Difficult Ground (+6)</option>
+            </select>
+          </div>
+          
+          <div class="modifier-group">
+            <label><strong>Weapon Accessories:</strong></label>
+            <select name="accessories-modifier" class="modifier-select">
+              <option value="0">None</option>
+              <option value="-2">Smartlink w/ Smartgun (-2)</option>
+              <option value="-1">Smart Goggles w/ Smartgun (-1)</option>
+              <option value="-1">Laser Sight (-1)</option>
+            </select>
+          </div>
+          
+          <div class="modifier-group">
+            <label><strong>Other Modifiers:</strong></label>
+            <select name="other-modifier" class="modifier-select">
+              <option value="0">None</option>
+              <option value="2">Using Second Firearm (+2)</option>
+              <option value="-1">Aimed Shot, 1 Phase (-1)</option>
+              <option value="-2">Aimed Shot, 2 Phases (-2)</option>
+              <option value="-3">Aimed Shot, 3 Phases (-3)</option>
+              <option value="-4">Aimed Shot, 4+ Phases (-4)</option>
+            </select>
+          </div>
+        </div>
+        <div class="total-modifier">
+          <strong>Total TN Modifier: <span id="total-tn-modifier">+0</span></strong>
+        </div>
+      </div>
+    ` : '';
 
     const content = `
       <div class="target-number-dialog">
@@ -926,7 +1107,7 @@ export class SR2ActorSheet extends ActorSheet {
         </div>
         
         <div class="target-number-section">
-          <label for="target-number"><strong>Target Number:</strong></label>
+          <label for="target-number"><strong>Base Target Number:</strong></label>
           <select id="target-number" name="targetNumber">
             <option value="2" ${defaultTN === 2 ? 'selected' : ''}>2 - Trivial</option>
             <option value="3" ${defaultTN === 3 ? 'selected' : ''}>3 - Easy</option>
@@ -960,6 +1141,8 @@ export class SR2ActorSheet extends ActorSheet {
           </select>
         </div>
 
+        ${rangedModifiersSection}
+
         ${availablePools.length > 0 ? `
         <div class="pool-dice-section">
           <label><strong>Pool Dice (Optional):</strong></label>
@@ -975,12 +1158,6 @@ export class SR2ActorSheet extends ActorSheet {
           `).join('')}
         </div>
         ` : ''}
-
-        <div class="modifiers-section">
-          <label for="dice-modifier"><strong>Dice Pool Modifier:</strong></label>
-          <input type="number" id="dice-modifier" name="diceModifier" value="0" min="-20" max="20">
-          <small>Positive for bonuses, negative for penalties</small>
-        </div>
       </div>
     `;
 
@@ -1008,15 +1185,62 @@ export class SR2ActorSheet extends ActorSheet {
             diceInput.val(0);
           }
         });
+
+        // Handle ranged modifier calculations
+        if (isRangedAttack) {
+          const updateTotalModifier = () => {
+            let totalModifier = 0;
+            html.find('.modifier-select').each(function() {
+              totalModifier += parseInt($(this).val()) || 0;
+            });
+            html.find('#total-tn-modifier').text(totalModifier >= 0 ? `+${totalModifier}` : `${totalModifier}`);
+          };
+
+          html.find('.modifier-select').change(updateTotalModifier);
+          updateTotalModifier(); // Initial calculation
+        }
       },
       buttons: {
         roll: {
           icon: '<i class="fas fa-dice-d6"></i>',
           label: "Roll",
           callback: async (html) => {
-            const targetNumber = parseInt(html.find('#target-number').val());
+            let baseTargetNumber = parseInt(html.find('#target-number').val());
             const diceModifier = parseInt(html.find('#dice-modifier').val()) || 0;
             let finalDicePool = dicePool + diceModifier;
+
+            // Calculate ranged combat modifiers if applicable
+            let tnModifier = 0;
+            let modifierDetails = [];
+            
+            if (isRangedAttack) {
+              const recoilMod = parseInt(html.find('select[name="recoil-modifier"]').val()) || 0;
+              const visibilityMod = parseInt(html.find('select[name="visibility-modifier"]').val()) || 0;
+              const coverMod = parseInt(html.find('select[name="cover-modifier"]').val()) || 0;
+              const multipleTargetsMod = parseInt(html.find('select[name="multiple-targets-modifier"]').val()) || 0;
+              const targetMovementMod = parseInt(html.find('select[name="target-movement-modifier"]').val()) || 0;
+              const attackerMeleeMod = parseInt(html.find('select[name="attacker-melee-modifier"]').val()) || 0;
+              const attackerMovementMod = parseInt(html.find('select[name="attacker-movement-modifier"]').val()) || 0;
+              const accessoriesMod = parseInt(html.find('select[name="accessories-modifier"]').val()) || 0;
+              const otherMod = parseInt(html.find('select[name="other-modifier"]').val()) || 0;
+
+              tnModifier = recoilMod + visibilityMod + coverMod + multipleTargetsMod + 
+                          targetMovementMod + attackerMeleeMod + attackerMovementMod + 
+                          accessoriesMod + otherMod;
+
+              // Build modifier details for display
+              if (recoilMod !== 0) modifierDetails.push(`Recoil: ${recoilMod >= 0 ? '+' : ''}${recoilMod}`);
+              if (visibilityMod !== 0) modifierDetails.push(`Visibility: ${visibilityMod >= 0 ? '+' : ''}${visibilityMod}`);
+              if (coverMod !== 0) modifierDetails.push(`Cover: ${coverMod >= 0 ? '+' : ''}${coverMod}`);
+              if (multipleTargetsMod !== 0) modifierDetails.push(`Multiple Targets: ${multipleTargetsMod >= 0 ? '+' : ''}${multipleTargetsMod}`);
+              if (targetMovementMod !== 0) modifierDetails.push(`Target Movement: ${targetMovementMod >= 0 ? '+' : ''}${targetMovementMod}`);
+              if (attackerMeleeMod !== 0) modifierDetails.push(`Attacker in Melee: ${attackerMeleeMod >= 0 ? '+' : ''}${attackerMeleeMod}`);
+              if (attackerMovementMod !== 0) modifierDetails.push(`Attacker Movement: ${attackerMovementMod >= 0 ? '+' : ''}${attackerMovementMod}`);
+              if (accessoriesMod !== 0) modifierDetails.push(`Accessories: ${accessoriesMod >= 0 ? '+' : ''}${accessoriesMod}`);
+              if (otherMod !== 0) modifierDetails.push(`Other: ${otherMod >= 0 ? '+' : ''}${otherMod}`);
+            }
+
+            const finalTargetNumber = Math.max(2, baseTargetNumber + tnModifier);
 
             // Handle pool dice
             const poolsUsed = [];
@@ -1055,15 +1279,36 @@ export class SR2ActorSheet extends ActorSheet {
               await this.actor.update(updateData);
             }
 
-            // Create enhanced title with pool info
-            let finalTitle = `${title} (TN ${targetNumber})`;
+            // Create enhanced title with pool info and modifiers
+            let finalTitle = `${title} (TN ${finalTargetNumber})`;
+            if (tnModifier !== 0) {
+              finalTitle += ` [Base TN ${baseTargetNumber} ${tnModifier >= 0 ? '+' : ''}${tnModifier}]`;
+            }
             if (poolsUsed.length > 0) {
               const poolInfo = poolsUsed.map(({ pool, dice }) => `${dice} ${pool.name}`).join(', ');
               finalTitle += ` [+${totalPoolDice} from ${poolInfo}]`;
             }
 
             // Roll the dice
-            this.actor.rollDice(finalDicePool, targetNumber, finalTitle);
+            this.actor.rollDice(finalDicePool, finalTargetNumber, finalTitle);
+
+            // Show modifier breakdown in chat if there were ranged modifiers
+            if (isRangedAttack && modifierDetails.length > 0) {
+              const modifierChatData = {
+                user: game.user.id,
+                speaker: ChatMessage.getSpeaker({ actor: this.actor }),
+                content: `
+                  <div class="ranged-modifiers-breakdown">
+                    <h4>Ranged Combat Modifiers Applied:</h4>
+                    <ul>
+                      ${modifierDetails.map(detail => `<li>${detail}</li>`).join('')}
+                    </ul>
+                    <p><strong>Total TN Modifier: ${tnModifier >= 0 ? '+' : ''}${tnModifier}</strong></p>
+                  </div>
+                `
+              };
+              ChatMessage.create(modifierChatData);
+            }
           }
         },
         cancel: {
@@ -1114,8 +1359,8 @@ export class SR2ActorSheet extends ActorSheet {
     const magicRating = this.actor.system.attributes.magic.value || 1;
     const sorcerySkill = this._getHighestSorcerySkill();
 
-    // Calculate dice pool for spellcasting
-    const dicePool = magicRating + sorcerySkill;
+    // Calculate dice pool for spellcasting - in SR2E, use only the sorcery skill rating
+    const dicePool = sorcerySkill;
 
     const title = `Casting ${spell.name} (Force ${force})`;
 
@@ -1236,8 +1481,8 @@ export class SR2ActorSheet extends ActorSheet {
       }
     }
 
-    // Calculate dice pool (attribute + skill in SR2E)
-    const dicePool = attribute + skillRating;
+    // Calculate dice pool - in SR2E, only use skill rating (not attribute + skill)
+    const dicePool = skillRating;
 
     // Create attack title
     const attackType = isRanged ? 'Ranged Attack' : 'Melee Attack';
@@ -1245,7 +1490,7 @@ export class SR2ActorSheet extends ActorSheet {
     const subtitle = skillRating > 0 ? `${skillName} (${rollDescription})` : 'Defaulting to Attribute Only';
 
     // Show TN selection dialog and roll for attack
-    await this._showTargetNumberDialog(dicePool, `${title} - ${subtitle}`, 'attack');
+    await this._showTargetNumberDialog(dicePool, `${title} - ${subtitle}`, 'attack', 4, weapon);
 
     // Display weapon damage in chat
     const damageCode = weapon.system.damage || "1L";
@@ -1256,10 +1501,8 @@ export class SR2ActorSheet extends ActorSheet {
         <div class="weapon-attack">
           <h3>${weapon.name} Attack</h3>
           <p><strong>Skill Used:</strong> ${skillName} ${rollDescription ? `(${rollDescription})` : ''}</p>
-          <p><strong>Dice Pool:</strong> ${skillRating} (Skill) = ${dicePool}</p>
+          <p><strong>Dice Pool:</strong> ${skillRating} (Skill Only)</p>
           <p><strong>Damage Code:</strong> ${damageCode}</p>
-          ${weapon.system.reach ? `<p><strong>Reach:</strong> ${weapon.system.reach}</p>` : ''}
-          ${weapon.system.mode ? `<p><strong>Mode:</strong> ${weapon.system.mode}</p>` : ''}
         </div>
       `
     };
@@ -3026,5 +3269,469 @@ export class SR2ActorSheet extends ActorSheet {
     }
 
     return true;
+  }
+
+  /**
+   * Handle drag start events for creating hotbar macros
+   */
+  _onDragStart(event) {
+    const element = event.currentTarget;
+    
+    // Get item data - try different ways to find the item ID
+    let itemId = element.dataset.itemId || 
+                 element.getAttribute('data-item-id') ||
+                 element.closest('[data-item-id]')?.dataset.itemId;
+    
+    if (!itemId) {
+      console.warn("SR2E | No item ID found for drag operation");
+      return;
+    }
+    
+    const item = this.actor.items.get(itemId);
+    
+    if (!item) {
+      console.warn("SR2E | Item not found for drag:", itemId);
+      return;
+    }
+
+    console.log("SR2E | Dragging item:", item.name, "Type:", item.type);
+
+    // Create drag data for hotbar macro creation
+    const dragData = {
+      type: "Item",
+      actorId: this.actor.id,
+      data: item.toObject(),
+      uuid: item.uuid
+    };
+
+    // Set the drag data
+    event.dataTransfer.setData("text/plain", JSON.stringify(dragData));
+  }
+
+  /**
+   * Handle weapon attack button clicks
+   */
+  async _onWeaponAttack(event) {
+    event.preventDefault();
+    
+    const weaponId = event.currentTarget.dataset.itemId;
+    const weapon = this.actor.items.get(weaponId);
+    
+    if (!weapon) {
+      ui.notifications.error("Weapon not found");
+      return;
+    }
+
+    // Check if this is a melee weapon (has reach property)
+    const isMeleeWeapon = weapon.system.reach !== undefined && weapon.system.reach !== null;
+    
+    if (isMeleeWeapon) {
+      // Show melee combat modifiers dialog
+      this._showMeleeCombatDialog(weapon);
+    } else {
+      // For ranged weapons, show a simpler attack dialog or direct roll
+      this._performWeaponAttack(weapon, 0); // No modifiers for now
+    }
+  }
+
+  /**
+   * Show melee combat modifiers dialog
+   */
+  async _showMeleeCombatDialog(weapon, defaultTN = 4) {
+    //Dean
+    const availablePools = this._getAvailablePools();
+    const dialogContent = `
+      <div class="melee-combat-dialog">
+        <h3>Melee Combat Modifiers for ${weapon.name}</h3>
+        <div class="target-number-section">
+          <label for="target-number"><strong>Base Target Number:</strong></label>
+          <select id="target-number" name="targetNumber">
+            <option value="2" ${defaultTN === 2 ? 'selected' : ''}>2 - Trivial</option>
+            <option value="3" ${defaultTN === 3 ? 'selected' : ''}>3 - Easy</option>
+            <option value="4" ${defaultTN === 4 ? 'selected' : ''}>4 - Average</option>
+            <option value="5" ${defaultTN === 5 ? 'selected' : ''}>5 - Fair</option>
+            <option value="6" ${defaultTN === 6 ? 'selected' : ''}>6 - Hard</option>
+            <option value="7" ${defaultTN === 7 ? 'selected' : ''}>7 - Extreme</option>
+            <option value="8" ${defaultTN === 8 ? 'selected' : ''}>8 - Nearly Impossible</option>
+            <option value="9" ${defaultTN === 9 ? 'selected' : ''}>9 - Impossible</option>
+            <option value="10" ${defaultTN === 10 ? 'selected' : ''}>10 - Miraculous</option>
+            <option value="11" ${defaultTN === 11 ? 'selected' : ''}>11</option>
+            <option value="12" ${defaultTN === 12 ? 'selected' : ''}>12</option>
+            <option value="13" ${defaultTN === 13 ? 'selected' : ''}>13</option>
+            <option value="14" ${defaultTN === 14 ? 'selected' : ''}>14</option>
+            <option value="15" ${defaultTN === 15 ? 'selected' : ''}>15</option>
+            <option value="16" ${defaultTN === 16 ? 'selected' : ''}>16</option>
+            <option value="17" ${defaultTN === 17 ? 'selected' : ''}>17</option>
+            <option value="18" ${defaultTN === 18 ? 'selected' : ''}>18</option>
+            <option value="19" ${defaultTN === 19 ? 'selected' : ''}>19</option>
+            <option value="20" ${defaultTN === 20 ? 'selected' : ''}>20</option>
+            <option value="21" ${defaultTN === 21 ? 'selected' : ''}>21</option>
+            <option value="22" ${defaultTN === 22 ? 'selected' : ''}>22</option>
+            <option value="23" ${defaultTN === 23 ? 'selected' : ''}>23</option>
+            <option value="24" ${defaultTN === 24 ? 'selected' : ''}>24</option>
+            <option value="25" ${defaultTN === 25 ? 'selected' : ''}>25</option>
+            <option value="26" ${defaultTN === 26 ? 'selected' : ''}>26</option>
+            <option value="27" ${defaultTN === 27 ? 'selected' : ''}>27</option>
+            <option value="28" ${defaultTN === 28 ? 'selected' : ''}>28</option>
+            <option value="29" ${defaultTN === 29 ? 'selected' : ''}>29</option>
+            <option value="30" ${defaultTN === 30 ? 'selected' : ''}>30</option>
+          </select>
+        </div>
+        
+        <div class="modifier-section">
+          <h4>Situational Modifiers</h4>
+          
+          <div class="modifier-row">
+            <label for="friends-in-melee">Character has friends in melee:</label>
+            <select id="friends-in-melee" name="friendsInMelee">
+              <option value="0">None</option>
+              <option value="-1">1 Friend (-1)</option>
+              <option value="-2">2 Friends (-2)</option>
+              <option value="-3">3 Friends (-3)</option>
+              <option value="-4">4+ Friends (-4)</option>
+            </select>
+          </div>
+
+          <div class="modifier-row">
+            <label for="opponents-in-melee">Opponent has friends in melee:</label>
+            <select id="opponents-in-melee" name="opponentsInMelee">
+              <option value="0">None</option>
+              <option value="1">1 Friend (+1)</option>
+              <option value="2">2 Friends (+2)</option>
+              <option value="3">3 Friends (+3)</option>
+              <option value="4">4+ Friends (+4)</option>
+            </select>
+          </div>
+
+          <div class="modifier-row">
+            <label for="reach-advantage">Character's weapon reach advantage:</label>
+            <select id="reach-advantage" name="reachAdvantage">
+              <option value="0">Equal reach</option>
+              <option value="-1">1 point longer (-1)</option>
+              <option value="-2">2 points longer (-2)</option>
+              <option value="-3">3 points longer (-3)</option>
+              <option value="1">1 point shorter (+1)</option>
+              <option value="2">2 points shorter (+2)</option>
+              <option value="3">3 points shorter (+3)</option>
+            </select>
+          </div>
+
+          <div class="modifier-row">
+            <label for="multiple-targets">Character attacking multiple targets:</label>
+            <select id="multiple-targets" name="multipleTargets">
+              <option value="0">Single target</option>
+              <option value="2">2 targets (+2)</option>
+              <option value="4">3 targets (+4)</option>
+              <option value="6">4 targets (+6)</option>
+              <option value="8">5+ targets (+8)</option>
+            </select>
+          </div>
+
+          <div class="modifier-row">
+            <label for="superior-position">Character has superior position:</label>
+            <input type="checkbox" id="superior-position" name="superiorPosition" value="-1">
+            <span class="modifier-value">(-1)</span>
+          </div>
+
+          <div class="modifier-row">
+            <label for="opponent-prone">Opponent is prone:</label>
+            <input type="checkbox" id="opponent-prone" name="opponentProne" value="-2">
+            <span class="modifier-value">(-2)</span>
+          </div>
+
+          <div class="modifier-summary">
+            <strong>Total TN Modifier: <span id="total-modifier">0</span></strong>
+          </div>
+        </div>
+        ${availablePools.length > 0 ? `
+        <div class="pool-dice-section">
+          <label><strong>Pool Dice (Optional):</strong></label>
+          ${availablePools.map(pool => `
+            <div class="pool-option">
+              <label>
+                <input type="checkbox" name="pool-${pool.key}" value="${pool.key}" class="pool-checkbox">
+                ${pool.name} (${pool.current}/${pool.max})
+              </label>
+              <input type="number" name="pool-${pool.key}-dice" 
+                     min="0" max="${pool.current}" value="0" disabled class="pool-dice-input">
+            </div>
+          `).join('')}
+        </div>
+        ` : ''}
+      </div>
+    `;
+
+    // Create and show the dialog
+    new Dialog({
+      title: `Melee Attack: ${weapon.name}`,
+      content: dialogContent,
+      buttons: {
+        attack: {
+          label: "Make Attack",
+          callback: (html) => {
+            const modifiers = this._calculateMeleeModifiers(html);
+            this._performWeaponAttack(weapon, modifiers.total);
+          }
+        },
+        cancel: {
+          label: "Cancel"
+        }
+      },
+      default: "attack",
+      render: (html) => {
+        // Add event listeners to update total modifier in real-time
+        const updateTotal = () => {
+          const modifiers = this._calculateMeleeModifiers(html);
+          html.find('#total-modifier').text(modifiers.total > 0 ? `+${modifiers.total}` : modifiers.total);
+        };
+
+        html.find('select, input[type="checkbox"]').on('change', updateTotal);
+        updateTotal(); // Initial calculation
+      }
+    }).render(true);
+  }
+
+  /**
+   * Calculate melee combat modifiers from dialog
+   */
+  _calculateMeleeModifiers(html) {
+    const friendsInMelee = parseInt(html.find('[name="friendsInMelee"]').val()) || 0;
+    const opponentsInMelee = parseInt(html.find('[name="opponentsInMelee"]').val()) || 0;
+    const reachAdvantage = parseInt(html.find('[name="reachAdvantage"]').val()) || 0;
+    const multipleTargets = parseInt(html.find('[name="multipleTargets"]').val()) || 0;
+    const superiorPosition = html.find('[name="superiorPosition"]').is(':checked') ? -1 : 0;
+    const opponentProne = html.find('[name="opponentProne"]').is(':checked') ? -2 : 0;
+
+    const total = friendsInMelee + opponentsInMelee + reachAdvantage + multipleTargets + superiorPosition + opponentProne;
+
+    return {
+      friendsInMelee,
+      opponentsInMelee,
+      reachAdvantage,
+      multipleTargets,
+      superiorPosition,
+      opponentProne,
+      total
+    };
+  }
+
+  /**
+   * Perform the actual weapon attack with modifiers
+   */
+  async _performWeaponAttack(weapon, tnModifier) {
+    // Get the linked skill for this weapon
+    const linkedSkill = this._getWeaponSkill(weapon);
+    
+    if (!linkedSkill) {
+      ui.notifications.error(`No skill found for ${weapon.name}. Please link a skill to this weapon.`);
+      return;
+    }
+
+    // Calculate base TN (typically 4 for most attacks)
+    const baseTN = 4;
+    const finalTN = Math.max(2, baseTN + tnModifier); // TN can't go below 2
+
+    // Get skill rating
+    const skillRating = this._getSkillRating(linkedSkill);
+    
+    if (skillRating === 0) {
+      ui.notifications.error(`${linkedSkill.name} skill rating is 0. Cannot make attack.`);
+      return;
+    }
+
+    // Create attack roll description
+    let attackDescription = `${weapon.name} Attack`;
+    if (tnModifier !== 0) {
+      attackDescription += ` (TN ${baseTN} ${tnModifier > 0 ? '+' : ''}${tnModifier} = ${finalTN})`;
+    }
+
+    // Roll the attack
+    const result = await this.actor.rollDice(skillRating, finalTN, attackDescription);
+
+    // Create detailed chat message
+    const chatContent = `
+      <div class="weapon-attack-result">
+        <h3>${weapon.name} Attack</h3>
+        <p><strong>Attacker:</strong> ${this.actor.name}</p>
+        <p><strong>Skill:</strong> ${linkedSkill.name} (${skillRating})</p>
+        <p><strong>Target Number:</strong> ${finalTN}</p>
+        ${tnModifier !== 0 ? `<p><strong>Modifiers:</strong> ${tnModifier > 0 ? '+' : ''}${tnModifier}</p>` : ''}
+        <p><strong>Damage:</strong> ${weapon.system.damage || 'Unknown'}</p>
+        ${weapon.system.reach !== undefined ? `<p><strong>Reach:</strong> ${weapon.system.reach}</p>` : ''}
+        <p><strong>Result:</strong> ${result.successes} success${result.successes !== 1 ? 'es' : ''}</p>
+        ${result.isCriticalFailure ? '<p><strong>Critical Failure!</strong></p>' : ''}
+      </div>
+    `;
+
+    ChatMessage.create({
+      user: game.user.id,
+      speaker: ChatMessage.getSpeaker({ actor: this.actor }),
+      content: chatContent
+    });
+  }
+
+  /**
+   * Get the appropriate skill for a weapon
+   */
+  _getWeaponSkill(weapon) {
+    // First check if weapon has a linked skill
+    if (weapon.system.linkedSkill && weapon.system.linkedSkill.skillId) {
+      return this.actor.items.get(weapon.system.linkedSkill.skillId);
+    }
+
+    // Auto-detect skill based on weapon type/name
+    const weaponName = weapon.name.toLowerCase();
+    const skills = this.actor.items.filter(i => i.type === 'skill');
+
+    // Common weapon skill mappings
+    const skillMappings = {
+      'sword': 'Edged Weapons',
+      'knife': 'Edged Weapons',
+      'blade': 'Edged Weapons',
+      'katana': 'Edged Weapons',
+      'club': 'Clubs',
+      'staff': 'Pole Arms',
+      'spear': 'Pole Arms',
+      'whip': 'Whips',
+      'pistol': 'Pistols',
+      'rifle': 'Rifles',
+      'shotgun': 'Shotguns',
+      'smg': 'SMG',
+      'assault': 'Assault Rifles'
+    };
+
+    // Try to find matching skill
+    for (const [weaponType, skillName] of Object.entries(skillMappings)) {
+      if (weaponName.includes(weaponType)) {
+        const skill = skills.find(s => s.system.baseSkill === skillName);
+        if (skill) return skill;
+      }
+    }
+
+    // Default to first combat skill found
+    const combatSkills = ['Edged Weapons', 'Clubs', 'Pole Arms', 'Whips', 'Pistols', 'Rifles', 'Shotguns', 'SMG', 'Assault Rifles'];
+    for (const skillName of combatSkills) {
+      const skill = skills.find(s => s.system.baseSkill === skillName);
+      if (skill) return skill;
+    }
+
+    return null;
+  }
+
+  /**
+   * Get effective skill rating for a skill item
+   */
+  _getSkillRating(skill) {
+    if (!skill) return 0;
+    
+    const baseRating = skill.system.baseRating || 0;
+    const concRating = skill.system.concentrationRating || 0;
+    const specRating = skill.system.specializationRating || 0;
+    
+    // Return the highest rating available
+    return Math.max(baseRating, concRating, specRating);
+  }
+
+  /**
+   * Handle attribute roll button clicks
+   */
+  async _onAttributeRoll(event) {
+    event.preventDefault();
+    const attribute = event.currentTarget.dataset.attribute;
+    
+    if (!attribute) {
+      ui.notifications.error("No attribute specified for roll");
+      return;
+    }
+
+    const attributeValue = this.actor.system.attributes[attribute]?.value || 1;
+    const title = `${attribute.charAt(0).toUpperCase() + attribute.slice(1)} Roll`;
+    
+    await this.actor.rollDice(attributeValue, 4, title);
+  }
+
+  /**
+   * Handle skill roll button clicks
+   */
+  async _onSkillRoll(event) {
+    event.preventDefault();
+    const skillId = event.currentTarget.dataset.skillId;
+    const rollType = event.currentTarget.dataset.rollType || 'base';
+
+    const skill = this.actor.items.get(skillId);
+    if (!skill) {
+      ui.notifications.error("Skill not found for roll");
+      return;
+    }
+
+    let skillRating = 0;
+    let skillName = skill.name;
+
+    switch (rollType) {
+      case 'base':
+        skillRating = skill.system.baseRating || 0;
+        break;
+      case 'concentration':
+        skillRating = skill.system.concentrationRating || 0;
+        skillName += ` (${skill.system.concentration})`;
+        break;
+      case 'specialization':
+        skillRating = skill.system.specializationRating || 0;
+        skillName += ` [${skill.system.specialization}]`;
+        break;
+    }
+
+    if (skillRating === 0) {
+      ui.notifications.error(`${skillName} rating is 0. Cannot make roll.`);
+      return;
+    }
+
+    const title = `${skillName} Roll`;
+    await this.actor.rollDice(skillRating, 4, title);
+  }
+
+  /**
+   * Placeholder methods for missing handlers
+   */
+  async _onBrowseItems(event) {
+    ui.notifications.info("Item browser not yet implemented");
+  }
+
+  async _onSpellCast(event) {
+    ui.notifications.info("Spell casting not yet implemented");
+  }
+
+  async _onRangeWeaponChange(event) {
+    // Range calculator functionality placeholder
+  }
+
+  async _onRangeDistanceChange(event) {
+    // Range calculator functionality placeholder
+  }
+
+  async _onBrowseTotems(event) {
+    ui.notifications.info("Totem browser not yet implemented");
+  }
+
+  async _onCyberwareInstall(event) {
+    const checkbox = event.currentTarget;
+    const itemId = checkbox.closest('.item-row').dataset.itemId;
+    const item = this.actor.items.get(itemId);
+    
+    if (item) {
+      await item.update({ 'system.installed': checkbox.checked });
+      this.render(false);
+    }
+  }
+
+  async _onBiowareInstall(event) {
+    const checkbox = event.currentTarget;
+    const itemId = checkbox.closest('.item-row').dataset.itemId;
+    const item = this.actor.items.get(itemId);
+    
+    if (item) {
+      await item.update({ 'system.installed': checkbox.checked });
+      this.render(false);
+    }
   }
 }
