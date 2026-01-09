@@ -87,7 +87,7 @@ A comprehensive game system for playing Shadowrun 2nd Edition in Foundry Virtual
 ### Dice Rolling
 
 - Click rollable elements throughout the character sheet
-- Skills automatically calculate dice pools (Attribute + Skill + Specialization)
+- Skills roll only their rating (not attribute + skill as in later editions)
 - Spells include automatic drain resistance rolls
 
 ## Compatibility
