@@ -3198,7 +3198,6 @@
   color: white;
   border-radius: 8px;
   margin-bottom: 15px;
-  height: 100px;
 }
 
 .shadowrun2e.vehicle .vehiclename input {
@@ -3264,7 +3263,6 @@ header.window-header.flexrow.draggable.resizable {
 }
 
 .shadowrun2e.vehicle .vehicle-stats h3 {
-  color: #2c3e50;
   border-bottom: 2px solid #3498db;
   margin-bottom: 20px;
   padding-bottom: 8px;
@@ -3286,7 +3284,6 @@ header.window-header.flexrow.draggable.resizable {
 }
 
 .shadowrun2e.vehicle .stat-group h4 {
-  color: #2c3e50;
   margin: 0 0 15px 0;
   border-bottom: 1px solid #ecf0f1;
   padding-bottom: 8px;
@@ -3307,7 +3304,6 @@ header.window-header.flexrow.draggable.resizable {
 }
 
 .shadowrun2e.vehicle .stat input {
-  background: #ecf0f1;
   border: 1px solid #bdc3c7;
   padding: 6px 10px;
   border-radius: 4px;
@@ -3351,7 +3347,6 @@ header.window-header.flexrow.draggable.resizable {
 }
 
 .shadowrun2e.vehicle .condition-section h4 {
-  color: #2c3e50;
   margin: 0 0 15px 0;
   border-bottom: 1px solid #ecf0f1;
   padding-bottom: 8px;
@@ -3397,7 +3392,6 @@ header.window-header.flexrow.draggable.resizable {
 }
 
 .shadowrun2e.vehicle .damage-controls input {
-  background: #ecf0f1;
   border: 1px solid #bdc3c7;
   padding: 4px 8px;
   border-radius: 4px;
@@ -3448,7 +3442,6 @@ header.window-header.flexrow.draggable.resizable {
 }
 
 .shadowrun2e.vehicle .info-field input {
-  background: #ecf0f1;
   border: 1px solid #bdc3c7;
   padding: 6px 10px;
   border-radius: 4px;
@@ -3481,7 +3474,6 @@ header.window-header.flexrow.draggable.resizable {
 }
 
 .shadowrun2e.vehicle .items-header h3 {
-  color: #2c3e50;
   margin: 0;
   font-size: 25px;
   border-bottom: none;
@@ -3655,7 +3647,6 @@ header.window-header.flexrow.draggable.resizable {
 .shadowrun2e.vehicle .notes-section textarea,
 .shadowrun2e.vehicle .biography-section textarea {
   width: 100%;
-  background: #fafafa;
   border: 1px solid #bdc3c7;
   padding: 15px;
   border-radius: 4px;
